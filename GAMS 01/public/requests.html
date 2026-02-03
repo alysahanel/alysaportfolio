@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AM System - Requests</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            transition: margin-left 0.3s ease-in-out;
+        }
+        .main-content {
+            transition: margin-left 0.3s ease-in-out;
+            width: calc(100% - 16rem); 
+        }
+        .sidebar-hidden {
+            margin-left: -16rem;
+        }
+        .content-expanded {
+            margin-left: 0;
+            width: 100%; 
+        }
+        .status-pending { color: #ffc107; }
+        .status-approved { color: #28a745; }
+        .status-rejected { color: #dc3545; }
+        .status-delivered { color: #17a2b8; }
+        html { font-size: 14px; }
+        html, body { overflow-x: hidden; }
+        @media (max-width: 768px) {
+            .main-content { margin-left: 0; width: 100%; }
+        }
+        .no-arrow {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: none !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex min-h-screen">
+        <aside id="sidebar" class="w-64 bg-white shadow-lg fixed h-screen flex flex-col sidebar z-20">
+            <div class="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100 p-5">
+                <div class="flex items-center justify-center gap-3">
+                    <img src="images/nipponlogo.svg" alt="Nippon Steel Logo" class="h-10 w-10">
+                    <h4 class="text-lg font-bold text-blue-600">AMMS</h4>
+                </div>
+                <div class="mt-2 text-center text-xs text-blue-500" id="userInfo"></div>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-4">
+                <ul id="sidebarMenu" class="space-y-1 px-3">
+                </ul>
+            </nav>
+            <div class="p-4 border-t">
+                <button onclick="logout()" class="w-full bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+        <main id="mainContent" class="flex-1 ml-64 main-content">
+            <div class="bg-white shadow-sm border-b sticky top-0 z-10">
+                <div class="px-6 py-4 flex justify-between items-center">
+                    <div class="flex items-center gap-4">
+                        <button id="sidebarToggle" class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                        <h2 class="text-2xl font-bold text-gray-800">Requests Management</h2>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div id="actionButtons"></div>
+                        <div class="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-lg">
+                            <i class="fas fa-user text-gray-600"></i>
+                            <span id="headerUserName" class="text-sm font-medium text-gray-700"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                            <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="startDate">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                            <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="endDate">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Search Item</label>
+                            <div class="relative">
+                                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="searchItem" placeholder="Search item..." list="itemSuggestions">
+                                <datalist id="itemSuggestions">
+                                    <option value="Keyboard Wireless Logitech">
+                                    <option value="Kertas HVS A4 75 gr">
+                                    <option value="Spidol Merah">
+                                    <option value="Clear Holder">
+                                    <option value="Baterai Alkaline A3">
+                                    <option value="Kop Surat">
+                                    <option value="Cable HDMI 1,5 M Vention">
+                                    <option value="Post It Plastic">
+                                    <option value="Senter LED Rechargeable">
+                                    <option value="Tinta Printer Canon">
+                                </datalist>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="searchDepartment">
+                                <option value="">All Departments</option>
+                                <option value="HRGA Legal">HRGA Legal</option>
+                                <option value="HSE">HSE</option>
+                                <option value="FAT">FAT</option>
+                                <option value="Production">Production</option>
+                                <option value="QA/QC">QA/QC</option>
+                                <option value="Purchasing">Purchasing</option>
+                                <option value="PPIC">PPIC</option>
+                                <option value="EXIM">EXIM</option>
+                                <option value="IT">IT</option>
+                                <option value="Sales">Sales</option>
+                                <option value="Maintenance">Maintenance</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center gap-2" onclick="filterRequests()">
+                            <i class="fas fa-search"></i> Filter
+                        </button>
+                        <button class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center gap-2" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel"></i> Export to Excel
+                        </button>
+                        <button class="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors flex items-center gap-2" onclick="clearFilters()">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow">
+                    <div class="p-6 border-b">
+                        <h5 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-list"></i> Requests List
+                        </h5>
+                    </div>
+                    <div class="overflow-x-auto" style="max-height: 600px; overflow-y: auto;">
+                        <table class="w-full">
+                            <thead class="bg-gray-800 text-white sticky top-0">
+                                <tr id="tableHeader"></tr>
+                            </thead>
+                            <tbody id="requestsTableBody" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div id="requestModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center p-6 border-b sticky top-0 bg-white">
+                <h5 class="text-xl font-bold text-gray-800" id="modalTitle">Create Request</h5>
+                <button onclick="closeRequestModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="requestForm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Request Date</label>
+                            <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="reqDate" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Item Name</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="itemName" required onchange="handleItemSelection()">
+                                <option value="">Select item</option>
+                                <option value="others">Others (Manual Input)</option>
+                            </select>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-2" id="searchItemSimple" placeholder="Type an item name to search..." style="display: none;">
+                            <input type="hidden" id="selectedItemId">
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-2" id="itemNameManual" placeholder="Enter item details manually" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Detail</label>
+                        <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="itemDetail" rows="3" required readonly></textarea>
+                        <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-2" id="itemDetailManual" rows="3" placeholder="Enter item details" style="display: none;"></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Purpose</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="purpose" placeholder="Enter purpose">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                            <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="qty" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="unit" required readonly>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-2" id="unitManual" style="display: none;">
+                                <option value="" disabled selected>Select unit</option>
+                                <option value="pcs">pcs</option>
+                                <option value="box">box</option>
+                                <option value="pack">pack</option>
+                                <option value="rim">rim</option>
+                                <option value="roll">roll</option>
+                                <option value="set">set</option>
+                                <option value="btl">btl</option>
+                                <option value="liter">liter</option>
+                                <option value="kg">kg</option>
+                                <option value="others">Others</option>
+                            </select>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-2" id="unitManualText" placeholder="" style="display: none;">
+                        </div>
+                    </div>
+                    <div id="adminFields" style="display: none;">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="status">
+                                    <option value="pending">Pending</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Comment</label>
+                                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="comment" rows="2"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="csFields" style="display: none;">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Date</label>
+                                <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="deliveryDate">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Sender (CS)</label>
+                                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="sender">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="flex gap-3 p-6 border-t sticky bottom-0 bg-white">
+                <button onclick="closeRequestModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg transition-colors">Cancel</button>
+                <button onclick="saveRequest()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">Save</button>
+            </div>
+        </div>
+    </div>
+    <div id="deliveryModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h5 class="text-xl font-bold text-gray-800">Update Delivery Information</h5>
+                <button onclick="closeDeliveryModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="deliveryForm">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Receiver Name</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="receiverName" required placeholder="Enter receiver name">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Date</label>
+                        <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="deliveryDateModal" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">CS Name</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed" id="csName" required readonly>
+                        <small class="text-gray-500 text-xs">CS Name is automatically filled based on the logged-in account</small>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Notes (Optional)</label>
+                        <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="deliveryNotes" rows="3" placeholder="Add any notes if necessary"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="flex gap-3 p-6 border-t">
+                <button onclick="closeDeliveryModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg transition-colors">Cancel</button>
+                <button onclick="saveDeliveryInfo()" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+                    <i class="fas fa-truck"></i> Update Delivery
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-sm w-full">
+            <div class="p-6 text-center">
+                <i class="fas fa-exclamation-triangle text-yellow-500 text-4xl mb-3"></i>
+                <h5 class="text-xl font-bold text-gray-800 mb-2" id="confirmTitle">Confirm Deletion</h5>
+                <p class="text-gray-600" id="confirmMessage">Are you sure you want to proceed?</p>
+            </div>
+            <div class="flex justify-center gap-3 p-4 border-t bg-gray-50 rounded-b-lg">
+                <button onclick="resolveConfirmation(false)" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg transition-colors">Cancel</button>
+                <button onclick="resolveConfirmation(true)" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors">Yes</button> 
+            </div>
+        </div>
+    </div>
+    <div id="inputModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-sm w-full">
+            <div class="p-6 border-b">
+                <h5 class="text-xl font-bold text-gray-800" id="inputTitle">Enter Reason</h5>
+            </div>
+            <div class="p-6">
+                <label for="inputValue" class="block text-sm font-medium text-gray-700 mb-2" id="inputLabel">Rejection Reason:</label>
+                <textarea id="inputValue" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"></textarea>
+                <p id="inputError" class="text-red-500 text-sm mt-1 hidden">Reason cannot be empty.</p>
+            </div>
+            <div class="flex gap-3 p-4 border-t bg-gray-50 rounded-b-lg">
+                <button onclick="resolveInput(null)" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg transition-colors">Cancel</button>
+                <button onclick="resolveInput(document.getElementById('inputValue').value)" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors">Send</button>
+            </div>
+        </div>
+    </div>
+    <div id="alert-error" class="hidden fixed inset-0 z-[100] flex items-start justify-center p-4">
+      <div class="relative bg-red-100 border-t-4 border-red-500 rounded-lg text-red-900 px-4 py-3 shadow-xl max-w-md w-full mt-10" role="alert">
+        <button type="button" onclick="hideAlert('alert-error')" class="absolute top-2 right-2 text-red-600 hover:text-red-800">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="flex items-center">
+          <div class="py-1">
+            <svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+              <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="font-bold">Error!</p>
+            <p id="alert-error-message" class="text-sm">Error message will appear here.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="alert-success" class="hidden fixed inset-0 z-[100] flex items-start justify-center p-4">
+      <div class="relative bg-green-100 border-t-4 border-green-500 rounded-lg text-green-900 px-4 py-3 shadow-xl max-w-md w-full mt-10" role="alert">
+        <button type="button" onclick="hideAlert('alert-success')" class="absolute top-2 right-2 text-green-600 hover:text-green-800">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="flex items-center">
+          <div class="py-1">
+            <svg class="fill-current h-6 w-6 text-green-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+              <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM8.3 13.6L5.6 10.9l1.4-1.4 1.3 1.3 3.6-3.6 1.4 1.4-5 5z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="font-bold">Success</p>
+            <p id="alert-success-message" class="text-sm">Success message will appear here.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+let _alertTimers = { error: null, success: null };
+function showErrorAlert(message, { autoHideMs = 3000 } = {}) {
+  const box = document.getElementById("alert-error");
+  const msg = document.getElementById("alert-error-message");
+  msg.textContent = message;
+  box.classList.remove("hidden");
+  clearTimeout(_alertTimers.error);
+  if (autoHideMs && autoHideMs > 0) {
+    _alertTimers.error = setTimeout(() => hideAlert("alert-error"), autoHideMs);
+  }
+}
+function showSuccessAlert(message, { autoHideMs = 3000 } = {}) {
+  const box = document.getElementById("alert-success");
+  const msg = document.getElementById("alert-success-message");
+  msg.textContent = message;
+  box.classList.remove("hidden");
+  clearTimeout(_alertTimers.success);
+  if (autoHideMs && autoHideMs > 0) {
+    _alertTimers.success = setTimeout(() => hideAlert("alert-success"), autoHideMs);
+  }
+}
+function hideAlert(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add("hidden");
+  if (id === "alert-error") clearTimeout(_alertTimers.error);
+  if (id === "alert-success") clearTimeout(_alertTimers.success);
+}
+function showConfirmModal(title, message) {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').textContent = message;
+    document.getElementById('confirmModal').classList.remove('hidden');
+    document.getElementById('confirmModal').classList.add('flex');
+    return new Promise(resolve => {
+        confirmModalResolver = resolve;
+    });
+}
+function resolveConfirmation(result) {
+    document.getElementById('confirmModal').classList.remove('flex');
+    document.getElementById('confirmModal').classList.add('hidden');
+    if (confirmModalResolver) {
+        confirmModalResolver(result); 
+        confirmModalResolver = null;
+    }
+}
+let inputModalResolver;
+function showInputModal(title, label) {
+    document.getElementById('inputTitle').textContent = title;
+    document.getElementById('inputLabel').textContent = label;
+    document.getElementById('inputValue').value = '';
+    document.getElementById('inputError').classList.add('hidden');
+    document.getElementById('inputModal').classList.remove('hidden');
+    document.getElementById('inputModal').classList.add('flex');
+    return new Promise(resolve => {
+        inputModalResolver = resolve;
+    });
+}
+function resolveInput(value) {
+    const errorMsg = document.getElementById('inputError');
+    if (value !== null && value.trim() === '') {
+        errorMsg.textContent = 'Reason cannot be empty.';
+        errorMsg.classList.remove('hidden');
+        return;
+    }
+    document.getElementById('inputModal').classList.remove('flex');
+    document.getElementById('inputModal').classList.add('hidden');
+    errorMsg.classList.add('hidden');
+    if (inputModalResolver) {
+        inputModalResolver(value === null ? null : value.trim());
+        inputModalResolver = null;
+    }
+}
+const sidebar = document.getElementById('sidebar');
+const mainContent = document.getElementById('mainContent');
+const sidebarToggle = document.getElementById('sidebarToggle');
+let sidebarVisible = true;
+sidebarToggle.addEventListener('click', function() {
+    sidebarVisible = !sidebarVisible;
+    if (sidebarVisible) {
+        sidebar.classList.remove('sidebar-hidden');
+        mainContent.classList.remove('content-expanded');
+        mainContent.classList.add('ml-64');
+    } else {
+        sidebar.classList.add('sidebar-hidden');
+        mainContent.classList.add('content-expanded');
+        mainContent.classList.remove('ml-64');
+    }
+});
+const token = localStorage.getItem('token');
+const user = JSON.parse(localStorage.getItem('user') || '{}');
+if (!token || !user.id) {
+    window.location.href = '/login';
+}
+document.getElementById('userInfo').textContent = `${user.full_name} | ${(user.role || '').toUpperCase()}`;
+document.getElementById('headerUserName').textContent = user.full_name;
+let currentRequestId = null;
+function initializePage() {
+    setupSidebar();
+    setupActionButtons();
+    setupTableHeader();
+    setupDepartmentFilter();
+    loadRequests();
+}
+function setupDepartmentFilter() {
+    const departmentFilter = document.getElementById('searchDepartment').closest('.col-md-3');
+    const departmentSelect = document.getElementById('searchDepartment');
+    if (user.role === 'user') {
+        departmentSelect.innerHTML = `<option value="${user.department}">${user.department}</option>`;
+        departmentSelect.disabled = true;
+        departmentSelect.classList.add('no-arrow');
+    } else if (user.role === 'cs') {
+        departmentSelect.innerHTML = `<option value="">All Departments</option>`;
+        departmentSelect.disabled = false;
+        loadDepartmentOptions();
+    } else if (user.role === 'admin') {
+        departmentSelect.innerHTML = `<option value="">All Departments</option>`;
+        departmentSelect.disabled = false;
+        loadDepartmentOptions();
+    }
+}
+function loadDepartmentOptions() {
+    const departmentSelect = document.getElementById('searchDepartment');
+    const departments = [
+        'HRGA Legal', 'HSE', 'FAT', 'Production', 'QA/QC',
+        'Purchasing', 'PPIC', 'EXIM', 'IT',
+        'Sales', 'Maintenance'
+    ];
+    departments.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept;
+        option.textContent = dept;
+        departmentSelect.appendChild(option);
+    });
+}
+function setupSidebar() {
+    const sidebarMenu = document.getElementById('sidebarMenu');
+    let menuItems = [];
+    if (user.role === 'admin') {
+        menuItems = [
+            { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard' },
+            { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests', active: true },
+            { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock' },
+            { icon: 'fas fa-calendar', text: 'Calendar', href: '/calendar' },
+            { icon: 'fas fa-users', text: 'Account Management', href: '/accounts' }
+        ];
+    } else if (user.role === 'cs') {
+        menuItems = [
+            { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard' },
+            { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests', active: true },
+            { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock' }
+        ];
+    } else if (user.role === 'user') {
+        menuItems = [
+            { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard' },
+            { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests', active: true }
+        ];
+    }
+    sidebarMenu.innerHTML = menuItems.map(item => `
+        <li>
+            <a href="${item.href}" class="flex items-center gap-3 px-4 py-3 rounded-lg ${item.active ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'} transition-colors">
+                <i class="${item.icon}"></i>
+                <span class="font-medium">${item.text}</span>
+            </a>
+        </li>
+    `).join('');
+}
+function setupActionButtons() {
+    const actionButtons = document.getElementById('actionButtons');
+    if (user.role === 'user') {
+        actionButtons.innerHTML = `
+            <button class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center gap-2" onclick="openRequestModal()">
+                <i class="fas fa-plus"></i> New Request
+            </button>
+        `;
+    }
+}
+function setupTableHeader() {
+    const tableHeader = document.getElementById('tableHeader');
+    let headers = [
+        'Req Date', 'Req ID', 'User ID', 'Item ID', 'Item Name', 'Detail',
+        'Qty', 'Unit', 'Dept', 'PIC', 'Purpose', 'Status', 'Comment', 'Reasons for Rejection', 'CS Notes', 'Delivery Date', 'Sender', 'Receiver'
+    ];
+    if (user.role === 'admin' || user.role === 'cs') {
+        headers.push('Actions');
+    }
+    tableHeader.innerHTML = headers.map(header => `<th class="px-6 py-3 text-left text-xs font-semibold">${header}</th>`).join('');
+}
+async function loadRequests() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login';
+            return;
+        }
+        const response = await fetch('/api/requests', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!response.ok) {
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/login';
+                return;
+            }
+            throw new Error('Failed to load requests');
+        }
+        const data = await response.json();
+        renderRequestsTable(data.data || []);
+    } catch (error) {
+        console.error('Error loading requests:', error);
+        document.getElementById('requestsTableBody').innerHTML = `
+            <tr><td colspan="100%" class="text-center text-red-600 py-4">
+                <i class="fas fa-exclamation-triangle"></i> failed to load requests data
+            </td></tr>
+        `;
+    }
+}
+function renderRequestsTable(requests) {
+    const tbody = document.getElementById('requestsTableBody');
+    if (!requests.length) {
+        tbody.innerHTML = `
+            <tr><td colspan="100%" class="text-center text-gray-500 py-8">
+                <i class="fas fa-inbox text-4xl mb-2"></i><br>No requests data
+            </td></tr>
+        `;
+        return;
+    }
+    tbody.innerHTML = requests.map(req => {
+        let actionsHtml = '';
+        if (user.role === 'admin') {
+            if (req.status === 'pending') {
+                const alreadyCommented = (req.comment && String(req.comment).trim().length > 0);
+                actionsHtml = `
+                    <button class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-sm mr-1" onclick="approveRequest('${req.id}')" title="Approve">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm mr-1" onclick="rejectRequest('${req.id}')" title="Reject">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    ${alreadyCommented ? '' : `<button class=\"bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-sm\" onclick=\"addComment('${req.id}')\" title=\"Add Comment\"><i class=\"fas fa-comment\"></i></button>`}
+                `;
+            } else {
+                const alreadyCommented = (req.comment && String(req.comment).trim().length > 0);
+                actionsHtml = alreadyCommented ? '' : `
+                    <button class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-sm" onclick="addComment('${req.id}')" title="Add Comment">
+                        <i class="fas fa-comment"></i>
+                    </button>
+                `;
+            }
+        } else if ((user.role === 'cs' || user.role === 'admin') && (req.status === 'approved')) {
+            actionsHtml = `
+                <button class="bg-cyan-500 hover:bg-cyan-600 text-white px-2 py-1 rounded text-sm" onclick="updateDelivery('${req.id}')" title="Update Delivery">
+                    <i class="fas fa-truck"></i>
+                </button>
+            `;
+        }
+        return `
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 text-sm text-gray-700">${req.formatted_req_date || req.req_date || '-'}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">${req.request_id || req.id}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">${req.user_id || '-'}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">${req.item_id || '-'}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">${req.item_name}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">${req.detail}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">${req.qty}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">${req.unit}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">${req.department}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">${req.pic}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">${req.purpose || '-'}</td>
+                <td class="px-6 py-4 text-sm"><span class="status-${(req.status || 'pending')} font-semibold">${(req.status || 'pending').toUpperCase()}</span></td>
+                <td class="px-6 py-4 text-sm text-gray-700">${req.comment || '-'}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">${req.rejected_reason || '-'}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">${req.cs_notes || '-'}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">${req.formatted_delivery_date || req.delivery_date || '-'}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">${req.sender || '-'}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">${req.receiver || req.receiver_name || '-'}</td>
+                ${actionsHtml ? `<td class="px-6 py-4 text-sm">${actionsHtml}</td>` : ''}
+            </tr>
+        `;
+    }).join('');
+}
+async function filterRequests() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const searchItem = document.getElementById('searchItem').value;
+    const searchDepartment = document.getElementById('searchDepartment').value;
+    const params = new URLSearchParams();
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    if (searchItem) params.append('item', searchItem);
+    if (searchDepartment) params.append('department', searchDepartment);
+    try {
+        const response = await fetch(`/api/requests?${params.toString()}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (!response.ok) throw new Error('Filter failed');
+        const data = await response.json();
+        renderRequestsTable(data.data);
+    } catch (error) {
+        console.error('Filter error:', error);
+        showErrorAlert('Failed to filter data');
+    }
+}
+function clearFilters() {
+    document.getElementById('startDate').value = '';
+    document.getElementById('endDate').value = '';
+    document.getElementById('searchItem').value = '';
+    document.getElementById('searchDepartment').value = '';
+    loadRequests();
+}
+async function exportToExcel() {
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!token) {
+        showErrorAlert('Please login first');
+        return;
+    }
+    try {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const searchItem = document.getElementById('searchItem').value;
+        const searchDepartment = document.getElementById('searchDepartment').value;
+        let url = '/api/export/requests';
+        const params = [];
+        if (startDate) params.push(`startDate=${startDate}`);
+        if (endDate) params.push(`endDate=${endDate}`);
+        if (searchItem) params.push(`item=${encodeURIComponent(searchItem)}`);
+        if (searchDepartment) params.push(`department=${encodeURIComponent(searchDepartment)}`);
+        if (params.length > 0) {
+            url += '?' + params.join('&');
+        }
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        if (response.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+            return;
+        }
+        if (!response.ok) {
+            throw new Error('Export failed');
+        }
+        const blob = await response.blob();
+        const url2 = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const dateRange = startDate && endDate ? `_${startDate}_to_${endDate}` : '';
+        const userPrefix = user.role === 'user' ? '_personal' : '';
+        a.href = url2;
+        a.download = `requests${userPrefix}${dateRange}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url2);
+        document.body.removeChild(a);
+        showSuccessAlert('Requests data exported successfully!');
+    } catch (error) {
+        console.error('Export error:', error);
+        showErrorAlert('Failed to export requests data: ' + error.message);
+    }
+}
+function closeRequestModal() {
+    document.getElementById('requestModal').classList.add('hidden');
+    document.getElementById('requestModal').classList.remove('flex');
+}
+function closeDeliveryModal() {
+    document.getElementById('deliveryModal').classList.add('hidden');
+    document.getElementById('deliveryModal').classList.remove('flex');
+}
+function openRequestModal(requestId = null) {
+    currentRequestId = requestId;
+    const modal = document.getElementById('requestModal');
+    if (requestId) {
+        document.getElementById('modalTitle').textContent = 'Edit Request';
+    } else {
+        document.getElementById('modalTitle').textContent = 'New Request';
+        document.getElementById('requestForm').reset();
+        document.getElementById('reqDate').value = new Date().toISOString().split('T')[0];
+        loadItemsForDropdown();
+    }
+    if (user.role === 'admin') {
+        document.getElementById('adminFields').style.display = 'block';
+    } else if (user.role === 'cs') {
+        document.getElementById('csFields').style.display = 'block';
+    }
+    if (user.role === 'user') {
+        const selectEl = document.getElementById('itemName');
+        const searchEl = document.getElementById('searchItemSimple');
+        const manualEl = document.getElementById('itemNameManual');
+        const othersOption = Array.from(selectEl.options).find(o => o.value === 'others');
+        if (othersOption) othersOption.remove();
+        searchEl.style.display = 'block';
+        selectEl.style.display = 'none';
+        manualEl.style.display = 'none';
+        document.getElementById('itemDetail').readOnly = true;
+        document.getElementById('unit').readOnly = true;
+        const attachListener = () => {
+            searchEl.addEventListener('ga:item-selected', () => {
+                const id = searchEl.getAttribute('data-selected-item-id') || '';
+                const unit = searchEl.getAttribute('data-selected-item-unit') || '';
+                const detail = searchEl.getAttribute('data-selected-item-detail') || '';
+                document.getElementById('selectedItemId').value = id;
+                document.getElementById('itemDetail').value = detail;
+                document.getElementById('unit').value = unit;
+            });
+        };
+        if (document.readyState === 'complete') attachListener();
+        else setTimeout(attachListener, 100);
+    }
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+async function saveRequest() {
+    if (user.role === 'user') {
+        const searchEl = document.getElementById('searchItemSimple');
+        const selectedId = document.getElementById('selectedItemId').value;
+        const itemName = searchEl.value.trim();
+        const detail = document.getElementById('itemDetail').value.trim();
+        const unit = document.getElementById('unit').value.trim();
+        if (!selectedId || !itemName || !detail || !unit) {
+            showErrorAlert('Please select a valid item');
+            return;
+        }
+        const qty = document.getElementById('qty').value;
+        if (!qty || qty <= 0) {
+            showErrorAlert('Please enter a valid quantity');
+            return;
+        }
+        const purposeInput = document.getElementById('purpose');
+        const purpose = (purposeInput.value || '').trim();
+        const formData = {
+            req_date: document.getElementById('reqDate').value,
+            item_name: itemName,
+            detail: detail,
+            qty: parseInt(qty),
+            unit: unit,
+            purpose: purpose || null
+        };
+        if (user.role === 'admin') {
+            formData.status = document.getElementById('status').value;
+            formData.comment = document.getElementById('comment').value;
+        }
+        if (user.role === 'cs') {
+            formData.delivery_date = document.getElementById('deliveryDate').value;
+            formData.sender = document.getElementById('sender').value;
+        }
+        try {
+            const currentToken = localStorage.getItem('token');
+            if (!currentToken) {
+                throw new Error('No authentication token found');
+            }
+            const url = currentRequestId ? `/api/requests/${currentRequestId}` : '/api/requests';
+            const method = currentRequestId ? 'PUT' : 'POST';
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentToken}`
+                },
+                body: JSON.stringify(formData)
+            });
+            const responseData = await response.json();
+            if (!response.ok) {
+                throw new Error(responseData.message || `Save failed (status ${response.status})`);
+            }
+            closeRequestModal();
+            loadRequests();
+            showSuccessAlert('Request saved successfully');
+        } catch (error) {
+            console.error('Save error:', error);
+            showErrorAlert('Failed to save request: ' + (error.message || 'Unknown error'));
+        }
+        return;
+    }
+    const itemSelect = document.getElementById('itemName');
+    const selectedValue = itemSelect.value;
+    let itemName, detail, unit;
+    if (selectedValue === 'others') {
+        itemName = document.getElementById('itemNameManual').value;
+        detail = document.getElementById('itemDetailManual').value;
+        const unitDropdownValue = document.getElementById('unitManual').value;
+        unit = unitDropdownValue === 'others' 
+            ? document.getElementById('unitManualText').value 
+            : unitDropdownValue;
+    } else if (selectedValue === '') {
+        showErrorAlert('Please select an item or choose Others for manual input');
+        return;
+    } else {
+        const selectedOption = itemSelect.options[itemSelect.selectedIndex];
+        itemName = selectedOption.textContent.split(' (')[0];
+        detail = document.getElementById('itemDetail').value;
+        unit = document.getElementById('unit').value;
+    }
+    if (!itemName || !detail || !unit) {
+        showErrorAlert('Please fill in all required fields (Item Name, Detail, Unit)');
+        return;
+    }
+    const qty = document.getElementById('qty').value;
+    if (!qty || qty <= 0) {
+        showErrorAlert('Please enter a valid quantity');
+        return;
+    }
+    const purposeInput = document.getElementById('purpose');
+    const purpose = (purposeInput.value || '').trim();
+    if (selectedValue === 'others' && !purpose) {
+        showErrorAlert('Please fill in the Purpose');
+        return;
+    }
+    const formData = {
+        req_date: document.getElementById('reqDate').value,
+        item_name: itemName,
+        detail: detail,
+        qty: parseInt(qty),
+        unit: unit,
+        purpose: purpose || null
+    };
+    if (user.role === 'admin') {
+        formData.status = document.getElementById('status').value;
+        formData.comment = document.getElementById('comment').value;
+    }
+    if (user.role === 'cs') {
+        formData.delivery_date = document.getElementById('deliveryDate').value;
+        formData.sender = document.getElementById('sender').value;
+    }
+    try {
+        const currentToken = localStorage.getItem('token');
+        if (!currentToken) {
+            throw new Error('No authentication token found');
+        }
+        const url = currentRequestId ? `/api/requests/${currentRequestId}` : '/api/requests';
+        const method = currentRequestId ? 'PUT' : 'POST';
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: JSON.stringify(formData)
+        });
+        const responseData = await response.json();
+        if (!response.ok) {
+            throw new Error(responseData.message || `Save failed (status ${response.status})`);
+        }
+        closeRequestModal();
+        loadRequests();
+        showSuccessAlert('Request saved successfully');
+    } catch (error) {
+        console.error('Save error:', error);
+        showErrorAlert('Failed to save request: ' + (error.message || 'Unknown error'));
+    }
+}
+async function addComment(requestId) {
+    const comment = await showInputModal('Add Comment', 'Enter Comment:');
+    if (!comment) return;
+    try {
+        const response = await fetch(`/api/requests/${requestId}/comment`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ comment }) 
+        });
+        if (!response.ok) throw new Error('Add comment failed');
+        loadRequests();
+        showSuccessAlert('Comment added successfully');
+    } catch (error) {
+        console.error('Add comment error:', error);
+        showErrorAlert('Failed to add comment');
+    }
+}
+async function approveRequest(requestId) {
+    if (!await showConfirmModal('Confirm Approval', 'Approve this request?')) return;
+    try {
+        const response = await fetch(`/api/requests/${requestId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ status: 'approved' })
+        });
+        if (!response.ok) throw new Error('Approve failed');
+        loadRequests();
+        showSuccessAlert('Request approved successfully');
+    } catch (error) {
+        console.error('Approve error:', error);
+        showErrorAlert('Failed to approve request');
+    }
+}
+async function rejectRequest(requestId) {
+    const comment = await showInputModal('Reason for rejection:', 'Please enter the reason for rejection');
+    if (!comment) return;
+    try {
+        const response = await fetch(`/api/requests/${requestId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ status: 'rejected', comment })
+        });
+        if (!response.ok) throw new Error('Reject failed');
+        loadRequests();
+        showSuccessAlert('Request rejected successfully');
+    } catch (error) {
+        console.error('Reject error:', error);
+        showErrorAlert('Failed to reject request');
+    }
+}
+let currentDeliveryRequestId = null;
+function updateDelivery(requestId) {
+    currentDeliveryRequestId = requestId;
+    const modal = document.getElementById('deliveryModal');
+    document.getElementById('deliveryDateModal').value = new Date().toISOString().split('T')[0];
+    let csDisplayName = user.full_name || user.username || '';
+    if (user.full_name === user.username || !user.full_name || user.full_name.trim() === '') {
+        csDisplayName = `CS - ${user.username}`;
+    }
+    document.getElementById('csName').value = csDisplayName;
+    document.getElementById('receiverName').value = '';
+    document.getElementById('deliveryNotes').value = '';
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+async function saveDeliveryInfo() {
+    const receiverName = document.getElementById('receiverName').value;
+    const deliveryDate = document.getElementById('deliveryDateModal').value;
+    const csName = document.getElementById('csName').value;
+    const deliveryNotes = document.getElementById('deliveryNotes').value;
+    const confirmReceived = true;
+    if (!receiverName || !deliveryDate || !csName) {
+        showErrorAlert('Please fill in all required fields!');
+        return;
+    }
+    try {
+        const response = await fetch(`/api/requests/${currentDeliveryRequestId}/delivery`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ 
+                delivery_date: deliveryDate, 
+                sender: csName,
+                receiver_name: receiverName,
+                delivery_notes: deliveryNotes,
+                confirm_received: confirmReceived
+            })
+        });
+        if (!response.ok) throw new Error('Update delivery failed');
+        closeDeliveryModal();
+        loadRequests();
+        showSuccessAlert('Delivery information updated successfully!');
+    } catch (error) {
+        console.error('Update delivery error:', error);
+        showErrorAlert('Failed to update delivery information');
+    }
+}
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+}
+let itemsData = [];
+async function loadItemsForDropdown() {
+    try {
+        const response = await fetch('/api/items', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            itemsData = data.data;
+            populateItemDropdown();
+        }
+    } catch (error) {
+        console.error('Error loading items:', error);
+    }
+}
+function populateItemDropdown() {
+    const itemSelect = document.getElementById('itemName');
+    while (itemSelect.children.length > 2) {
+        itemSelect.removeChild(itemSelect.lastChild);
+    }
+    itemsData.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.id;
+        option.textContent = `${item.item_name} (${item.item_id})`;
+        option.setAttribute('data-detail', item.detail || '');
+        option.setAttribute('data-unit', item.unit || '');
+        itemSelect.appendChild(option);
+    });
+}
+function handleItemSelection() {
+    const itemSelect = document.getElementById('itemName');
+    const selectedValue = itemSelect.value;
+    const itemNameManual = document.getElementById('itemNameManual');
+    const itemDetail = document.getElementById('itemDetail');
+    const itemDetailManual = document.getElementById('itemDetailManual');
+    const unit = document.getElementById('unit');
+    const unitManual = document.getElementById('unitManual');
+    const unitManualText = document.getElementById('unitManualText');
+    const purposeInput = document.getElementById('purpose');
+    if (selectedValue === 'others') {
+        itemNameManual.style.display = 'block';
+        itemDetailManual.style.display = 'block';
+        unitManual.style.display = 'block';
+        unitManualText.style.display = unitManual.value === 'others' ? 'block' : 'none';
+        itemDetail.style.display = 'none';
+        unit.style.display = 'none';
+        itemDetail.value = '';
+        unit.value = '';
+        itemNameManual.required = true;
+        itemDetailManual.required = true;
+        unitManual.required = true;
+        unitManualText.required = unitManual.value === 'others';
+        itemDetail.required = false;
+        unit.required = false;
+        if (purposeInput) purposeInput.required = true;
+    } else if (selectedValue === '') {
+        itemNameManual.style.display = 'none';
+        itemDetailManual.style.display = 'none';
+        unitManual.style.display = 'none';
+        unitManualText.style.display = 'none';
+        itemDetail.style.display = 'block';
+        unit.style.display = 'block';
+        itemDetail.value = '';
+        unit.value = '';
+        itemNameManual.value = '';
+        itemDetailManual.value = '';
+        unitManual.value = '';
+        unitManualText.value = '';
+        itemNameManual.required = false;
+        itemDetailManual.required = false;
+        unitManual.required = false;
+        unitManualText.required = false;
+        itemDetail.required = true;
+        unit.required = true;
+        if (purposeInput) purposeInput.required = false;
+    } else {
+        const selectedOption = itemSelect.options[itemSelect.selectedIndex];
+        const detail = selectedOption.getAttribute('data-detail');
+        const unitValue = selectedOption.getAttribute('data-unit');
+        itemDetail.style.display = 'block';
+        unit.style.display = 'block';
+        itemNameManual.style.display = 'none';
+        itemDetailManual.style.display = 'none';
+        unitManual.style.display = 'none';
+        unitManualText.style.display = 'none';
+        itemDetail.value = detail;
+        unit.value = unitValue;
+        itemNameManual.value = '';
+        itemDetailManual.value = '';
+        unitManual.value = '';
+        unitManualText.value = '';
+        itemNameManual.required = false;
+        itemDetailManual.required = false;
+        unitManual.required = false;
+        unitManualText.required = false;
+        itemDetail.required = true;
+        unit.required = true;
+        if (purposeInput) purposeInput.required = false;
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const unitManual = document.getElementById('unitManual');
+    const unitManualText = document.getElementById('unitManualText');
+    if (unitManual) {
+        unitManual.addEventListener('change', () => {
+            const isOthers = unitManual.value === 'others';
+            unitManualText.style.display = isOthers ? 'block' : 'none';
+            unitManualText.required = isOthers;
+            if (!isOthers) unitManualText.value = '';
+        });
+    }
+});
+function selectItem(itemName) {
+    document.getElementById('searchItem').value = itemName;
+}
+document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+    <script src="js/item-suggestions.js"></script>
+</body>
+</html>

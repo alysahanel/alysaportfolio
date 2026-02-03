@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Perpustakaan</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  
+  <script defer src="assets/elibrary.js"></script>
+  <script src="./assets/global-sidebar.js" defer></script>
+
+  <style>
+    body { 
+      font-family: 'Poppins', sans-serif; 
+      background-color: #f9fafb;
+    }
+    
+    .gradient-bg { 
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%); 
+    }
+    
+    .hero-title { 
+      text-shadow: 2px 4px 8px rgba(0,0,0,.2); 
+    }
+    
+    .regulation-card {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.1) !important;
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 24px;
+      padding: 2.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .regulation-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    
+    .regulation-card:hover {
+      border-color: rgba(255, 255, 255, 0.7);
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+    
+    .regulation-card:hover::before {
+      opacity: 1;
+    }
+    
+    .regulation-card h3 {
+      color: white;
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .regulation-count {
+      color: white;
+      font-size: 1.75rem;
+      font-weight: 700;
+      position: relative;
+      z-index: 1;
+    }
+
+    .primary-card {
+      background: rgba(255, 255, 255, 0.2) !important;
+      border-color: rgba(255, 255, 255, 0.9);
+      transform: scale(1.05);
+    }
+
+    .detail-table {
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .detail-table thead th {
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%);
+      color: white;
+      font-weight: 600;
+      padding: 18px 16px;
+      text-align: left;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .detail-table tbody td {
+      padding: 16px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 0.875rem;
+    }
+    
+    .detail-table tbody tr {
+      transition: background-color 0.2s ease;
+    }
+    
+    .detail-table tbody tr:hover {
+      background-color: #f0f9ff;
+    }
+    
+    .detail-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .status-active,
+    .status-inactive {
+      color: #fff !important;
+      font-weight: 800;
+      font-size: 0.9rem;
+      letter-spacing: 0.3px;
+      padding: 8px 18px;
+      border-radius: 9999px;
+      display: inline-block;
+      line-height: 1;
+      border: 1px solid rgba(255,255,255,0.85);
+      text-shadow: 0 1px 0 rgba(0,0,0,0.15);
+    }
+
+    .status-active {
+      background: #0ea5e9;
+    }
+
+    .status-inactive {
+      background: #ef4444;
+    }
+
+    td .status-active,
+    td .status-inactive {
+      color: #fff !important;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.875rem;
+    }
+    
+    button.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(30, 91, 168, 0.3);
+    }
+    
+    button.secondary {
+      background: white;
+      color: #1e5ba8;
+      border: 2px solid #1e5ba8;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.875rem;
+    }
+    
+    button.secondary:hover {
+      background: #f0f9ff;
+      border-color: #4db8e8;
+    }
+    
+    button.primary.small,
+    button.secondary.small {
+      padding: 10px 20px;
+      font-size: 0.813rem;
+    }
+
+    .btn-edit {
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.813rem;
+    }
+    
+    .btn-edit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(30, 91, 168, 0.3);
+    }
+
+    .modal {
+      border-radius: 20px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+      max-width: 800px;
+    }
+    
+    .modal-header {
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%);
+      color: white;
+      padding: 24px 28px;
+      border-radius: 20px 20px 0 0;
+    }
+    
+    .modal-body {
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .topbar { display: none; }
+    
+    .hero-circle {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 600px;
+      height: 600px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      transform: translate(33%, 33%);
+      pointer-events: none;
+      z-index: 0;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50">
+  <button id="btnMenu" class="fixed top-5 left-5 z-50 bg-white p-3 rounded-lg shadow-lg md:hidden">
+    <i class="fas fa-bars text-xl text-gray-700"></i>
+  </button>
+
+  <main class="min-h-screen md:ml-64">
+    <section class="gradient-bg relative overflow-hidden min-h-screen px-6 py-8 md:px-12">
+      <div class="hero-circle"></div>
+
+      <div class="absolute top-6 right-6 z-20">
+        <div class="flex items-center gap-3 bg-white/10 backdrop-blur-sm px-5 py-3 rounded-2xl border border-white/20 shadow-2xl">
+          <div class="bg-gradient-to-br from-blue-400 to-cyan-300 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-6 transition-transform">
+            <i class="fas fa-user-shield text-white text-2xl"></i>
+          </div>
+          <div class="text-left">
+            <h1 class="text-white font-bold text-xl leading-none tracking-wide" style="text-shadow: 0 2px 4px rgba(0,0,0,0.1);">Compliance System</h1>
+            <p class="text-blue-100 font-medium text-sm tracking-[0.15em] mt-1">Alysa Milano</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="relative z-10 max-w-7xl mx-auto pt-20">
+        <h1 class="hero-title text-white font-extrabold text-1xl md:text-2xl lg:text-3xl mb-2 tracking-tight">
+          Perpustakaan
+        </h1>
+        <h2 class="text-white font-semibold text-xl md:text-1xl lg:text-2xl mb-16 tracking-wide">
+          HIERARKI PERATURAN
+        </h2>
+
+        <section id="regulationGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
+          <div class="regulation-card text-center p-5 rounded-xl shadow-md bg-white" data-category="undang-undang">
+            <h3 class="text-base md:text-lg font-semibold text-gray-800">Undang - Undang</h3>
+            <div class="regulation-count text-sm text-white-500 mt-1">0 Peraturan</div>
+          </div>
+
+          <div class="regulation-card text-center p-5 rounded-xl shadow-md bg-white" data-category="peraturan-pemerintah">
+            <h3 class="text-base md:text-lg font-semibold text-gray-800">Peraturan Pemerintah</h3>
+            <div class="regulation-count text-sm text-white-500 mt-1">0 Peraturan</div>
+          </div>
+          <div class="regulation-card text-center p-5 rounded-xl shadow-md bg-white" data-category="peraturan-presiden">
+            <h3 class="text-base md:text-lg font-semibold text-gray-800">Peraturan Presiden</h3>
+            <div class="regulation-count text-sm text-white-500 mt-1">0 Peraturan</div>
+          </div>
+
+          <div class="regulation-card text-center p-5 rounded-xl shadow-md bg-white" data-category="peraturan-daerah">
+            <h3 class="text-base md:text-lg font-semibold text-gray-800">Peraturan Daerah Provinsi dan Kabupaten/Kota</h3>
+            <div class="regulation-count text-sm text-white-500 mt-1">0 Peraturan</div>
+          </div>
+
+          <div class="regulation-card text-center p-5 rounded-xl shadow-md bg-white" data-category="peraturan-kawasan">
+            <h3 class="text-base md:text-lg font-semibold text-gray-800">Peraturan Kawasan Industri</h3>
+            <div class="regulation-count text-sm text-white-500 mt-1">0 Peraturan</div>
+          </div>
+
+          <div class="regulation-card text-center p-5 rounded-xl shadow-md bg-white" data-category="peraturan-lainnya">
+            <h3 class="text-base md:text-lg font-semibold text-gray-800">Peraturan Lainnya</h3>
+            <div class="regulation-count text-sm text-white-500 mt-1">0 Peraturan</div>
+          </div>
+        </section>
+      </div>
+
+      <div class="container mx-auto px-6 py-12 max-w-7xl">
+        <section id="regulationDetail" class="detail-section" style="display:none">
+          <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+            <div class="detail-header flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+              <h2 id="detailTitle" class="text-3xl font-bold text-gray-800 flex items-center gap-3">
+                <i class="fas fa-file-contract text-blue-600"></i>
+                Detail Regulasi
+              </h2>
+              <div class="detail-nav flex flex-wrap gap-3">
+                <button id="btnEnterEdit" class="primary small flex items-center gap-2">
+                  <i class="fas fa-edit"></i> Ubah Data
+                </button>
+                <button id="hierarchyBtn" class="secondary" style="display:none">
+                  <i class="fas fa-th-large"></i> Kembali ke Kategori
+                </button>
+              </div>
+            </div>
+
+            <div id="editToolbar" class="edit-toolbar hidden gradient-bg text-white rounded-xl p-5 mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div class="bar-left flex items-center gap-2 font-semibold text-lg">
+                <i class="fas fa-pen"></i> Mode Edit
+              </div>
+              <div class="bar-right flex flex-wrap gap-3">
+                <button id="btnAddRow" class="bg-white text-blue-600 px-5 py-2.5 rounded-lg font-semibold hover:bg-blue-50 transition flex items-center gap-2">
+                  <i class="fas fa-plus"></i> Tambah Regulasi
+                </button>
+                <button id="btnExportCSV" class="bg-white/20 backdrop-blur text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-white/30 transition flex items-center gap-2">
+                  <i class="fas fa-file-excel"></i> Ekspor Excel (CSV)
+                </button>
+                <button id="btnImport" class="bg-white/20 backdrop-blur text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-white/30 transition flex items-center gap-2">
+                  <i class="fas fa-upload"></i> Impor Excel (CSV)
+                </button>
+                <input id="fileInput" type="file" accept=".csv,text/csv" style="display:none" />
+                <button id="btnExitEdit" class="bg-red-500 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-red-600 transition flex items-center gap-2">
+                  <i class="fas fa-times"></i> Selesai Edit
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+              <table id="elibraryTable" class="detail-table w-full">
+                <thead>
+                  <tr>
+                    <th style="width:3%">NO</th>
+                    <th style="width:14%">DEPARTEMEN</th>
+                    <th style="width:24%">REGULASI</th>
+                    <th style="width:28%">LINGKUP REGULASI</th>
+                    <th style="width:10%">STATUS</th>
+                    <th style="width:12%">CATATAN</th>
+                    <th id="th-actions" class="hidden" style="width:9%">AKSI</th>
+                  </tr>
+                </thead>
+                <tbody id="detailTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <div id="modalBackdrop" class="backdrop hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"></div>
+  
+  <div id="editModal" class="modal hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white z-50 w-full max-w-3xl max-h-[90vh] overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-header flex justify-between items-center">
+      <h3 id="modalTitle" class="text-2xl font-bold flex items-center gap-3">
+        <i class="fas fa-file-alt"></i> Detail Dokumen
+      </h3>
+      <button id="btnCloseModal" class="close text-white hover:text-gray-200 text-4xl leading-none transition" aria-label="Close">×</button>
+    </div>
+    
+    <div class="modal-body p-8">
+      <div class="form-grid grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="form-group">
+          <label for="fDepartemen" class="block text-sm font-semibold text-gray-700 mb-2">Departemen</label>
+          <input type="text" id="fDepartemen" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+        </div>
+        
+        <div class="form-group">
+          <label for="fRegulasi" class="block text-sm font-semibold text-gray-700 mb-2">Regulasi</label>
+          <input type="text" id="fRegulasi" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+        </div>
+        
+        <div class="form-group">
+          <label for="fLingkup" class="block text-sm font-semibold text-gray-700 mb-2">Lingkup Regulasi</label>
+          <input type="text" id="fLingkup" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+        </div>
+        
+        <div class="form-group">
+          <label for="fStatus" class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+          <select id="fStatus" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+            <option value="applicable">Berlaku</option>
+            <option value="not-applicable">Tidak Berlaku</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="fLink" class="block text-sm font-semibold text-gray-700 mb-2">Tautan</label>
+          <input type="text" id="fLink" placeholder="contoh: https://peraturan.go.id/..." class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+        </div>
+        
+        <div class="form-group md:col-span-2">
+          <label for="fNotes" class="block text-sm font-semibold text-gray-700 mb-2">Catatan</label>
+          <textarea id="fNotes" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"></textarea>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-actions flex gap-3 p-6 bg-gray-50 border-t border-gray-200">
+      <button id="btnSave" type="button" class="primary flex items-center gap-2">
+        <i class="fas fa-save"></i> Simpan
+      </button>
+      <button id="btnDelete" type="button" class="bg-red-500 text-white px-5 py-3 rounded-lg font-semibold hover:bg-red-600 transition flex items-center gap-2">
+        <i class="fas fa-trash"></i> Hapus
+      </button>
+      <button id="btnCancel" type="button" class="secondary flex items-center gap-2">
+        <i class="fas fa-times"></i> Batal
+      </button>
+    </div>
+  </div>
+</body>
+</html>

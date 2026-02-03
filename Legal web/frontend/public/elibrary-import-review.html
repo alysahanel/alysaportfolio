@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E‑Library Import Review</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <script defer src="assets/elibrary_import_review.js"></script>
+  <script src="./assets/global-sidebar.js" defer></script>
+
+  <style>
+    body { 
+      font-family: 'Poppins', sans-serif; 
+      background-color: #f9fafb;
+    }
+
+    .gradient-bg { 
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%); 
+    }
+ 
+    .hero-title { 
+      text-shadow: 2px 4px 8px rgba(0,0,0,.2); 
+    }
+
+    .reg-table {
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      width: 100%;
+      background: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .reg-table thead th {
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%);
+      color: white;
+      font-weight: 600;
+      padding: 16px 12px;
+      text-align: left;
+      font-size: 0.813rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .reg-table tbody td {
+      padding: 14px 12px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 0.813rem;
+    }
+    
+    .reg-table tbody tr {
+      transition: background-color 0.2s ease;
+    }
+    
+    .reg-table tbody tr:hover {
+      background-color: #f0f9ff;
+    }
+    
+    .reg-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .status-active,
+    .status-inactive {
+      color: #fff !important;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.3px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      display: inline-block;
+      line-height: 1;
+      border: 1px solid rgba(255,255,255,0.85);
+      text-shadow: 0 1px 0 rgba(0,0,0,0.15);
+    }
+    
+    .status-active {
+      background: #10b981;
+    }
+    
+    .status-inactive {
+      background: #ef4444;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.875rem;
+    }
+    
+    button.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(30, 91, 168, 0.3);
+    }
+    
+    button.secondary {
+      background: white;
+      color: #1e5ba8;
+      border: 2px solid #1e5ba8;
+      padding: 10px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.875rem;
+    }
+    
+    button.secondary:hover {
+      background: #f0f9ff;
+      border-color: #4db8e8;
+    }
+
+    .btn-remove,
+    .btn-keep {
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.75rem;
+    }
+    
+    .btn-remove {
+      background: #ef4444;
+    }
+    
+    .btn-remove:hover {
+      background: #dc2626;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(239, 68, 68, 0.3);
+    }
+    
+    .btn-keep {
+      background: #10b981;
+    }
+    
+    .btn-keep:hover {
+      background: #059669;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .topbar { display: none; }
+
+    .hero-circle {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 600px;
+      height: 600px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      transform: translate(33%, 33%);
+    }
+
+    .info-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .section-heading {
+      color: #1e5ba8;
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin: 2rem 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    
+    .section-heading::before {
+      content: '';
+      width: 4px;
+      height: 24px;
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%);
+      border-radius: 2px;
+    }
+
+    .muted {
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50">
+  <button id="btnMenu" class="fixed top-5 left-5 z-50 bg-white p-3 rounded-lg shadow-lg md:hidden">
+    <i class="fas fa-bars text-xl text-gray-700"></i>
+  </button>
+
+  <main class="min-h-screen md:ml-64">
+
+    <section class="gradient-bg relative overflow-hidden px-6 py-8 md:px-12">
+      <div class="hero-circle"></div>
+
+      <div class="absolute top-6 right-6 z-20">
+        <div class="flex items-center gap-3 bg-white/10 backdrop-blur-sm px-5 py-3 rounded-2xl border border-white/20 shadow-2xl">
+          <div class="bg-gradient-to-br from-blue-400 to-cyan-300 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-6 transition-transform">
+            <i class="fas fa-user-shield text-white text-2xl"></i>
+          </div>
+          <div class="text-left">
+            <h1 class="text-white font-bold text-xl leading-none tracking-wide" style="text-shadow: 0 2px 4px rgba(0,0,0,0.1);">Compliance System</h1>
+            <p class="text-blue-100 font-medium text-sm tracking-[0.15em] mt-1">Alysa Milano</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="relative z-10 max-w-7xl mx-auto pt-20 pb-8">
+        <h1 class="hero-title text-white font-extrabold text-2xl md:text-3xl lg:text-4xl mb-2 tracking-tight">
+          <i class="fas fa-file-import mr-3"></i>
+          Import Review
+        </h1>
+        <h2 class="text-white font-semibold text-lg md:text-xl mb-8 tracking-wide">
+          Review and Manage Imported Data
+        </h2>
+        <div class="info-card">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-3">
+                <i class="fas fa-folder-open text-blue-600 text-2xl"></i>
+                <div>
+                  <span class="text-gray-700 font-semibold text-sm">Category:</span>
+                  <span id="catLabel" class="ml-2 text-gray-900 font-bold text-lg"></span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <i class="fas fa-info-circle text-blue-500"></i>
+                <span id="summaryText" class="muted"></span>
+              </div>
+            </div>
+            <button id="btnBack" class="secondary flex items-center gap-2 whitespace-nowrap">
+              <i class="fas fa-arrow-left"></i> Back to E‑Library
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="px-6 py-8 md:px-12">
+      <div class="container mx-auto max-w-7xl">
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+          <h3 class="section-heading">
+            <i class="fas fa-exclamation-triangle text-yellow-500"></i>
+            Duplicates Detected
+          </h3>
+          
+          <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+            <table class="reg-table" id="dupTable">
+              <thead>
+                <tr>
+                  <th style="width:4%">NO</th>
+                  <th style="width:16%">DEPARTMENT</th>
+                  <th style="width:26%">REGULATION</th>
+                  <th style="width:16%">REGULATION SCOPE</th>
+                  <th style="width:10%">STATUS</th>
+                  <th style="width:16%">LINK</th>
+                  <th style="width:12%">NOTES</th>
+                  <th style="width:6%">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="dupBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+          <h3 class="section-heading">
+            <i class="fas fa-check-circle text-green-500"></i>
+            New Rows (No Duplicates)
+          </h3>
+          
+          <div class="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+            <table class="reg-table" id="newTable">
+              <thead>
+                <tr>
+                  <th style="width:4%">NO</th>
+                  <th style="width:16%">DEPARTMENT</th>
+                  <th style="width:26%">REGULATION</th>
+                  <th style="width:16%">REGULATION SCOPE</th>
+                  <th style="width:10%">STATUS</th>
+                  <th style="width:16%">LINK</th>
+                  <th style="width:12%">NOTES</th>
+                  <th style="width:6%">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="newBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button id="btnSaveImport" class="primary flex items-center gap-3 text-lg px-8 py-4">
+            <i class="fas fa-save"></i> 
+            Save Import
+          </button>
+        </div>
+
+      </div>
+    </section>
+  </main>
+  <div id="toastContainer" class="toast-container"></div>
+</body>
+</html>

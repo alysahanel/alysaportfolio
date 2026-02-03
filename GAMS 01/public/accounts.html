@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AM System - Account Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            transition: margin-left 0.3s ease-in-out;
+        }
+        .main-content {
+            transition: margin-left 0.3s ease-in-out;
+            width: calc(100% - 16rem);
+        }
+        .sidebar-hidden {
+            margin-left: -16rem;
+        }
+        .content-expanded {
+            margin-left: 0;
+            width: 100%;
+        }
+        html { font-size: 14px; }
+        html, body { overflow-x: hidden; }
+        @media (max-width: 768px) {
+            .main-content { margin-left: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex min-h-screen">
+        <aside id="sidebar" class="w-64 bg-white shadow-lg fixed h-screen flex flex-col sidebar z-20">
+            <div class="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100 p-5">
+                <div class="flex items-center justify-center gap-3">
+                    <img src="images/nipponlogo.svg" alt="Nippon Steel Logo" class="h-10 w-10">
+                    <h4 class="text-lg font-bold text-blue-600">AMMS</h4>
+                </div>
+                <div class="mt-2 text-center text-xs text-blue-500" id="userInfo"></div>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto py-4">
+                <ul id="sidebarMenu" class="space-y-1 px-3">
+                </ul>
+            </nav>
+            <div class="p-4 border-t">
+                <button onclick="logout()" class="w-full bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <main id="mainContent" class="flex-1 ml-64 main-content">
+            <div class="bg-white shadow-sm border-b sticky top-0 z-10">
+                <div class="px-6 py-4 flex justify-between items-center">
+                    <div class="flex items-center gap-4">
+                        <button id="sidebarToggle" class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                        <h2 class="text-2xl font-bold text-gray-800">Account Management</h2>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="exportToExcel()" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
+                            <i class="fas fa-file-excel"></i> Export to Excel
+                        </button>
+                        <button onclick="toggleAddAccountForm()" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
+                            <i class="fas fa-plus"></i> Add Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <div id="addAccountSection" class="bg-white rounded-lg shadow-lg p-6 mb-6 hidden">
+                    <h5 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-user-plus"></i> Add New Account
+                    </h5>
+                    <form id="addAccountForm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                                <input type="text" id="username" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                                <div class="relative">
+                                    <input type="password" id="password" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10">
+                                    <i class="fas fa-eye absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500" onclick="togglePassword('password')"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                                <input type="text" id="fullName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                <input type="email" id="email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                                <select id="role" required onchange="onRoleChange()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="">Select Role...</option>
+                                    <option value="admin">Admin (HRGA Legal)</option>
+                                    <option value="cs">CS</option>
+                                    <option value="user">User</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                                <select id="department" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="">Select Department...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 mt-6">
+                            <button type="button" onclick="createAccount()" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg transition-colors flex items-center gap-2">
+                                <i class="fas fa-save"></i> Create Account
+                            </button>
+                            <button type="button" onclick="toggleAddAccountForm()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-6 rounded-lg transition-colors flex items-center gap-2">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg">
+                    <div class="p-6 border-b">
+                        <h5 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-users"></i> User Accounts
+                        </h5>
+                    </div>
+                    <div class="overflow-x-auto max-h-[600px]">
+                        <table class="w-full">
+                            <thead class="bg-gray-800 text-white sticky top-0">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold">Created Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold">Username</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold">Full Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold">Email</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold">Role</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold">Department</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold">Created By</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accountsTableBody" class="divide-y divide-gray-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="editAccountModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h5 class="text-xl font-bold text-gray-800">Edit Account</h5>
+                <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="editAccountForm">
+                    <input type="hidden" id="editUserId">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                            <input type="text" id="editUsername" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                            <input type="text" id="editFullName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" id="editEmail" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                            <select id="editRole" required onchange="onEditRoleChange()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="admin">Admin (HRGA Legal)</option>
+                                <option value="cs">CS</option>
+                                <option value="user">User</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                            <select id="editDepartment" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Select Department...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">New Password (optional)</label>
+                            <div class="relative">
+                                <input type="password" id="editPassword" placeholder="Leave blank if you don't want to change the password" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10">
+                                <i class="fas fa-eye absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500" onclick="togglePassword('editPassword')"></i>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="flex gap-3 p-6 border-t">
+                <button onclick="closeEditModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg transition-colors">Cancel</button>
+                <button onclick="updateAccount()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+<div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-sm w-full">
+            <div class="p-6 text-center">
+                <i class="fas fa-exclamation-triangle text-yellow-500 text-4xl mb-3"></i>
+                <h5 class="text-xl font-bold text-gray-800 mb-2" id="confirmTitle">Confirm Deletion</h5>
+                <p class="text-gray-600" id="confirmMessage">Are you sure you want to proceed?</p>
+            </div>
+            <div class="flex justify-center gap-3 p-4 border-t bg-gray-50 rounded-b-lg">
+                <button onclick="resolveConfirmation(false)" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg transition-colors">Cancel</button>
+                <button onclick="resolveConfirmation(true)" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors">Delete</button>
+            </div>
+        </div>
+    </div>
+
+<div id="alert-error" class="hidden fixed inset-0 z-[100] flex items-start justify-center p-4">
+  <div class="relative bg-red-100 border-t-4 border-red-500 rounded-lg text-red-900 px-4 py-3 shadow-xl max-w-md w-full mt-10" role="alert">
+    <button type="button" onclick="hideAlert('alert-error')" class="absolute top-2 right-2 text-red-600 hover:text-red-800">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="flex items-center">
+      <div class="py-1">
+        <svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+          <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="font-bold">Error!</p>
+        <p id="alert-error-message" class="text-sm">Pesan error akan muncul di sini.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="alert-success" class="hidden fixed inset-0 z-[100] flex items-start justify-center p-4">
+  <div class="relative bg-green-100 border-t-4 border-green-500 rounded-lg text-green-900 px-4 py-3 shadow-xl max-w-md w-full mt-10" role="alert">
+    <button type="button" onclick="hideAlert('alert-success')" class="absolute top-2 right-2 text-green-600 hover:text-green-800">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="flex items-center">
+      <div class="py-1">
+        <svg class="fill-current h-6 w-6 text-green-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+          <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM8.3 13.6L5.6 10.9l1.4-1.4 1.3 1.3 3.6-3.6 1.4 1.4-5 5z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="font-bold">Success</p>
+        <p id="alert-success-message" class="text-sm">Pesan sukses akan muncul di sini.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+
+let _alertTimers = { error: null, success: null };
+
+function showErrorAlert(message, { autoHideMs = 3000 } = {}) {
+  const box = document.getElementById("alert-error");
+  const msg = document.getElementById("alert-error-message");
+  msg.textContent = message;
+  box.classList.remove("hidden");
+  clearTimeout(_alertTimers.error);
+  if (autoHideMs && autoHideMs > 0) {
+    _alertTimers.error = setTimeout(() => hideAlert("alert-error"), autoHideMs);
+  }
+}
+
+function showSuccessAlert(message, { autoHideMs = 3000 } = {}) {
+  const box = document.getElementById("alert-success");
+  const msg = document.getElementById("alert-success-message");
+  msg.textContent = message;
+  box.classList.remove("hidden");
+
+  clearTimeout(_alertTimers.success);
+  if (autoHideMs && autoHideMs > 0) {
+    _alertTimers.success = setTimeout(() => hideAlert("alert-success"), autoHideMs);
+  }
+}
+
+function hideAlert(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add("hidden");
+  if (id === "alert-error") clearTimeout(_alertTimers.error);
+  if (id === "alert-success") clearTimeout(_alertTimers.success);
+}
+
+function showConfirmModal(title, message) {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').textContent = message;
+    document.getElementById('confirmModal').classList.remove('hidden');
+    document.getElementById('confirmModal').classList.add('flex');
+
+    return new Promise(resolve => {
+        confirmModalResolver = resolve;
+    });
+}
+function resolveConfirmation(result) {
+    document.getElementById('confirmModal').classList.remove('flex');
+    document.getElementById('confirmModal').classList.add('hidden');
+    
+    if (confirmModalResolver) {
+        confirmModalResolver(result);
+        confirmModalResolver = null;
+    }
+}
+
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        let sidebarVisible = true;
+
+        sidebarToggle.addEventListener('click', function() {
+            sidebarVisible = !sidebarVisible;
+            if (sidebarVisible) {
+                sidebar.classList.remove('sidebar-hidden');
+                mainContent.classList.remove('content-expanded');
+                mainContent.classList.add('ml-64');
+            } else {
+                sidebar.classList.add('sidebar-hidden');
+                mainContent.classList.add('content-expanded');
+                mainContent.classList.remove('ml-64');
+            }
+        });
+
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        if (!token || !user.id) {
+            window.location.href = '/login';
+        }
+
+        if (user.role !== 'admin') {
+            showErrorAlert('You do not have access to this page');
+            window.location.href = '/requests';
+        }
+
+        document.getElementById('userInfo').textContent = `${user.full_name} | ${user.role.toUpperCase()}`;
+
+        let accounts = [];
+        let departments = [];
+
+        const departmentList = [
+            'HRGA Legal', 'CS', 'WH',
+            'HSE', 'FAT (Finance Accounting Tax)', 'Production',
+            'QA/QC', 'Purchasing', 'PPIC Warehouse EXIM (Export Import)',
+            'IT', 'Sales', 'Maintenance'
+        ];
+
+        function initializePage() {
+            setupSidebar();
+            loadDepartments();
+            loadAccounts();
+        }
+
+        function setupSidebar() {
+            const sidebarMenu = document.getElementById('sidebarMenu');
+            let menuItems = [];
+
+            if (user.role === 'admin') {
+                menuItems = [
+                    { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard' },
+                    { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests' },
+                    { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock' },
+                    { icon: 'fas fa-calendar', text: 'Calendar', href: '/calendar' },
+                    { icon: 'fas fa-users', text: 'Account Management', href: '/accounts', active: true }
+                ];
+            }
+
+            sidebarMenu.innerHTML = menuItems.map(item => `
+                <li>
+                    <a href="${item.href}" class="flex items-center gap-3 px-4 py-3 rounded-lg ${item.active ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'} transition-colors">
+                        <i class="${item.icon}"></i>
+                        <span class="font-medium">${item.text}</span>
+                    </a>
+                </li>
+            `).join('');
+        }
+
+        function loadDepartments() {
+            departments = departmentList;
+            populateDepartmentDropdowns();
+        }
+
+        function populateDepartmentDropdowns() {
+            const departmentSelect = document.getElementById('department');
+            const editDepartmentSelect = document.getElementById('editDepartment');
+            
+            const options = departments.map(dept => `<option value="${dept}">${dept}</option>`).join('');
+            
+            departmentSelect.innerHTML = '<option value="">Select Department...</option>' + options;
+            editDepartmentSelect.innerHTML = '<option value="">Select Department...</option>' + options;
+        }
+
+        function onRoleChange() {
+            const role = document.getElementById('role').value;
+            const departmentSelect = document.getElementById('department');
+            
+            if (role === 'admin') {
+                departmentSelect.value = 'HRGA Legal';
+                departmentSelect.disabled = true;
+            } else if (role === 'cs') {
+                departmentSelect.value = 'CS';
+                departmentSelect.disabled = true;
+            } else {
+                departmentSelect.disabled = false;
+                departmentSelect.value = '';
+            }
+        }
+
+        function onEditRoleChange() {
+            const role = document.getElementById('editRole').value;
+            const departmentSelect = document.getElementById('editDepartment');
+            
+            if (role === 'admin') {
+                departmentSelect.value = 'HRGA Legal';
+                departmentSelect.disabled = true;
+            } else if (role === 'cs') {
+                departmentSelect.value = 'CS';
+                departmentSelect.disabled = true;
+            } else {
+                departmentSelect.disabled = false;
+            }
+        }
+
+        async function loadAccounts() {
+            try {
+                const currentToken = localStorage.getItem('token');
+                if (!currentToken) {
+                    throw new Error('No authentication token found');
+                }
+
+                console.log('Loading accounts with token:', currentToken ? 'Token exists' : 'No token');
+
+                const response = await fetch('/api/accounts', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('API Error:', errorData);
+                    
+                    if (response.status === 401) {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        showErrorAlert('Session expired. Please login again.');
+                        window.location.href = '/login';
+                        return;
+                    }
+                    
+                    throw new Error(errorData.message || 'Failed to load accounts');
+                }
+
+                const data = await response.json();
+                console.log('Accounts data received:', data);
+                accounts = data.data || [];
+                renderAccountsTable();
+            } catch (error) {
+                console.error('Error loading accounts:', error);
+                document.getElementById('accountsTableBody').innerHTML = `
+                    <tr><td colspan="8" class="text-center text-red-600 py-8">
+                        <i class="fas fa-exclamation-triangle"></i> Error: ${error.message}
+                        <br><small class="text-gray-500">Please refresh the page or contact administrator</small>
+                    </td></tr>
+                `;
+            }
+        }
+
+        function renderAccountsTable() {
+            const tbody = document.getElementById('accountsTableBody');
+            
+            if (!accounts.length) {
+                tbody.innerHTML = `
+                    <tr><td colspan="8" class="text-center text-gray-500 py-8">
+                        <i class="fas fa-inbox"></i> No account data
+                    </td></tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = accounts.map(account => {
+                const roleClass = account.role === 'admin' ? 'bg-red-500' : account.role === 'cs' ? 'bg-green-500' : 'bg-blue-500';
+                const createdDate = new Date(account.created_at).toLocaleDateString('id-ID');
+                
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-sm text-gray-700">${createdDate}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${account.username}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${account.full_name}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${account.email}</td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs font-medium ${roleClass} text-white">${account.role.toUpperCase()}</span></td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${account.department}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${account.created_by_name || 'System'}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex gap-1">
+                                <button onclick="editAccount(${account.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs transition-colors">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button onclick="showPassword(${account.id}, '${account.username}')" class="bg-cyan-600 hover:bg-cyan-700 text-white px-2 py-1 rounded text-xs transition-colors">
+                                    <i class="fas fa-eye"></i> Show
+                                </button>
+                                <button onclick="deleteAccount(${account.id}, '${account.username}')" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function toggleAddAccountForm() {
+            const section = document.getElementById('addAccountSection');
+            const isVisible = !section.classList.contains('hidden');
+            
+            if (isVisible) {
+                section.classList.add('hidden');
+                document.getElementById('addAccountForm').reset();
+            } else {
+                section.classList.remove('hidden');
+            }
+        }
+
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = field.nextElementSibling;
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        async function createAccount() {
+            const formData = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                full_name: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                role: document.getElementById('role').value,
+                department: document.getElementById('department').value
+            };
+
+            if (!formData.username || !formData.password || !formData.full_name || 
+                !formData.email || !formData.role || !formData.department) {
+                showErrorAlert('All fields must be filled in');
+                return;
+            }
+
+            const currentToken = localStorage.getItem('token');
+            if (!currentToken) {
+                throw new Error('No authentication token found');
+            }
+
+            try {
+                const response = await fetch('/api/accounts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to create account');
+                }
+
+                toggleAddAccountForm();
+                loadAccounts();
+                showSuccessAlert('Account successfully created');
+            } catch (error) {
+                console.error('Error creating account:', error);
+                showErrorAlert('Failed to create account: ' + error.message);
+            }
+        }
+
+        function editAccount(accountId) {
+            const account = accounts.find(acc => acc.id === accountId);
+            if (!account) return;
+
+            document.getElementById('editUserId').value = account.id;
+            document.getElementById('editUsername').value = account.username;
+            document.getElementById('editFullName').value = account.full_name;
+            document.getElementById('editEmail').value = account.email;
+            document.getElementById('editRole').value = account.role;
+            document.getElementById('editDepartment').value = account.department;
+            document.getElementById('editPassword').value = '';
+
+            onEditRoleChange();
+
+            document.getElementById('editAccountModal').classList.remove('hidden');
+            document.getElementById('editAccountModal').classList.add('flex');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editAccountModal').classList.add('hidden');
+            document.getElementById('editAccountModal').classList.remove('flex');
+        }
+
+        async function updateAccount() {
+            const accountId = document.getElementById('editUserId').value;
+            const formData = {
+                username: document.getElementById('editUsername').value,
+                full_name: document.getElementById('editFullName').value,
+                email: document.getElementById('editEmail').value,
+                role: document.getElementById('editRole').value,
+                department: document.getElementById('editDepartment').value
+            };
+
+            const newPassword = document.getElementById('editPassword').value;
+
+            if (!formData.username || !formData.full_name || !formData.email || 
+                !formData.role || !formData.department) {
+                showErrorAlert('All fields must be filled in');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/accounts/${accountId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to update account');
+                }
+
+                if (newPassword && newPassword.trim().length > 0) {
+                    const passResp = await fetch(`/api/accounts/${accountId}/password`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ password: newPassword })
+                    });
+
+                    if (!passResp.ok) {
+                        const passErr = await passResp.json();
+                        throw new Error(passErr.message || 'Failed to update password');
+                    }
+                }
+
+                closeEditModal();
+                loadAccounts();
+                showSuccessAlert('Account successfully updated');
+            } catch (error) {
+                console.error('Error updating account:', error);
+                showErrorAlert('Failed to update account: ' + error.message);
+            }
+        }
+
+        async function deleteAccount(accountId, username) {
+            if (!await showConfirmModal(`Are you sure you want to delete the account "${username}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/accounts/${accountId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to delete account');
+                }
+
+                loadAccounts();
+                showSuccessAlert('Account successfully deleted');
+            } catch (error) {
+                console.error('Error deleting account:', error);
+                showErrorAlert('Failed to delete account: ' + error.message);
+            }
+        }
+
+        async function showPassword(userId, username) {
+            const currentToken = localStorage.getItem('token');
+            if (!currentToken) {
+                showErrorAlert('Please login first');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/accounts/${userId}/show-password`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to show password');
+                }
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    const password = result.data.password;
+                    showPasswordModal(username, password);
+                } else {
+                    showErrorAlert(result.message || 'Failed to show password');
+                }
+            } catch (error) {
+                console.error('Error showing password:', error);
+                showErrorAlert('Failed to show password: ' + error.message);
+            }
+        }
+        function showPasswordModal(username, password) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                    <div class="flex justify-between items-center p-6 border-b">
+                        <h5 class="text-xl font-bold text-gray-800">Password for ${username}</h5>
+                        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg mb-4">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Attention:</strong> Keep this password safe. Do not share it with anyone else.
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password:</label>
+                            <div class="flex gap-2">
+                                <input type="text" value="${password}" readonly class="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                                <button onclick="copyToClipboard('${password}', this)" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                    <i class="fas fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end p-6 border-t">
+                        <button onclick="this.closest('.fixed').remove()" class="bg-gray-600 hover:bg-gray-700 text-white py-2 px-6 rounded-lg transition-colors">Close</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                button.classList.remove('bg-gray-600', 'hover:bg-gray-700');
+                button.classList.add('bg-green-600', 'hover:bg-green-700');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    button.classList.add('bg-gray-600', 'hover:bg-gray-700');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                showErrorAlert('Failed to copy password');
+            });
+        }
+
+        function exportToExcel() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showErrorAlert('Please login first');
+                return;
+            }
+
+            fetch('/api/export/accounts', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Export failed');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `user_accounts_${new Date().toISOString().split('T')[0]}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            })
+            .catch(error => {
+                console.error('Export error:', error);
+                showErrorAlert('Failed to export accounts data');
+            });
+        }
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

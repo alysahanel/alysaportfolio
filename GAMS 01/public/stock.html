@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AM System - Item Stock</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            transition: margin-left 0.3s ease-in-out;
+        }
+        .main-content {
+            transition: margin-left 0.3s ease-in-out;
+            width: calc(100% - 16rem);
+        }
+        .sidebar-hidden {
+            margin-left: -16rem;
+        }
+        .content-expanded {
+            margin-left: 0;
+            width: 100%;
+        }
+        .low-stock { 
+            background-color: #fef3c7; 
+        }
+        .out-of-stock { 
+            background-color: #fee2e2; 
+        }
+        html { font-size: 14px; }
+        html, body { overflow-x: hidden; }
+        @media (max-width: 768px) {
+            .main-content { margin-left: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex min-h-screen">
+        <aside id="sidebar" class="w-64 bg-white shadow-lg fixed h-screen flex flex-col sidebar z-20">
+            <div class="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100 p-5">
+                <div class="flex items-center justify-center gap-3">
+                    <img src="images/nipponlogo.svg" alt="Nippon Steel Logo" class="h-10 w-10">
+                    <h4 class="text-lg font-bold text-blue-600">AMMS</h4>
+                </div>
+                <div class="mt-2 text-center text-xs text-blue-500" id="userInfo"></div>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-4">
+                <ul id="sidebarMenu" class="space-y-1 px-3">
+                  
+                </ul>
+            </nav>
+
+            <div class="p-4 border-t">
+                <button onclick="logout()" class="w-full bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <main id="mainContent" class="flex-1 ml-64 main-content">      
+            <div class="bg-white shadow-sm border-b sticky top-0 z-10">
+                <div class="px-6 py-4 flex justify-between items-center">
+                    <div class="flex items-center gap-4">
+                        <button id="sidebarToggle" class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                        <h2 class="text-2xl font-bold text-gray-800">Item Stock Management</h2>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors" onclick="openEditStockModal()">
+                            <i class="fas fa-plus"></i> Add Stock
+                        </button>
+                        <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors" onclick="openStockReport()">
+                            <i class="fas fa-chart-bar"></i> Report
+                        </button>
+                        <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel"></i> Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                        <div class="md:col-span-8">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Search Item</label>
+                            <div class="flex gap-2">
+                                <input type="text" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="searchItem" placeholder="Search item by name or ID...">
+                                <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors" onclick="searchItems()">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                        <div class="md:col-span-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Filter Stock</label>
+                            <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="stockFilter" onchange="filterByStock()">
+                                <option value="">All Stock</option>
+                                <option value="low">Low Stock</option>
+                                <option value="out">Out of Stock</option>
+                                <option value="available">Available</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow">
+                    <div class="p-6 border-b">
+                        <h5 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-boxes"></i> Items Stock List
+                        </h5>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <div class="max-h-[600px] overflow-y-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-800 text-white sticky top-0">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold">Item ID</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold">Item Name</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold">Detail</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold">Stock</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold">Unit</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold">Min Stock</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold">Status</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stockTableBody" class="divide-y divide-gray-100">
+                            
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="editStockModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h5 class="text-xl font-bold text-gray-800">Edit Stock - Stock In</h5>
+                <button onclick="closeEditStockModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="editStockForm">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Input Date</label>
+                        <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="inputDate" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Item</label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="itemSelect" onchange="onItemSelect()">
+                            <option value="">Select Item...</option>
+                            <option value="others">Others (Manual Input)</option>
+                        </select>
+                    </div>
+                    <div id="manualItemFields" style="display: none;">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Item Name</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="manualItemName">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Item Detail</label>
+                            <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="manualItemDetail" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Stock In</label>
+                        <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="stockIn" min="1" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-700 focus:outline-none" id="unitReadonly" placeholder="Unit" disabled style="display:none;">
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="unitSelect" onchange="onUnitSelect()" style="display:none;">
+                            <option value="">Select Unit...</option>
+                            <option value="others">Others (Manual Input)</option>
+                        </select>
+                        <div id="manualUnitField" style="display: none;" class="mt-2">
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="manualUnitInput" placeholder="Enter custom unit">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="flex gap-3 p-6 border-t">
+                <button onclick="closeEditStockModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg transition-colors">Cancel</button>
+                <button onclick="saveStockEdit()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="stockReportModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h5 class="text-xl font-bold text-gray-800">Stock Process Report</h5>
+                <button onclick="closeStockReportModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                        <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="reportStartDate">
+                    </div>
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                        <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="reportEndDate">
+                    </div>
+                    <div class="md:col-span-4 flex items-end gap-2">
+                        <button class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors" onclick="getStockReport()">
+                            <i class="fas fa-search"></i> Get Report
+                        </button>
+                        <button class="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors" onclick="exportReportToExcel()">
+                            <i class="fas fa-file-excel"></i> Export
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-800 text-white">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">Transaction Date</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">Item ID</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">Item Name</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">Detail</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">Qty</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">Unit</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">Process</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">Process Date</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">Department</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">PIC</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">Req Dept</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold">Receiver</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportTableBody" class="divide-y divide-gray-100">
+                            <tr>
+                                <td colspan="12" class="px-4 py-8 text-center text-gray-500">
+                                    Select date and click "Get Report" to view data
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="editItemModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h5 class="text-xl font-bold text-gray-800">Edit Item Details</h5>
+                <button onclick="closeEditItemModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="editItemForm">
+                    <input type="hidden" id="editItemId">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Item ID</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="editItemIdField" required>
+                        <small class="text-gray-500 text-xs">Admin can edit item ID. Use GA-XXXX format or custom format (3-50 characters)</small>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Item Name</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="editItemName" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Detail</label>
+                        <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="editItemDetail" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="editItemUnit" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Minimum Stock</label>
+                        <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="editItemMinStock" min="0" required>
+                    </div>
+                </form>
+            </div>
+            <div class="flex gap-3 p-6 border-t">
+                <button onclick="closeEditItemModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg transition-colors">Cancel</button>
+                <button onclick="saveItemDetails()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+<div id="alert-error" class="hidden fixed inset-0 z-[100] flex items-start justify-center p-4">
+  <div class="relative bg-red-100 border-t-4 border-red-500 rounded-lg text-red-900 px-4 py-3 shadow-xl max-w-md w-full mt-10" role="alert">
+    <button type="button" onclick="hideAlert('alert-error')" class="absolute top-2 right-2 text-red-600 hover:text-red-800">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="flex items-center">
+      <div class="py-1">
+        <svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+          <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="font-bold">Error!</p>
+        <p id="alert-error-message" class="text-sm">Pesan error akan muncul di sini.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="alert-success" class="hidden fixed inset-0 z-[100] flex items-start justify-center p-4">
+  <div class="relative bg-green-100 border-t-4 border-green-500 rounded-lg text-green-900 px-4 py-3 shadow-xl max-w-md w-full mt-10" role="alert">
+    <button type="button" onclick="hideAlert('alert-success')" class="absolute top-2 right-2 text-green-600 hover:text-green-800">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="flex items-center">
+      <div class="py-1">
+        <svg class="fill-current h-6 w-6 text-green-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+          <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM8.3 13.6L5.6 10.9l1.4-1.4 1.3 1.3 3.6-3.6 1.4 1.4-5 5z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="font-bold">Success</p>
+        <p id="alert-success-message" class="text-sm">Pesan sukses akan muncul di sini.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <div id="confirmModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-sm w-full">
+            <div class="p-6 text-center">
+                <i class="fas fa-exclamation-triangle text-yellow-500 text-4xl mb-3"></i>
+                <h5 class="text-xl font-bold text-gray-800 mb-2" id="confirmTitle">Confirm Deletion</h5>
+                <p class="text-gray-600" id="confirmMessage">Are you sure you want to proceed?</p>
+            </div>
+            <div class="flex justify-center gap-3 p-4 border-t bg-gray-50 rounded-b-lg">
+                <button onclick="resolveConfirmation(false)" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg transition-colors">Cancel</button>
+                <button onclick="resolveConfirmation(true)" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors">Delete</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+
+let _alertTimers = { error: null, success: null };
+
+function showErrorAlert(message, { autoHideMs = 3000 } = {}) {
+  const box = document.getElementById("alert-error");
+  const msg = document.getElementById("alert-error-message");
+  msg.textContent = message;
+  box.classList.remove("hidden");
+  clearTimeout(_alertTimers.error);
+  if (autoHideMs && autoHideMs > 0) {
+    _alertTimers.error = setTimeout(() => hideAlert("alert-error"), autoHideMs);
+  }
+}
+
+function showSuccessAlert(message, { autoHideMs = 3000 } = {}) {
+  const box = document.getElementById("alert-success");
+  const msg = document.getElementById("alert-success-message");
+  msg.textContent = message;
+  box.classList.remove("hidden");
+
+  clearTimeout(_alertTimers.success);
+  if (autoHideMs && autoHideMs > 0) {
+    _alertTimers.success = setTimeout(() => hideAlert("alert-success"), autoHideMs);
+  }
+}
+
+function hideAlert(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add("hidden");
+  if (id === "alert-error") clearTimeout(_alertTimers.error);
+  if (id === "alert-success") clearTimeout(_alertTimers.success);
+}  
+
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        let sidebarVisible = true;
+
+        sidebarToggle.addEventListener('click', function() {
+            sidebarVisible = !sidebarVisible;
+            if (sidebarVisible) {
+                sidebar.classList.remove('sidebar-hidden');
+                mainContent.classList.remove('content-expanded');
+                mainContent.classList.add('ml-64');
+            } else {
+                sidebar.classList.add('sidebar-hidden');
+                mainContent.classList.add('content-expanded');
+                mainContent.classList.remove('ml-64');
+            }
+        });
+
+        // Modal helper functions
+        function closeEditStockModal() {
+            document.getElementById('editStockModal').classList.add('hidden');
+            document.getElementById('editStockModal').classList.remove('flex');
+        }
+
+        function closeStockReportModal() {
+            document.getElementById('stockReportModal').classList.add('hidden');
+            document.getElementById('stockReportModal').classList.remove('flex');
+        }
+
+        function closeEditItemModal() {
+            document.getElementById('editItemModal').classList.add('hidden');
+            document.getElementById('editItemModal').classList.remove('flex');
+        }
+
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        if (!token || !user.id) {
+            window.location.href = '/login';
+        }
+
+        if (user.role === 'user') {
+            showErrorAlert('You do not have access to this page');
+            window.location.href = '/requests';
+        }
+
+        document.getElementById('userInfo').textContent = `${user.full_name} | ${(user.role || '').toUpperCase()}`;
+
+        let itemsData = [];
+
+        function initializePage() {
+            setupSidebar();
+            loadItems();
+            loadItemsForDropdown();
+            
+            document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
+        }
+
+        function setupSidebar() {
+            const sidebarMenu = document.getElementById('sidebarMenu');
+            let menuItems = [];
+
+            if (user.role === 'admin') {
+                menuItems = [
+                    { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard' },
+                    { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests' },
+                    { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock', active: true },
+                    { icon: 'fas fa-calendar', text: 'Calendar', href: '/calendar' },
+                    { icon: 'fas fa-users', text: 'Account Management', href: '/accounts' }
+                ];
+            } else if (user.role === 'cs') {
+                menuItems = [
+                    { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard' },
+                    { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests' },
+                    { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock', active: true }
+                ];
+            }
+
+            sidebarMenu.innerHTML = menuItems.map(item => `
+                <li>
+                    <a href="${item.href}" class="flex items-center gap-3 px-4 py-3 rounded-lg ${item.active ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'} transition-colors">
+                        <i class="${item.icon}"></i>
+                        <span class="font-medium">${item.text}</span>
+                    </a>
+                </li>
+            `).join('');
+        }
+
+        async function loadItems() {
+            try {
+                const currentToken = localStorage.getItem('token');
+                if (!currentToken) {
+                    throw new Error('No authentication token found');
+                }
+
+                const response = await fetch('/api/items', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to fetch items');
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    itemsData = result.data || [];
+                    renderItemsTable(itemsData);
+                } else {
+                    throw new Error(result.message || 'Failed to load items');
+                }
+            } catch (error) {
+                console.error('Error loading items:', error);
+                document.getElementById('stockTableBody').innerHTML = `
+                    <tr><td colspan="8" class="px-6 py-8 text-center text-red-600">
+                        <i class="fas fa-exclamation-triangle"></i> Error: ${error.message}
+                    </td></tr>
+                `;
+            }
+        }
+
+        async function loadItemsForDropdown() {
+            try {
+                const currentToken = localStorage.getItem('token');
+                if (!currentToken) {
+                    throw new Error('No authentication token found');
+                }
+
+                const response = await fetch('/api/items', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to fetch items');
+                }
+
+                const result = await response.json();
+                if (result.success) {
+                    const itemSelect = document.getElementById('itemSelect');
+                    
+                   
+                    const existingOptions = itemSelect.innerHTML;
+                    itemSelect.innerHTML = existingOptions + (result.data || []).map(item => 
+                        `<option value="${item.id}" data-name="${item.item_name}" data-unit="${item.unit}">
+                            ${item.item_name} (${item.detail})
+                        </option>`
+                    ).join('');
+                }
+            } catch (error) {
+                console.error('Error loading items for dropdown:', error);
+            }
+        }
+
+        function renderItemsTable(items) {
+            const tbody = document.getElementById('stockTableBody');
+            
+            if (!items.length) {
+                tbody.innerHTML = `
+                    <tr><td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                        <i class="fas fa-inbox"></i> No items data
+                    </td></tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = items.map(item => {
+                let rowClass = '';
+                let status = 'Normal';
+                
+                if (item.stock === 0) {
+                    rowClass = 'out-of-stock';
+                    status = 'Out of Stock';
+                } else if (item.stock <= (item.min_stock || 10)) {
+                    rowClass = 'low-stock';
+                    status = 'Low Stock';
+                }
+
+                return `
+                    <tr class="${rowClass} hover:bg-gray-50">
+                        <td class="px-6 py-4 text-sm text-gray-700">${item.item_id || 'N/A'}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${item.item_name}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${item.detail}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${item.stock}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${item.unit}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${item.min_stock || 10}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${status}</td>
+                        <td class="px-6 py-4 text-sm">
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs transition-colors mr-1" onclick="editItemStock(${item.id})">
+                                <i class="fas fa-edit"></i> Stock
+                            </button>
+                            ${(user && user.role === 'admin') ? 
+                                `<button class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-xs transition-colors mr-1" onclick="editItemDetails(${item.id})">
+                                    <i class="fas fa-cog"></i> Details
+                                </button>` : ''
+                            }
+                            ${(user && ['admin', 'cs'].includes(user.role)) ? 
+                                `<button class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs transition-colors" onclick="deleteItem(${item.id}, '${item.item_name}')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>` : ''
+                            }
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        
+        function searchItems() {
+            const searchTerm = document.getElementById('searchItem').value.toLowerCase();
+            
+            if (!searchTerm) {
+                renderItemsTable(itemsData);
+                return;
+            }
+
+            const filteredItems = itemsData.filter(item => 
+                item.item_name.toLowerCase().includes(searchTerm) ||
+                item.detail.toLowerCase().includes(searchTerm) ||
+                (item.item_id && item.item_id.toLowerCase().includes(searchTerm)) ||
+                item.id.toString().includes(searchTerm)
+            );
+
+            renderItemsTable(filteredItems);
+        }
+
+        
+        function filterByStock() {
+            const filter = document.getElementById('stockFilter').value;
+            let filteredItems = itemsData;
+
+            switch(filter) {
+                case 'low':
+                    filteredItems = itemsData.filter(item => item.stock > 0 && item.stock <= (item.min_stock || 10));
+                    break;
+                case 'out':
+                    filteredItems = itemsData.filter(item => item.stock === 0);
+                    break;
+                case 'available':
+                    filteredItems = itemsData.filter(item => item.stock > (item.min_stock || 10));
+                    break;
+            }
+
+            renderItemsTable(filteredItems);
+        }
+
+    
+        function openEditStockModal() {
+            const modal = document.getElementById('editStockModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.getElementById('editStockForm').reset();
+            document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('manualItemFields').style.display = 'none';
+           
+            const unitSelect = document.getElementById('unitSelect');
+            const unitReadonly = document.getElementById('unitReadonly');
+            populateUnitDropdown();
+            unitSelect.value = '';
+            unitSelect.style.display = 'none';
+            unitReadonly.value = '';
+            unitReadonly.style.display = 'none';
+            document.getElementById('manualUnitField').style.display = 'none';
+            document.getElementById('manualUnitInput').value = '';
+        }
+
+   
+        function editItemStock(itemId) {
+            const item = itemsData.find(i => i.id === itemId);
+            if (!item) return;
+
+            openEditStockModal();
+            document.getElementById('itemSelect').value = itemId;
+           
+            const unitSelect = document.getElementById('unitSelect');
+            const unitReadonly = document.getElementById('unitReadonly');
+            unitSelect.style.display = 'none';
+            unitReadonly.style.display = 'block';
+            unitReadonly.value = item.unit || '';
+            document.getElementById('manualUnitField').style.display = 'none';
+        }
+
+        function onItemSelect() {
+            const select = document.getElementById('itemSelect');
+            const selectedOption = select.options[select.selectedIndex];
+            const manualFields = document.getElementById('manualItemFields');
+            const unitSelect = document.getElementById('unitSelect');
+            const manualUnitField = document.getElementById('manualUnitField');
+            const manualUnitInput = document.getElementById('manualUnitInput');
+            const unitReadonly = document.getElementById('unitReadonly');
+            if (select.value === 'others') {
+                manualFields.style.display = 'block';
+                unitReadonly.style.display = 'none';
+                unitReadonly.value = '';
+                unitSelect.style.display = 'block';
+                unitSelect.value = '';
+                manualUnitField.style.display = 'none';
+                manualUnitInput.value = '';
+            } else if (select.value) {
+                manualFields.style.display = 'none';
+                
+                unitSelect.style.display = 'none';
+                manualUnitField.style.display = 'none';
+                manualUnitInput.value = '';
+                unitReadonly.style.display = 'block';
+                unitReadonly.value = selectedOption?.dataset?.unit || '';
+            } else {
+                manualFields.style.display = 'none';
+                unitSelect.style.display = 'none';
+                unitSelect.value = '';
+                manualUnitField.style.display = 'none';
+                manualUnitInput.value = '';
+                unitReadonly.style.display = 'none';
+                unitReadonly.value = '';
+            }
+        }
+
+
+        function onUnitSelect() {
+            const unitSelect = document.getElementById('unitSelect');
+            const manualUnitField = document.getElementById('manualUnitField');
+            if (unitSelect.value === 'others') {
+                manualUnitField.style.display = 'block';
+                document.getElementById('manualUnitInput').focus();
+            } else {
+                manualUnitField.style.display = 'none';
+            }
+        }
+        function populateUnitDropdown() {
+            const unitSelect = document.getElementById('unitSelect');
+            if (!unitSelect) return;
+            const commonUnits = ['pcs','box','pack','set','roll','bottle','can','sheet','ream','unit'];
+            const dynamicUnits = Array.from(new Set((itemsData || []).map(i => i.unit).filter(Boolean)));
+            
+            unitSelect.innerHTML = '';
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = 'Select Unit...';
+            unitSelect.appendChild(placeholder);
+            [...new Set([...commonUnits, ...dynamicUnits])].forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u;
+                opt.textContent = u;
+                unitSelect.appendChild(opt);
+            });
+    
+            const optOthers = document.createElement('option');
+            optOthers.value = 'others';
+            optOthers.textContent = 'Others (Manual Input)';
+            unitSelect.appendChild(optOthers);
+        }
+
+        async function saveStockEdit() {
+            const itemSelect = document.getElementById('itemSelect');
+            const stockIn = document.getElementById('stockIn').value;
+            const inputDate = document.getElementById('inputDate').value;
+            const unitSelectVal = document.getElementById('unitSelect').value;
+            const unitManualVal = document.getElementById('manualUnitInput').value.trim();
+            const unit = unitSelectVal === 'others' ? unitManualVal : unitSelectVal;
+            const isNewItem = itemSelect.value === 'others';
+
+            if (!stockIn || !inputDate || (isNewItem && !unit)) {
+                showErrorAlert('All fields must be filled');
+                return;
+            }
+
+            const currentToken = localStorage.getItem('token');
+            if (!currentToken) {
+                throw new Error('No authentication token found');
+            }
+
+            try {
+                if (itemSelect.value === 'others') {
+                    const itemName = document.getElementById('manualItemName').value;
+                    const itemDetail = document.getElementById('manualItemDetail').value;
+                    
+                    if (!itemName || !itemDetail) {
+                        showErrorAlert('Item name and detail must be filled for new item');
+                        return;
+                    }
+
+                    const response = await fetch('/api/items', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${currentToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            item_name: itemName,
+                            detail: itemDetail,
+                            stock: parseInt(stockIn),
+                            unit: unit,
+                            min_stock: 10
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    if (!response.ok || !result.success) {
+                        throw new Error(result.message || 'Failed to create item');
+                    }
+                } else if (itemSelect.value) {
+                    const itemId = parseInt(itemSelect.value);
+                    
+                    const response = await fetch(`/api/stock/update/${itemId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${currentToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            qty: parseInt(stockIn),
+                            type: 'in',
+                            process_date: inputDate,
+                            process: 'Stock Addition'
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    if (!response.ok || !result.success) {
+                        throw new Error(result.message || 'Failed to update stock');
+                    }
+                } else {
+                    showErrorAlert('Select item or choose "Others" for new item');
+                    return;
+                }
+
+
+                closeEditStockModal();
+                loadItems();
+                loadItemsForDropdown();
+                showSuccessAlert('Stock updated successfully');
+            } catch (error) {
+                console.error('Error saving stock:', error);
+                showErrorAlert('Failed to save stock: ' + error.message);
+            }
+        }
+
+        function openStockReport() {
+            const modal = document.getElementById('stockReportModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - 30);
+            
+            document.getElementById('reportEndDate').value = endDate.toISOString().split('T')[0];
+            document.getElementById('reportStartDate').value = startDate.toISOString().split('T')[0];
+        }
+
+
+        async function getStockReport() {
+            const startDate = document.getElementById('reportStartDate').value;
+            const endDate = document.getElementById('reportEndDate').value;
+
+            if (!startDate || !endDate) {
+                showErrorAlert('Select start and end date');
+                return;
+            }
+
+            const currentToken = localStorage.getItem('token');
+            if (!currentToken) {
+                throw new Error('No authentication token found');
+            }
+
+            try {
+                const response = await fetch(`/api/stock/report?startDate=${startDate}&endDate=${endDate}`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to get report');
+                }
+
+                const data = await response.json();
+                renderStockReport(data.data);
+            } catch (error) {
+                console.error('Error getting stock report:', error);
+                document.getElementById('reportTableBody').innerHTML = `
+                    <tr><td colspan="12" class="px-4 py-8 text-center text-red-600">
+                        <i class="fas fa-exclamation-triangle"></i> Failed to load report: ${error.message}
+                    </td></tr>
+                `;
+            }
+        }
+
+        function renderStockReport(transactions) {
+            const tbody = document.getElementById('reportTableBody');
+            
+            if (!transactions.length) {
+                tbody.innerHTML = `
+                    <tr><td colspan="12" class="px-4 py-8 text-center text-gray-500">
+                        <i class="fas fa-inbox"></i> No transaction data
+                    </td></tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = transactions.map(trans => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm text-gray-700">${trans.transactionDate || 'N/A'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${trans.itemId || 'N/A'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${trans.itemName || 'N/A'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${trans.detail || 'N/A'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${trans.qty || 'N/A'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${trans.unit || 'N/A'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${trans.process || 'N/A'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${trans.processDate || 'N/A'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${trans.dept || 'N/A'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${trans.pic || 'N/A'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${trans.reqDept || 'N/A'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">${trans.receiver || 'N/A'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function exportToExcel() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showSuccessAlert('Please login first');
+                return;
+            }
+
+            fetch('/api/export/stock', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Export failed');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `stock_data_${new Date().toISOString().split('T')[0]}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            })
+            .catch(error => {
+                console.error('Export error:', error);
+                showErrorAlert('Failed to export data');
+            });
+        }
+
+        function exportReportToExcel() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showErrorAlert('Please login first');
+                return;
+            }
+
+            const startDate = document.getElementById('reportStartDate').value;
+            const endDate = document.getElementById('reportEndDate').value;
+            
+            let url = '/api/export/stock-report';
+            if (startDate && endDate) {
+                url += `?startDate=${startDate}&endDate=${endDate}`;
+            }
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Export failed');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const dateRange = startDate && endDate ? `_${startDate}_to_${endDate}` : '';
+                a.href = url;
+                a.download = `stock_report${dateRange}_${new Date().toISOString().split('T')[0]}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            })
+            .catch(error => {
+                console.error('Export error:', error);
+                showErrorAlert('Failed to export report');
+            });
+        }
+
+        async function editItemDetails(itemId) {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showErrorAlert('Please login first');
+                    return;
+                }
+
+                const response = await fetch(`/api/items/${itemId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    const item = result.data;
+                    
+                    document.getElementById('editItemId').value = item.id;
+                    document.getElementById('editItemIdField').value = item.item_id;
+                    document.getElementById('editItemName').value = item.item_name;
+                    document.getElementById('editItemDetail').value = item.detail;
+                    document.getElementById('editItemUnit').value = item.unit;
+                    document.getElementById('editItemMinStock').value = item.min_stock || 10;
+                    
+                    const modal = document.getElementById('editItemModal');
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                } else {
+                    const error = await response.json();
+                    showErrorAlert(error.message || 'Failed to get item details');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorAlert('An error occurred while getting item details');
+            }
+        }
+
+        async function saveItemDetails() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showErrorAlert('Please login first');
+                    return;
+                }
+
+                const itemId = document.getElementById('editItemId').value;
+                const itemIdField = document.getElementById('editItemIdField').value;
+                const itemName = document.getElementById('editItemName').value;
+                const itemDetail = document.getElementById('editItemDetail').value;
+                const itemUnit = document.getElementById('editItemUnit').value;
+                const minStock = parseInt(document.getElementById('editItemMinStock').value);
+
+                if (!itemIdField || !itemName || !itemDetail || !itemUnit || isNaN(minStock)) {
+                    showErrorAlert('Please fill all fields correctly');
+                    return;
+                }
+
+                const response = await fetch(`/api/items/${itemId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        item_id: itemIdField,
+                        item_name: itemName,
+                        detail: itemDetail,
+                        unit: itemUnit,
+                        min_stock: minStock
+                    })
+                });
+
+                if (response.ok) {
+                    showSuccessAlert('Item details updated successfully');
+                    closeEditItemModal();
+                    loadItems();
+                } else {
+                    const error = await response.json();
+                    showErrorAlert(error.message || 'Failed to update item details');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorAlert('An error occurred while updating item details');
+            }
+        }
+
+        let confirmModalResolver; 
+
+function showConfirmModal(title, message) {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').textContent = message;
+    document.getElementById('confirmModal').classList.remove('hidden');
+    document.getElementById('confirmModal').classList.add('flex');
+
+    
+    return new Promise(resolve => {
+        confirmModalResolver = resolve;
+    });
+}
+
+
+function resolveConfirmation(result) {
+    document.getElementById('confirmModal').classList.remove('flex');
+    document.getElementById('confirmModal').classList.add('hidden');
+    
+    if (confirmModalResolver) {
+        confirmModalResolver(result); 
+        confirmModalResolver = null;
+    }
+}
+
+        async function deleteItem(itemId, itemName) {
+            
+            const message = `Are you sure you want to delete item "${itemName}"? This action cannot be undone.`;
+            const isConfirmed = await showConfirmModal('Confirm Deletion', message); 
+            
+            if (!isConfirmed) { 
+                return;
+            }
+
+            const currentToken = localStorage.getItem('token');
+            if (!currentToken) {
+                showErrorAlert('Authentication required');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/items/${itemId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showSuccessAlert('Item deleted successfully');
+                    loadItems();
+                } else {
+                    showErrorAlert(result.message || 'Failed to delete item');
+                }
+            } catch (error) {
+                console.error('Error deleting item:', error);
+                showErrorAlert('Failed to delete item');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
+
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+    <script src="js/item-suggestions.js"></script>
+</body>
+</html>

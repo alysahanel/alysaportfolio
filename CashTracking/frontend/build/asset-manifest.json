@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/cashtracking/static/css/main.0bbcf580.css",
+    "main.js": "/cashtracking/static/js/main.878b21f2.js",
+    "static/js/453.670e15c7.chunk.js": "/cashtracking/static/js/453.670e15c7.chunk.js",
+    "index.html": "/cashtracking/index.html",
+    "main.0bbcf580.css.map": "/cashtracking/static/css/main.0bbcf580.css.map",
+    "main.878b21f2.js.map": "/cashtracking/static/js/main.878b21f2.js.map",
+    "453.670e15c7.chunk.js.map": "/cashtracking/static/js/453.670e15c7.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.0bbcf580.css",
+    "static/js/main.878b21f2.js"
+  ]
+}

@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AM System - Stock Process Report</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar { transition: margin-left 0.3s ease-in-out; }
+        .main-content { transition: margin-left 0.3s ease-in-out; width: calc(100% - 16rem); }
+        .sidebar-hidden { margin-left: -16rem; }
+        .content-expanded { margin-left: 0; width: 100%; }
+        html { font-size: 14px; }
+        html, body { overflow-x: hidden; }
+        @media (max-width: 768px) { .main-content { margin-left: 0; width: 100%; } }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex min-h-screen">
+        <aside id="sidebar" class="w-64 bg-white shadow-lg fixed h-screen flex flex-col sidebar z-20">
+            <div class="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100 p-5">
+                <div class="flex items-center justify-center gap-3">
+                    <img src="images/nipponlogo.svg" alt="Nippon Steel Logo" class="h-10 w-10">
+                    <h4 class="text-lg font-bold text-blue-600">AMMS</h4>
+                </div>
+                <div class="mt-2 text-center text-xs text-blue-500" id="userInfo"></div>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto py-4">
+                <ul id="sidebarMenu" class="space-y-1 px-3"></ul>
+            </nav>
+
+            <div class="p-4 border-t">
+                <button onclick="logout()" class="w-full bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+
+        <main id="mainContent" class="flex-1 ml-64 main-content">
+            <div class="bg-white shadow-sm border-b sticky top-0 z-10">
+                <div class="px-6 py-4 flex justify-between items-center">
+                    <div class="flex items-center gap-4">
+                        <button id="sidebarToggle" class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                        <h2 class="text-2xl font-bold text-gray-800">Stock Process Report</h2>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="text-gray-600 text-sm">Total Records: <strong id="totalRecords">0</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                        <div class="md:col-span-3">
+                            <label for="startDate" class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                            <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="startDate">
+                        </div>
+                        <div class="md:col-span-3">
+                            <label for="endDate" class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                            <input type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="endDate">
+                        </div>
+                        <div class="md:col-span-3">
+                            <label for="statusFilter" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="Requested">Requested</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Delivered">Delivered</option>
+                                <option value="Pending">Pending</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-3">
+                            <label for="itemFilter" class="block text-sm font-medium text-gray-700 mb-2">Item</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="itemFilter">
+                                <option value="">All Items</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mt-4">
+                        <div class="md:col-span-3">
+                            <label for="departmentFilter" class="block text-sm font-medium text-gray-700 mb-2">Department</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="departmentFilter">
+                                <option value="">All Departments</option>
+                                <option value="HRGA Legal">HRGA Legal</option>
+                                <option value="IT">IT</option>
+                                <option value="Sales">Sales</option>
+                                <option value="FAT (Finance Accounting Tax)">FAT (Finance Accounting Tax)</option>
+                                <option value="Production">Production</option>
+                                <option value="PPIC Warehouse EXIM (Export Import)">PPIC Warehouse EXIM</option>
+                                <option value="Maintenance">Maintenance</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-9 flex items-end gap-2">
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors" onclick="getReport()">
+                                <i class="fas fa-search mr-2"></i>Get Report
+                            </button>
+                            <button class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-colors" onclick="exportToXLS()">
+                                <i class="fas fa-file-excel mr-2"></i>Export to XLS
+                            </button>
+                            <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition-colors" onclick="showReportStats()">
+                                <i class="fas fa-chart-pie mr-2"></i>Statistics
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow">
+                    <div class="p-6 border-b">
+                        <h5 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-chart-bar"></i> Stock Process Report
+                        </h5>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm" id="reportTable">
+                            <thead class="bg-gray-800 text-white">
+                                <tr>
+                                    <th class="px-4 py-3 text-left font-semibold">Transaction Date</th>
+                                    <th class="px-4 py-3 text-left font-semibold">Item ID</th>
+                                    <th class="px-4 py-3 text-left font-semibold">Item Name</th>
+                                    <th class="px-4 py-3 text-left font-semibold">Detail</th>
+                                    <th class="px-4 py-3 text-left font-semibold">Qty</th>
+                                    <th class="px-4 py-3 text-left font-semibold">Unit</th>
+                                    <th class="px-4 py-3 text-left font-semibold">Process</th>
+                                    <th class="px-4 py-3 text-left font-semibold">Process Date</th>
+                                    <th class="px-4 py-3 text-left font-semibold">Department</th>
+                                    <th class="px-4 py-3 text-left font-semibold">PIC</th>
+                                    <th class="px-4 py-3 text-left font-semibold">Req Dept</th>
+                                    <th class="px-4 py-3 text-left font-semibold">Receiver</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+<div id="alert-error" class="hidden fixed inset-0 z-[100] flex items-start justify-center p-4">
+  <div class="relative bg-red-100 border-t-4 border-red-500 rounded-lg text-red-900 px-4 py-3 shadow-xl max-w-md w-full mt-10" role="alert">
+    <button type="button" onclick="hideAlert('alert-error')" class="absolute top-2 right-2 text-red-600 hover:text-red-800">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="flex items-center">
+      <div class="py-1">
+        <svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+          <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="font-bold">Error!</p>
+        <p id="alert-error-message" class="text-sm">Pesan error akan muncul di sini.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="alert-success" class="hidden fixed inset-0 z-[100] flex items-start justify-center p-4">
+  <div class="relative bg-green-100 border-t-4 border-green-500 rounded-lg text-green-900 px-4 py-3 shadow-xl max-w-md w-full mt-10" role="alert">
+    <button type="button" onclick="hideAlert('alert-success')" class="absolute top-2 right-2 text-green-600 hover:text-green-800">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="flex items-center">
+      <div class="py-1">
+        <svg class="fill-current h-6 w-6 text-green-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+          <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM8.3 13.6L5.6 10.9l1.4-1.4 1.3 1.3 3.6-3.6 1.4 1.4-5 5z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="font-bold">Success</p>
+        <p id="alert-success-message" class="text-sm">Pesan sukses akan muncul di sini.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let _alertTimers = { error: null, success: null };
+function showErrorAlert(message, { autoHideMs = 3000 } = {}) {
+  const box = document.getElementById("alert-error");
+  const msg = document.getElementById("alert-error-message");
+  msg.textContent = message;
+  box.classList.remove("hidden");
+  clearTimeout(_alertTimers.error);
+  if (autoHideMs && autoHideMs > 0) {
+    _alertTimers.error = setTimeout(() => hideAlert("alert-error"), autoHideMs);
+  }
+}
+function showSuccessAlert(message, { autoHideMs = 3000 } = {}) {
+  const box = document.getElementById("alert-success");
+  const msg = document.getElementById("alert-success-message");
+  msg.textContent = message;
+  box.classList.remove("hidden");
+  clearTimeout(_alertTimers.success);
+  if (autoHideMs && autoHideMs > 0) {
+    _alertTimers.success = setTimeout(() => hideAlert("alert-success"), autoHideMs);
+  }
+}
+function hideAlert(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add("hidden");
+  if (id === "alert-error") clearTimeout(_alertTimers.error);
+  if (id === "alert-success") clearTimeout(_alertTimers.success);
+}
+const sidebar = document.getElementById('sidebar');
+const mainContent = document.getElementById('mainContent');
+const sidebarToggle = document.getElementById('sidebarToggle');
+let sidebarVisible = true;
+sidebarToggle.addEventListener('click', function() {
+    sidebarVisible = !sidebarVisible;
+    if (sidebarVisible) {
+        sidebar.classList.remove('sidebar-hidden');
+        mainContent.classList.remove('content-expanded');
+        mainContent.classList.add('ml-64');
+    } else {
+        sidebar.classList.add('sidebar-hidden');
+        mainContent.classList.add('content-expanded');
+        mainContent.classList.remove('ml-64');
+    }
+});
+let reportData = [];
+function setupSidebar(userRole) {
+    const sidebarMenu = document.getElementById('sidebarMenu');
+    let menuItems = [];
+    if (userRole === 'admin') {
+        menuItems = [
+            { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard' },
+            { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests' },
+            { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock' },
+            { icon: 'fas fa-calendar', text: 'Calendar', href: '/calendar' },
+            { icon: 'fas fa-users', text: 'Account Management', href: '/accounts' }
+        ];
+    } else if (userRole === 'cs') {
+        menuItems = [
+            { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard' },
+            { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests' },
+            { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock' }
+        ];
+    }
+    sidebarMenu.innerHTML = menuItems.map(item => `
+        <li>
+            <a href="${item.href}" class="flex items-center gap-3 px-4 py-3 rounded-lg ${item.active ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'} transition-colors">
+                <i class="${item.icon}"></i>
+                <span class="font-medium">${item.text}</span>
+            </a>
+        </li>
+    `).join('');
+}
+function checkAuth() {
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!token) { window.location.href = '/login'; return; }
+    if (!['admin', 'cs'].includes(user.role)) {
+        showErrorAlert('Access denied. Only admin and CS can view stock reports.');
+        window.location.href = '/requests';
+        return;
+    }
+    setupSidebar(user.role);
+    if (user.role && user.full_name) {
+        document.getElementById('userInfo').textContent = `${user.full_name} | ${user.role.toUpperCase()}`;
+    }
+    loadStockReport();
+}
+async function loadStockReport() {
+    const currentToken = localStorage.getItem('token');
+    if (!currentToken) { throw new Error('No authentication token found'); }
+    try {
+        const cacheBuster = Date.now() + Math.random();
+        console.log('=== LOADING STOCK REPORT ===');
+        console.log('Cache buster:', cacheBuster);
+        console.log('Token exists:', !!currentToken);
+        const response = await fetch(`/api/stock/report?_cb=${cacheBuster}`, {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`,
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
+        console.log('Response status:', response.status);
+        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+        if (response.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+            return;
+        }
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to load stock report');
+        }
+        const result = await response.json();
+        console.log('=== FRESH API RESPONSE ===');
+        console.log('Full result:', JSON.stringify(result, null, 2));
+        console.log('Result success:', result.success);
+        console.log('Result data type:', typeof result.data);
+        console.log('Result data length:', result.data ? result.data.length : 'N/A');
+        if (result.data && result.data.length > 0) {
+            console.log('=== FIRST ITEM DETAILED ANALYSIS ===');
+            const firstItem = result.data[0];
+            console.log('First item raw:', JSON.stringify(firstItem, null, 2));
+            console.log('itemId value:', firstItem.itemId, 'type:', typeof firstItem.itemId);
+            console.log('itemName value:', firstItem.itemName, 'type:', typeof firstItem.itemName);
+            console.log('transactionDate value:', firstItem.transactionDate, 'type:', typeof firstItem.transactionDate);
+        }
+        if (result.success) {
+            reportData = result.data || [];
+            console.log('=== SETTING reportData ===');
+            console.log('reportData assigned, length:', reportData.length);
+            console.log('reportData first item after assignment:', reportData[0]);
+            loadReportData(reportData);
+        } else {
+            throw new Error(result.message || 'Failed to load stock report');
+        }
+    } catch (error) {
+        console.error('Error loading stock report:', error);
+        document.getElementById('reportTableBody').innerHTML = `
+            <tr><td colspan="12" class="px-4 py-8 text-center text-red-600">
+                <i class="fas fa-exclamation-triangle"></i> Failed to load stock report: ${error.message}
+            </td></tr>
+        `;
+    }
+}
+function loadReportData(data = reportData) {
+    const tbody = document.getElementById('reportTableBody');
+    tbody.innerHTML = '';
+    console.log('=== DEBUG: loadReportData called ===');
+    console.log('Data received:', data);
+    console.log('Data type:', typeof data);
+    console.log('Data length:', data ? data.length : 'N/A');
+    if (!data || !Array.isArray(data)) {
+        console.error('Invalid data received:', data);
+        tbody.innerHTML = '<tr><td colspan="12" class="px-4 py-8 text-center text-red-600">No valid data received</td></tr>';
+        return;
+    }
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="12" class="px-4 py-8 text-center text-gray-500"><i class="fas fa-inbox"></i> No data available</td></tr>';
+        updateTotalRecords(0);
+        return;
+    }
+    data.forEach((item, index) => {
+        console.log(`=== Item ${index + 1} ===`);
+        console.log('Full item object:', item);
+        console.log('transactionDate:', item.transactionDate, '(type:', typeof item.transactionDate, ')');
+        console.log('itemId:', item.itemId, '(type:', typeof item.itemId, ')');
+        console.log('itemName:', item.itemName, '(type:', typeof item.itemName, ')');
+        console.log('All properties:', Object.keys(item));
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50';
+        let statusClass = 'bg-gray-100 text-gray-800';
+        const process = item.process ? item.process.toLowerCase() : '';
+        if (process.includes('requested')) { statusClass = 'bg-yellow-100 text-yellow-800'; }
+        else if (process.includes('approved')) { statusClass = 'bg-blue-100 text-blue-800'; }
+        else if (process.includes('delivered')) { statusClass = 'bg-green-100 text-green-800'; }
+        else if (process.includes('pending')) { statusClass = 'bg-orange-100 text-orange-800'; }
+        const statusBadge = `<span class="px-2 py-1 rounded text-xs font-medium ${statusClass}">${item.process || 'N/A'}</span>`;
+        const itemId = item.itemId !== undefined && item.itemId !== null ? String(item.itemId) : 'N/A';
+        const itemName = item.itemName !== undefined && item.itemName !== null ? String(item.itemName) : 'N/A';
+        console.log('Processed itemId:', itemId);
+        console.log('Processed itemName:', itemName);
+        row.innerHTML = `
+            <td class="px-4 py-3 text-gray-700">${item.transactionDate || 'N/A'}</td>
+            <td class="px-4 py-3 text-gray-700">${itemId}</td>
+            <td class="px-4 py-3 text-gray-700">${itemName}</td>
+            <td class="px-4 py-3 text-gray-700">${item.detail || 'N/A'}</td>
+            <td class="px-4 py-3 text-gray-700">${item.qty || 'N/A'}</td>
+            <td class="px-4 py-3 text-gray-700">${item.unit || 'N/A'}</td>
+            <td class="px-4 py-3">${statusBadge}</td>
+            <td class="px-4 py-3 text-gray-700">${item.processDate || 'N/A'}</td>
+            <td class="px-4 py-3 text-gray-700">${item.dept || 'N/A'}</td>
+            <td class="px-4 py-3 text-gray-700">${item.pic || 'N/A'}</td>
+            <td class="px-4 py-3 text-gray-700">${item.reqDept || 'N/A'}</td>
+            <td class="px-4 py-3 text-gray-700">${item.receiver || ''}</td>
+        `;
+        tbody.appendChild(row);
+    });
+    updateTotalRecords(data.length);
+    console.log('=== Table population completed ===');
+}
+async function getReport() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    const itemFilter = document.getElementById('itemFilter').value;
+    const departmentFilter = document.getElementById('departmentFilter').value;
+    const token = localStorage.getItem('token');
+    try {
+        const params = new URLSearchParams();
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        if (statusFilter) params.append('status', statusFilter);
+        if (itemFilter) params.append('itemId', itemFilter);
+        if (departmentFilter) params.append('department', departmentFilter);
+        const response = await fetch(`/api/stock/report?${params.toString()}`, {
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        });
+        if (response.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+            return;
+        }
+        if (!response.ok) { throw new Error('Failed to get filtered report'); }
+        const result = await response.json();
+        console.log('API Response:', result);
+        if (result.success) {
+            reportData = result.data || [];
+            console.log('Report data:', reportData);
+            if (reportData.length > 0) {
+                console.log('First item:', reportData[0]);
+                console.log('itemId:', reportData[0].itemId, 'type:', typeof reportData[0].itemId);
+                console.log('itemName:', reportData[0].itemName, 'type:', typeof reportData[0].itemName);
+            }
+            loadReportData(reportData);
+        } else {
+            throw new Error(result.message || 'Failed to get filtered report');
+        }
+    } catch (error) {
+        console.error('Error getting filtered report:', error);
+        document.getElementById('reportTableBody').innerHTML = `
+            <tr><td colspan="12" class="px-4 py-8 text-center text-red-600">
+                <i class="fas fa-exclamation-triangle"></i> Failed to load filtered report: ${error.message}
+            </td></tr>
+        `;
+    }
+}
+function updateTotalRecords(count) { document.getElementById('totalRecords').textContent = count; }
+function showReportStats() {
+    const currentData = getCurrentFilteredData();
+    const stats = { totalTransactions: currentData.length, statusBreakdown: {}, departmentBreakdown: {}, topItems: {} };
+    currentData.forEach(item => {
+        stats.statusBreakdown[item.process] = (stats.statusBreakdown[item.process] || 0) + 1;
+        stats.departmentBreakdown[item.dept] = (stats.departmentBreakdown[item.dept] || 0) + 1;
+        stats.topItems[item.itemName] = (stats.topItems[item.itemName] || 0) + parseInt(item.qty);
+    });
+    let statsMessage = `Report Statistics:\n\n`;
+    statsMessage += `Total Transactions: ${stats.totalTransactions}\n\n`;
+    statsMessage += `Status Breakdown:\n`;
+    Object.entries(stats.statusBreakdown).forEach(([status, count]) => { statsMessage += `- ${status}: ${count}\n`; });
+    statsMessage += `\nDepartment Activity:\n`;
+    Object.entries(stats.departmentBreakdown).forEach(([dept, count]) => { statsMessage += `- ${dept}: ${count}\n`; });
+    showSuccessAlert(statsMessage);
+}
+function getCurrentFilteredData() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    const itemFilter = document.getElementById('itemFilter').value;
+    const departmentFilter = document.getElementById('departmentFilter').value;
+    let filteredData = [...reportData];
+    if (startDate) { filteredData = filteredData.filter(item => item.transactionDate >= startDate); }
+    if (endDate) { filteredData = filteredData.filter(item => item.transactionDate <= endDate); }
+    if (statusFilter) { filteredData = filteredData.filter(item => item.process === statusFilter); }
+    if (itemFilter) { filteredData = filteredData.filter(item => item.itemId === itemFilter); }
+    if (departmentFilter) { filteredData = filteredData.filter(item => item.dept === departmentFilter); }
+    return filteredData;
+}
+function populateItemFilter() {
+    const itemFilter = document.getElementById('itemFilter');
+    const uniqueItems = [...new Set(reportData.map(item => ({ id: item.itemId, name: item.itemName })))];
+    uniqueItems.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.id;
+        option.textContent = `${item.id} - ${item.name}`;
+        itemFilter.appendChild(option);
+    });
+}
+async function exportToXLS() {
+    const token = localStorage.getItem('token');
+    try {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const statusFilter = document.getElementById('statusFilter').value;
+        const itemFilter = document.getElementById('itemFilter').value;
+        const departmentFilter = document.getElementById('departmentFilter').value;
+        const params = new URLSearchParams();
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        if (statusFilter) params.append('status', statusFilter);
+        if (itemFilter) params.append('itemId', itemFilter);
+        if (departmentFilter) params.append('department', departmentFilter);
+        const response = await fetch(`/api/export/stock-report?${params.toString()}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (response.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+            return;
+        }
+        if (!response.ok) { throw new Error('Failed to export stock report'); }
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `stock-report-${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        showSuccessAlert('Stock report exported successfully!');
+    } catch (error) {
+        console.error('Error exporting stock report:', error);
+        showErrorAlert('Failed to export stock report: ' + error.message);
+    }
+}
+function logout() { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = '/login'; }
+document.addEventListener('DOMContentLoaded', function() {
+    checkAuth();
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+    document.getElementById('endDate').value = today.toISOString().split('T')[0];
+    document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+});
+</script>
+</body>
+</html>

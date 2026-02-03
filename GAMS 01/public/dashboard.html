@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AM System - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            transition: margin-left 0.3s ease-in-out;
+        }
+        .main-content {
+            transition: margin-left 0.3s ease-in-out;
+            width: calc(100% - 16rem);
+        }
+        .sidebar-hidden {
+            margin-left: -16rem;
+        }
+        .content-expanded {
+            margin-left: 0;
+            width: 100%;
+        }
+        html { font-size: 14px; }
+        html, body { overflow-x: hidden; }
+        @media (max-width: 768px) {
+            .main-content { margin-left: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex min-h-screen">
+        <aside id="sidebar" class="w-64 bg-white shadow-lg fixed h-screen flex flex-col sidebar z-20">
+            <div class="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100 p-5">
+                <div class="flex items-center justify-center gap-3">
+                    <img src="images/nipponlogo.svg" alt="Nippon Steel Logo" class="h-10 w-10">
+                    <h4 class="text-lg font-bold text-blue-600">AMMS</h4>
+                </div>
+                <div class="mt-2 text-center text-xs text-blue-500" id="userInfo"></div>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto py-4">
+                <ul id="sidebarMenu" class="space-y-1 px-3">
+                </ul>
+            </nav>
+            <div class="p-4 border-t">
+                <button onclick="logout()" class="w-full bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </aside>
+        <main id="mainContent" class="flex-1 ml-64 main-content">
+            <div class="bg-white shadow-sm border-b sticky top-0 z-10">
+                <div class="px-6 py-4 flex justify-between items-center">
+                    <div class="flex items-center gap-4">
+                        <button id="sidebarToggle" class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                        <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="text-gray-600 text-sm flex items-center gap-2">
+                            <i class="fas fa-calendar"></i> <span id="currentDate"></span>
+                        </span>
+                        <div class="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-lg">
+                            <i class="fas fa-user text-gray-600"></i>
+                            <span id="headerUserName" class="text-sm font-medium text-gray-700"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <div id="itemSearchWidget" class="bg-white rounded-lg shadow p-4 mb-6">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
+                        <h5 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                            <i class="fas fa-search"></i> Search Item
+                        </h5>
+<div class="flex flex-col sm:flex-row gap-2 w-full md:w-2/3 lg:w-1/2">
+                            <input id="itemSearchInput" type="text" placeholder="Search by name or ID..." class="flex-1 px-4 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300" />
+                            <div class="flex gap-2">
+                                <button id="itemSearchBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">search</button>
+                                <button id="itemShowAllBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded">show all</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="itemSearchResults" class="divide-y"></div>
+                </div>
+                <div id="dashboardContent">
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="addItemModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h5 class="text-xl font-bold text-gray-800">Add New Item</h5>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="addItemForm">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Item ID</label>
+                        <input type="text" id="itemId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Leave empty for auto-generate (GA-XXXX)">
+                        <small class="text-gray-500 text-xs">Leave empty to auto-generate ID</small>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Item Name</label>
+                        <input type="text" id="itemName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter item name...">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Detail</label>
+                        <textarea id="itemDetail" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter item description..."></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Unit</label>
+                        <input type="text" id="itemUnit" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., pcs, box, roll...">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Initial Stock</label>
+                        <input type="number" id="itemStock" min="0" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter initial stock...">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Minimum Stock</label>
+                        <input type="number" id="itemMinStock" min="0" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter minimum stock threshold...">
+                    </div>
+                </form>
+            </div>
+            <div class="flex gap-3 p-6 border-t">
+                <button onclick="closeModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg transition-colors">Cancel</button>
+                <button onclick="saveItem()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">Save Item</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="eventModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h5 class="text-xl font-bold text-gray-800">Calendar Events <span id="eventModalDate" class="text-gray-500 text-sm"></span></h5>
+                <button onclick="closeEventModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div id="eventList" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+<div id="alert-error" class="hidden fixed inset-0 z-[100] flex items-start justify-center p-4">
+  <div class="relative bg-red-100 border-t-4 border-red-500 rounded-lg text-red-900 px-4 py-3 shadow-xl max-w-md w-full mt-10" role="alert">
+    <button type="button" onclick="hideAlert('alert-error')" class="absolute top-2 right-2 text-red-600 hover:text-red-800">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="flex items-center">
+      <div class="py-1">
+        <svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+          <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="font-bold">Error!</p>
+        <p id="alert-error-message" class="text-sm">Pesan error akan muncul di sini.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="alert-success" class="hidden fixed inset-0 z-[100] flex items-start justify-center p-4">
+  <div class="relative bg-green-100 border-t-4 border-green-500 rounded-lg text-green-900 px-4 py-3 shadow-xl max-w-md w-full mt-10" role="alert">
+    <button type="button" onclick="hideAlert('alert-success')" class="absolute top-2 right-2 text-green-600 hover:text-green-800">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="flex items-center">
+      <div class="py-1">
+        <svg class="fill-current h-6 w-6 text-green-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+          <path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM8.3 13.6L5.6 10.9l1.4-1.4 1.3 1.3 3.6-3.6 1.4 1.4-5 5z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="font-bold">Success</p>
+        <p id="alert-success-message" class="text-sm">Pesan sukses akan muncul di sini.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    <script>
+
+let _alertTimers = { error: null, success: null };
+
+function showErrorAlert(message, { autoHideMs = 3000 } = {}) {
+  const box = document.getElementById("alert-error");
+  const msg = document.getElementById("alert-error-message");
+  msg.textContent = message;
+  box.classList.remove("hidden");
+
+  clearTimeout(_alertTimers.error);
+  if (autoHideMs && autoHideMs > 0) {
+    _alertTimers.error = setTimeout(() => hideAlert("alert-error"), autoHideMs);
+  }
+}
+
+function showSuccessAlert(message, { autoHideMs = 3000 } = {}) {
+  const box = document.getElementById("alert-success");
+  const msg = document.getElementById("alert-success-message");
+  msg.textContent = message;
+  box.classList.remove("hidden");
+
+  clearTimeout(_alertTimers.success);
+  if (autoHideMs && autoHideMs > 0) {
+    _alertTimers.success = setTimeout(() => hideAlert("alert-success"), autoHideMs);
+  }
+}
+
+function hideAlert(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add("hidden");
+  if (id === "alert-error") clearTimeout(_alertTimers.error);
+  if (id === "alert-success") clearTimeout(_alertTimers.success);
+}
+
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        let sidebarVisible = true;
+
+        sidebarToggle.addEventListener('click', function() {
+            sidebarVisible = !sidebarVisible;
+            if (sidebarVisible) {
+                sidebar.classList.remove('sidebar-hidden');
+                mainContent.classList.remove('content-expanded');
+                mainContent.classList.add('ml-64');
+            } else {
+                sidebar.classList.add('sidebar-hidden');
+                mainContent.classList.add('content-expanded');
+                mainContent.classList.remove('ml-64');
+            }
+        });
+
+        function closeModal() {
+            document.getElementById('addItemModal').classList.add('hidden');
+            document.getElementById('addItemModal').classList.remove('flex');
+        }
+
+        let user = null;
+
+        async function checkAuthentication() {
+            try {
+                const token = localStorage.getItem('token');
+                
+                const response = await fetch('/api/auth/check', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        user = result.user;
+                        return true;
+                    }
+                }
+                
+                window.location.href = '/login';
+                return false;
+            } catch (error) {
+                console.error('Auth check error:', error);
+                window.location.href = '/login';
+                return false;
+            }
+        }
+
+        async function initializeDashboard() {
+            const isAuthenticated = await checkAuthentication();
+            if (!isAuthenticated) return;
+
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US');
+            document.getElementById('userInfo').textContent = `${user.full_name} | ${(user.role || '').toUpperCase()}`;
+            document.getElementById('headerUserName').textContent = user.full_name;
+
+            setupSidebar();
+            loadDashboardContent();
+            
+            setInterval(() => {
+                loadDashboardContent();
+                console.log('Dashboard auto-refreshed at:', new Date().toLocaleTimeString());
+            }, 30000);
+        }
+
+        function setupSidebar() {
+            const sidebarMenu = document.getElementById('sidebarMenu');
+            let menuItems = [];
+
+            if (user.role === 'admin') {
+                menuItems = [
+                    { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard', active: true },
+                    { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests' },
+                    { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock' },
+                    { icon: 'fas fa-calendar', text: 'Calendar', href: '/calendar' },
+                    { icon: 'fas fa-users', text: 'Account Management', href: '/accounts' },
+                
+                ];
+            } else if (user.role === 'cs') {
+                menuItems = [
+                    { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard', active: true },
+                    { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests' },
+                    { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock' }
+                ];
+            } else if (user.role === 'user') {
+                menuItems = [
+                    { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard', active: true },
+                    { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests' }
+                ];
+            }
+
+            sidebarMenu.innerHTML = menuItems.map(item => `
+                <li>
+                    <a href="${item.href}" class="flex items-center gap-3 px-4 py-3 rounded-lg ${item.active ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'} transition-colors">
+                        <i class="${item.icon}"></i>
+                        <span class="font-medium">${item.text}</span>
+                    </a>
+                </li>
+            `).join('');
+        }
+
+        async function loadDashboardContent() {
+            try {
+                const token = localStorage.getItem('token');
+                
+                const response = await fetch('/api/dashboard/stats', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const stats = result.success ? result.data : {};
+                
+                renderDashboardContent(stats);
+                renderRecentRequestsTable(stats.recentRequests || []);
+                
+                if (user.role === 'admin' || user.role === 'cs') {
+                    renderLowStockTable(stats.itemsNeedingStock || []);
+                }
+                
+                if (user.role === 'admin' && stats.requestsByStatus) {
+                    renderStatusChart(stats.requestsByStatus);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                document.getElementById('dashboardContent').innerHTML = `
+                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                       Failed to load dashboard data: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+       function renderDashboardContent(stats) {
+  const dashboardContent = document.getElementById('dashboardContent');
+
+  if (user.role === 'admin') {
+    dashboardContent.innerHTML = `
+      <!-- TOP: 3 cards -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow p-6 h-full">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-600 mb-2">Approved Requests</p>
+              <h3 class="text-3xl font-bold text-gray-800">${stats.totalApprovedRequests || 0}</h3>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <i class="fas fa-check-circle text-2xl text-green-600"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6 h-full">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-600 mb-2">Low Stock Items</p>
+              <h3 class="text-3xl font-bold text-gray-800">${stats.lowStockItems || 0}</h3>
+            </div>
+            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+              <i class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6 h-full">
+          <h5 class="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <i class="fas fa-chart-pie"></i> Request Status
+          </h5>
+          <div id="statusChart"></div>
+        </div>
+      </div>
+
+      <!-- MIDDLE: 3 widget sejajar (Today / This Week / Calendar) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow p-6">
+          <h5 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <i class="fas fa-calendar-day"></i> Today's Events
+          </h5>
+          <div id="calendarWidget" class="space-y-3"></div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+          <h5 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <i class="fas fa-calendar-week"></i> This Week's Events
+          </h5>
+          <div id="weeklyEventsWidget" class="space-y-3"></div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-4">
+          <div class="flex justify-between items-center mb-3">
+            <button onclick="previousMonth()" class="bg-gray-100 hover:bg-gray-200 w-8 h-8 rounded flex items-center justify-center text-sm">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <h5 id="calendarMonth" class="font-bold text-gray-800 text-sm"></h5>
+            <button onclick="nextMonth()" class="bg-gray-100 hover:bg-gray-200 w-8 h-8 rounded flex items-center justify-center text-sm">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+          <div class="grid grid-cols-7 gap-1 mb-2 text-center text-xs font-semibold text-gray-600">
+            <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+          </div>
+          <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center text-xs"></div>
+        </div>
+      </div>
+
+      <!-- BOTTOM: Recent Requests (thead-nya akan kita gelapkan di langkah #2) -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="p-6 border-b">
+          <h5 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <i class="fas fa-list"></i> Recent Requests
+          </h5>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-800 text-white">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-semibold">Request ID</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold">User ID</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold">User</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold">Department</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold">Item</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold">Qty</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold">Date</th>
+              </tr>
+            </thead>
+            <tbody id="recentRequestsTableBody" class="divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+      </div>
+    `;
+             } else if (user.role === 'cs') {
+                dashboardContent.innerHTML = `
+                    <!-- Top Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-600 mb-2">Pending Delivery</p>
+                                    <h3 class="text-3xl font-bold text-gray-800">${stats.totalPendingDelivery || 0}</h3>
+                                </div>
+                                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-truck text-2xl text-yellow-600"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-600 mb-2">Low Stock Items</p>
+                                    <h3 class="text-3xl font-bold text-gray-800">${stats.lowStockItems || 0}</h3>
+                                </div>
+                                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Events: Today & This Week -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                        <!-- Today's Events -->
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h5 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-calendar-day"></i> Today's Events
+                            </h5>
+                            <div id="calendarWidget" class="space-y-3"></div>
+                        </div>
+                        <!-- This Week's Events -->
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h5 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-calendar-week"></i> This Week's Events
+                            </h5>
+                            <div id="weeklyEventsWidget" class="space-y-3"></div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Requests -->
+                    <div class="bg-white rounded-lg shadow mb-6">
+                        <div class="p-6 border-b">
+                            <h5 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                                <i class="fas fa-list"></i> Recent Requests for Delivery
+                            </h5>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Request ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">User ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">User</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Department</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Item</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Qty</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentRequestsTableBody" class="divide-y divide-gray-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Low Stock Items -->
+                    <div class="bg-white rounded-lg shadow">
+                        <div class="p-6 border-b">
+                            <h5 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                                <i class="fas fa-boxes"></i> Items Needing Stock Update
+                            </h5>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Item Name</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Current Stock</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Min Stock</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Pending Requests</th>
+                                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lowStockTableBody" class="divide-y divide-gray-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            } else if (user.role === 'user') {
+                dashboardContent.innerHTML = `
+                    <!-- Top Stats (without New Request card) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-600 mb-2">Approved</p>
+                                    <h3 class="text-3xl font-bold text-gray-800">${stats.totalApprovedRequests || 0}</h3>
+                                </div>
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-check-circle text-2xl text-green-600"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-600 mb-2">Delivered</p>
+                                    <h3 class="text-3xl font-bold text-gray-800">${stats.totalDeliveredRequests || 0}</h3>
+                                </div>
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-truck text-2xl text-blue-600"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Recent Requests -->
+                        <div class="lg:col-span-2 bg-white rounded-lg shadow">
+                            <div class="p-6 border-b">
+                                <h5 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                                    <i class="fas fa-list"></i> My Recent Requests
+                                </h5>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Request ID</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">User ID</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Item</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Qty</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Status</th>
+                                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700">Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentRequestsTableBody" class="divide-y divide-gray-100"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Request Summary -->
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <h5 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-chart-pie"></i> My Request Summary
+                            </h5>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Total Requests:</span>
+                                    <strong class="text-lg">${stats.requestHistory?.total_requests || 0}</strong>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Pending:</span>
+                                    <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-medium">${stats.requestHistory?.pending_requests || 0}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Approved:</span>
+                                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-medium">${stats.requestHistory?.approved_requests || 0}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Delivered:</span>
+                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">${stats.requestHistory?.delivered_requests || 0}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Rejected:</span>
+                                    <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-sm font-medium">${stats.requestHistory?.rejected_requests || 0}</span>
+                                </div>
+                                <hr class="my-4">
+                                <div class="text-center">
+                                    <a href="/requests" class="inline-block bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">
+                                        <i class="fas fa-plus"></i> Create New Request
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (user.role === 'admin' || user.role === 'cs') {
+                loadCalendarWidget();
+                loadWeeklyEvents();
+            }
+            
+            if (user.role === 'admin') {
+                generateCalendar();
+            }
+        }
+
+
+        function renderRecentRequestsTable(requests) {
+            const tbody = document.getElementById('recentRequestsTableBody');
+            if (!tbody) return;
+            
+            if (user.role === 'admin' || user.role === 'cs') {
+                tbody.innerHTML = requests.map(req => `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-sm text-gray-700">${req.request_id || req.id}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${req.user_id || '-'}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${req.full_name || req.user_name}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${req.department || 'N/A'}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${req.item_name}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${(req.qty ?? req.quantity ?? '-')} ${req.unit || ''}</td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs font-medium bg-${getStatusColor(req.status)}-100 text-${getStatusColor(req.status)}-800">${req.status}</span></td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${req.request_date || req.formatted_req_date || req.req_date || req.created_at?.split('T')[0] || '-'}</td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = requests.map(req => `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-sm text-gray-700">${req.request_id || req.id}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${req.user_id || '-'}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${req.item_name}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${(req.qty ?? req.quantity ?? '-')} ${req.unit || ''}</td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs font-medium bg-${getStatusColor(req.status)}-100 text-${getStatusColor(req.status)}-800">${req.status}</span></td>
+                        <td class="px-6 py-4 text-sm text-gray-700">${req.request_date || req.formatted_req_date || req.req_date || req.created_at?.split('T')[0] || '-'}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function renderLowStockTable(items) {
+            const tbody = document.getElementById('lowStockTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = items.map(item => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 text-sm text-gray-700">${item.item_name}</td>
+                    <td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs font-medium ${item.stock <= item.min_stock ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}">${item.stock}</span></td>
+                    <td class="px-6 py-4 text-sm text-gray-700">${item.min_stock}</td>
+                    <td class="px-6 py-4 text-sm text-gray-700">${item.pending_quantity || 0}</td>
+                    <td class="px-6 py-4">
+                        <a href="/stock" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors inline-flex items-center gap-1">
+                            <i class="fas fa-plus"></i> Add Stock
+                        </a>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderStatusChart(statusData) {
+            const chartDiv = document.getElementById('statusChart');
+            if (!chartDiv) return;
+
+            const maxCount = Math.max(...statusData.map(s => s.count || 0), 0);
+            chartDiv.innerHTML = statusData.map(item => {
+                const rawStatus = typeof item.status === 'string' ? item.status.trim() : '';
+                const label = rawStatus ? rawStatus : 'Pending';
+                const color = getStatusColor(rawStatus || 'pending');
+                const count = item.count || 0;
+                const widthPct = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                return `
+                    <div class="mb-3">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-xs text-gray-600 capitalize">${label}:</span>
+                            <strong class="text-xs text-gray-800">${count}</strong>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="h-2 rounded-full bg-${color}-500" style="width: ${widthPct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+
+        function generateCalendar() {
+            const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+            
+            document.getElementById('calendarMonth').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+            
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const startDate = new Date(firstDay);
+            
+            const dayOfWeek = firstDay.getDay();
+            const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+            startDate.setDate(firstDay.getDate() - mondayOffset);
+            
+            const calendarGrid = document.getElementById('calendarGrid');
+            let calendarHTML = '';
+            
+            for (let week = 0; week < 6; week++) {
+                for (let day = 0; day < 7; day++) {
+                    const currentDate = new Date(startDate);
+                    currentDate.setDate(startDate.getDate() + (week * 7) + day);
+                    
+                    const isCurrentMonth = currentDate.getMonth() === currentMonth;
+                    const isToday = currentDate.toDateString() === new Date().toDateString();
+
+                    const yyyy = currentDate.getFullYear();
+                    const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+                    const dd = String(currentDate.getDate()).padStart(2, '0');
+                    const dateKey = `${yyyy}-${mm}-${dd}`;
+                    
+                    let classes = 'p-1 rounded cursor-pointer transition-colors hover:bg-gray-100';
+                    if (!isCurrentMonth) classes += ' text-gray-300';
+                    if (isToday) classes += ' bg-blue-600 text-white font-bold hover:bg-blue-700';
+                    
+                    calendarHTML += `<div class="${classes}" data-date="${dateKey}">${currentDate.getDate()}</div>`;
+                }
+            }
+            
+            calendarGrid.innerHTML = calendarHTML;
+            calendarGrid.onclick = (e) => {
+                const cell = e.target.closest('[data-date]');
+                if (!cell) return;
+                const key = cell.getAttribute('data-date');
+                openEventModal(key);
+            };
+
+            highlightEventDatesInCalendar();
+            loadMonthlyEventsForCalendar();
+        }
+
+        function previousMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            generateCalendar();
+        }
+
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            generateCalendar();
+        }
+
+        let currentCalendarView = 'month';
+
+        function setCalendarView(view) {
+            currentCalendarView = view;
+            
+            document.querySelectorAll('.calendar-control-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            switch(view) {
+                case 'week':
+                    generateWeekView();
+                    break;
+                case 'month':
+                    generateCalendar();
+                    break;
+                case 'year':
+                    generateYearView();
+                    break;
+            }
+        }
+
+        function generateWeekView() {
+            const today = new Date();
+            const startOfWeek = new Date(today);
+            const day = today.getDay();
+            const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+            startOfWeek.setDate(diff);
+            
+            const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+            document.getElementById('calendarMonth').textContent = `WEEK OF ${monthNames[startOfWeek.getMonth()]} ${startOfWeek.getFullYear()}`;
+            
+            const calendarGrid = document.getElementById('calendarGrid');
+            let calendarHTML = '';
+            
+            for (let i = 0; i < 7; i++) {
+                const currentDate = new Date(startOfWeek);
+                currentDate.setDate(startOfWeek.getDate() + i);
+                
+                const isToday = currentDate.toDateString() === today.toDateString();
+                let classes = 'p-1 rounded cursor-pointer transition-colors';
+                if (isToday) classes += ' bg-red-500 text-white font-bold';
+                
+                calendarHTML += `<div class="${classes}">${currentDate.getDate()}</div>`;
+            }
+            
+            calendarGrid.innerHTML = calendarHTML;
+        }
+
+        function generateYearView() {
+            const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+            document.getElementById('calendarMonth').textContent = `${currentYear}`;
+            
+            const calendarGrid = document.getElementById('calendarGrid');
+            let calendarHTML = '';
+            
+            for (let i = 0; i < 12; i++) {
+                const isCurrentMonth = i === new Date().getMonth() && currentYear === new Date().getFullYear();
+                let classes = 'p-2 rounded cursor-pointer transition-colors hover:bg-gray-100 text-xs font-semibold';
+                if (isCurrentMonth) classes += ' bg-red-500 text-white';
+                
+                calendarHTML += `<div class="${classes}" onclick="selectMonth(${i})">${monthNames[i]}</div>`;
+            }
+            
+            calendarGrid.innerHTML = calendarHTML;
+        }
+
+        function selectMonth(monthIndex) {
+            currentMonth = monthIndex;
+            setCalendarView('month');
+        }
+            
+        function getStatusColor(status) {
+            switch(status?.toLowerCase()) {
+                case 'pending': return 'yellow';
+                case 'approved': return 'green';
+                case 'delivered': return 'blue';
+                case 'rejected': return 'red';
+                default: return 'gray';
+            }
+        }
+
+        const mockItems = [
+            { item_name: 'Kertas HVS A4 75 gr', detail: 'Kertas putih standar', stock: 250, unit: 'rim' },
+            { item_name: 'Baterai Alkaline A3', detail: 'Baterai alkaline ukuran A3', stock: 48, unit: 'pcs' },
+            { item_name: 'PP Pocket Bambi', detail: 'Plastik pocket transparan', stock: 120, unit: 'pcs' }
+        ];
+
+        async function searchItems() {
+            const searchTerm = document.getElementById('searchItemSimple')?.value || document.getElementById('searchItem')?.value;
+            if (!searchTerm) return;
+
+            try {
+                const token = localStorage.getItem('token');
+
+                const response = await fetch(`/api/items/search?q=${encodeURIComponent(searchTerm)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const result = await response.json();
+                const resultsDiv = document.getElementById('searchResults');
+                
+                if (!result.success || result.data.length === 0) {
+                    resultsDiv.innerHTML = '<p class="text-gray-500">no items found</p>';
+                } else {
+                    resultsDiv.innerHTML = result.data.slice(0, 5).map(item => `
+                        <div class="border-b pb-2 mb-2">
+                            <strong class="text-gray-800">${item.item_name}</strong>
+                            <div class="text-gray-600 text-sm">
+                                ${item.detail || 'No description'} - Stock: ${item.stock} ${item.unit}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                document.getElementById('searchResults').innerHTML = 
+                    '<div class="bg-red-50 text-red-700 p-2 rounded">Failed to search items</div>';
+            }
+        }
+
+        async function loadCalendarWidget() {
+            try {
+                const calendarDiv = document.getElementById('calendarWidget');
+                
+                if (!calendarDiv) {
+                    console.log('Calendar widget element not found');
+                    return;
+                }
+
+                const token = localStorage.getItem('token');
+
+                const response = await fetch('/api/calendar/events/today', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const todayEvents = result.success ? result.data : [];
+                
+                if (todayEvents.length === 0) {
+                    calendarDiv.innerHTML = '<p class="text-gray-500">No events today</p>';
+                } else {
+                    calendarDiv.innerHTML = todayEvents.map(event => `
+                        <div class="border-b pb-2 mb-2">
+                            <strong class="text-gray-800">${event.title}</strong>
+                            <div class="text-gray-600 text-sm">
+                                ${event.event_time || event.start_time ? (event.event_time || event.start_time) + ' WIB' : 'All day'}
+                                ${event.location ? ' • ' + event.location : ''}
+                                ${event.description ? ' • ' + event.description : ''}
+                            </div>
+                        </div>
+                    `).join('');
+
+                    const now = new Date();
+                    const key = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+                    window.dashboardEventDates = window.dashboardEventDates || new Set();
+                    window.dashboardEventDates.add(key);
+                    highlightEventDatesInCalendar();
+                }
+            } catch (error) {
+                console.error('Calendar error:', error);
+                const calendarDiv = document.getElementById('calendarWidget');
+                if (calendarDiv) {
+                    calendarDiv.innerHTML = '<div class="bg-red-50 text-red-700 p-2 rounded">failed to load calendar</div>';
+                }
+            }
+        }
+
+        async function loadWeeklyEvents() {
+            try {
+                const weeklyDiv = document.getElementById('weeklyEventsWidget');
+                if (!weeklyDiv) return;
+
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/calendar/events/this-week', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const weekEvents = result.success ? result.data : [];
+
+                if (weekEvents.length === 0) {
+                    weeklyDiv.innerHTML = '<p class="text-gray-500">There are no events this week</p>';
+                    return;
+                }
+
+
+                const grouped = weekEvents.reduce((acc, ev) => {
+                    const raw = ev.event_date || ev.date;
+                    const dObj = new Date(raw);
+                    const y = dObj.getFullYear();
+                    const m = String(dObj.getMonth()+1).padStart(2,'0');
+                    const d = String(dObj.getDate()).padStart(2,'0');
+                    const key = `${y}-${m}-${d}`; 
+                    acc[key] = acc[key] || [];
+                    acc[key].push(ev);
+                    return acc;
+                }, {});
+
+                window.dashboardEventDates = window.dashboardEventDates || new Set();
+                Object.keys(grouped).forEach(k => window.dashboardEventDates.add(k));
+
+                const sections = Object.keys(grouped).sort().map(dateKey => {
+                    const displayDate = new Date(dateKey).toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'long', year: 'numeric' });
+                    const items = grouped[dateKey].map(ev => `
+                        <li class="mb-1">
+                            <span class="text-gray-800 font-medium">${ev.title}</span>
+                            <span class="text-gray-600 text-sm">
+                                ${ev.event_time || ev.start_time ? ' • ' + (ev.event_time || ev.start_time) + ' WIB' : ''}
+                                ${ev.location ? ' • ' + ev.location : ''}
+                            </span>
+                        </li>
+                    `).join('');
+                    return `
+                        <div class="mb-3">
+                            <div class="text-sm text-gray-700 font-semibold mb-1">${displayDate}</div>
+                            <ul class="pl-1">${items}</ul>
+                        </div>
+                    `;
+                }).join('');
+
+                weeklyDiv.innerHTML = sections;
+
+                highlightEventDatesInCalendar();
+            } catch (error) {
+                console.error('Weekly events error:', error);
+                const weeklyDiv = document.getElementById('weeklyEventsWidget');
+                if (weeklyDiv) {
+                    weeklyDiv.innerHTML = '<div class="bg-red-50 text-red-700 p-2 rounded">Failed to load events this week</div>';
+                }
+            }
+        }
+
+        function highlightEventDatesInCalendar() {
+            try {
+                const grid = document.getElementById('calendarGrid');
+                if (!grid || !window.dashboardEventDates || window.dashboardEventDates.size === 0) return;
+                grid.querySelectorAll('[data-date]').forEach(cell => {
+                    const key = cell.getAttribute('data-date');
+                    if (window.dashboardEventDates.has(key)) {
+                        cell.classList.add('bg-blue-300');
+                    }
+                });
+            } catch (e) {
+                console.log('Highlight error:', e);
+            }
+        }
+
+        async function loadMonthlyEventsForCalendar() {
+            try {
+                const token = localStorage.getItem('token');
+                const lastDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+                const y = currentYear;
+                const m = String(currentMonth + 1).padStart(2, '0');
+                const startDate = `${y}-${m}-01`;
+                const endDate = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
+
+                const res = await fetch(`/api/calendar/events/range?startDate=${startDate}&endDate=${endDate}`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    }
+                });
+
+                if (!res.ok) return;
+                const result = await res.json();
+                const events = result.success ? result.data : [];
+
+                window.dashboardEventDates = new Set(window.dashboardEventDates || []);
+                events.forEach(ev => {
+                    const dObj = new Date(ev.event_date || ev.date);
+                    const ky = `${dObj.getFullYear()}-${String(dObj.getMonth()+1).padStart(2,'0')}-${String(dObj.getDate()).padStart(2,'0')}`;
+                    window.dashboardEventDates.add(ky);
+                });
+
+                highlightEventDatesInCalendar();
+            } catch (err) {
+                console.log('Load monthly events error:', err);
+            }
+        }
+
+        function openEventModal(dateKey) {
+            const modal = document.getElementById('eventModal');
+            const label = new Date(dateKey).toLocaleDateString('en-US', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+            document.getElementById('eventModalDate').textContent = `• ${label}`;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            fetchEventsByDate(dateKey);
+        }
+
+        function closeEventModal() {
+            const modal = document.getElementById('eventModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function fetchEventsByDate(dateKey) {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`/api/calendar/events/date/${dateKey}`, {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    }
+                });
+                const result = await res.json();
+                const events = result.success ? result.data : [];
+                renderEventList(events, dateKey);
+            } catch (err) {
+                console.error('Fetch events by date error:', err);
+                document.getElementById('eventList').innerHTML = '<div class="bg-red-50 text-red-700 p-2 rounded">Failed to load events</div>';
+            }
+        }
+
+        function renderEventList(events, dateKey) {
+            const canEdit = ['admin','cs'].includes(user?.role);
+            const container = document.getElementById('eventList');
+            if (!events || events.length === 0) {
+                container.innerHTML = '<p class="text-gray-500">There are no events on this date</p>';
+                return;
+            }
+            container.innerHTML = events.map(ev => {
+                const time = ev.event_time || ev.start_time;
+                const displayTime = time ? `${time} WIB` : 'All day';
+                const id = ev.id;
+                return `
+                    <div class="border rounded p-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-semibold text-gray-800">${ev.title}</div>
+                                <div class="text-gray-600 text-sm">${displayTime}${ev.location ? ' • '+ev.location : ''}</div>
+                                ${ev.description ? `<div class='text-gray-500 text-sm'>${ev.description}</div>` : ''}
+                            </div>
+                            ${canEdit ? `<button class="text-blue-600 hover:text-blue-800 text-sm" onclick="toggleEditForm('${id}')"><i class='fas fa-edit'></i> Edit</button>` : ''}
+                        </div>
+                        ${canEdit ? `
+                        <div id="editForm-${id}" class="mt-3 hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-xs text-gray-600">Title</label>
+                                    <input type="text" id="editTitle-${id}" class="w-full px-2 py-1 border rounded" value="${ev.title}">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-600">Date</label>
+                                    <input type="date" id="editDate-${id}" class="w-full px-2 py-1 border rounded" value="${(ev.event_date || dateKey)}">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-600">Time</label>
+                                    <input type="time" id="editTime-${id}" class="w-full px-2 py-1 border rounded" value="${(time ? time.slice(0,5) : '')}">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-600">Location</label>
+                                    <input type="text" id="editLocation-${id}" class="w-full px-2 py-1 border rounded" value="${ev.location || ''}">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-xs text-gray-600">Description</label>
+                                    <textarea id="editDesc-${id}" rows="2" class="w-full px-2 py-1 border rounded">${ev.description || ''}</textarea>
+                                </div>
+                            </div>
+                            <div class="mt-3 flex gap-2">
+                                <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm" onclick="submitEventEdit('${id}')">Save</button>
+                                <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm" onclick="toggleEditForm('${id}', true)">Cancel</button>
+                            </div>
+                        </div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleEditForm(id, hideOnly=false) {
+            const el = document.getElementById(`editForm-${id}`);
+            if (!el) return;
+            if (hideOnly) {
+                el.classList.add('hidden');
+            } else {
+                el.classList.toggle('hidden');
+            }
+        }
+
+        async function submitEventEdit(id) {
+            try {
+                const token = localStorage.getItem('token');
+                const title = document.getElementById(`editTitle-${id}`).value.trim();
+                const event_date = document.getElementById(`editDate-${id}`).value;
+                const timeVal = document.getElementById(`editTime-${id}`).value; 
+                const event_time = timeVal ? `${timeVal}:00` : null;
+                const location = document.getElementById(`editLocation-${id}`).value.trim();
+                const description = document.getElementById(`editDesc-${id}`).value.trim();
+
+                if (!title || !event_date) {
+                    showErrorAlert('Title and date are required');
+                    return;
+                }
+
+                const res = await fetch(`/api/calendar/events/${id}`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token ? `Bearer ${token}` : ''
+                    },
+                    body: JSON.stringify({ event_date, event_time, title, description, location })
+                });
+
+                if (!res.ok) {
+                    const txt = await res.text();
+                    throw new Error(txt || `Update failed (${res.status})`);
+                }
+
+                fetchEventsByDate(event_date);
+                loadMonthlyEventsForCalendar();
+            } catch (err) {
+                showErrorAlert('Failed to update event: ' + (err.message || err));
+                console.error('Update event error:', err);
+            }
+        }
+
+ 
+function initItemSearchWidget() {
+  const input = document.getElementById('itemSearchInput');
+  const btnSearch = document.getElementById('itemSearchBtn');
+  const btnShowAll = document.getElementById('itemShowAllBtn'); 
+  const results = document.getElementById('itemSearchResults');
+  const widget = document.getElementById('itemSearchWidget');
+
+  if (!input || !btnSearch || !btnShowAll || !widget) return;
+
+  let role = null;
+  try { role = JSON.parse(localStorage.getItem('user') || '{}')?.role || null; } catch {}
+  const isPrivileged = role === 'admin' || role === 'cs';
+
+  if (!isPrivileged) { widget.style.display = 'none'; return; }
+
+  results.style.display = 'none';
+  btnShowAll.style.display = 'none';
+
+  btnSearch.addEventListener('click', async () => {
+    const q = input.value.trim();
+    if (!q) return showErrorAlert('Please enter an item keyword first');
+    const items = await fetchItemsByQuery(q);
+    renderItemResults(items);
+    results.style.display = 'block';
+  });
+
+  input.addEventListener('keydown', async (e) => {
+    if (e.key === 'Enter') {
+      const q = input.value.trim();
+      if (!q) return showErrorAlert('Please enter an item keyword first');
+      const items = await fetchItemsByQuery(q);
+      renderItemResults(items);
+      results.style.display = 'block';
+    }
+  });
+}
+
+async function fetchItemsByQuery(query) {
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`/api/items/search?q=${encodeURIComponent(query)}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : ''
+      }
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message || 'Failed to search items');
+    return Array.isArray(data.data) ? data.data : [];
+  } catch (err) {
+    console.error('Search items error:', err);
+    showErrorAlert('Failed to search items');
+    return [];
+  }
+}
+
+function renderItemResults(items) {
+  const container = document.getElementById('itemSearchResults');
+  if (!container) return;
+
+  if (!items || items.length === 0) {
+    container.innerHTML = '<div class="py-6 text-gray-500">No items found.</div>';
+    return;
+  }
+
+  const html = items.map(item => {
+    const stock = Number(item.stock ?? 0);
+    const minStock = Number(item.min_stock ?? 0);
+    const low = stock <= minStock && minStock > 0;
+    const badgeClass = low
+      ? 'bg-red-100 text-red-700 border border-red-300'
+      : 'bg-green-100 text-green-700 border border-green-300';
+    const badgeText = low ? 'Low Stock' : 'Normal';
+
+    return `
+      <div class="py-3">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <div class="font-medium text-gray-800">${item.item_name || '-'}</div>
+            <div class="text-sm text-gray-500">ID: ${item.item_id || item.id || '-'} • Unit: ${item.unit || '-'}</div>
+            ${item.detail ? `<div class="text-sm text-gray-600">${item.detail}</div>` : ''}
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="text-sm">
+              <span class="text-gray-500">Stock:</span>
+              <span class="font-semibold ${low ? 'text-red-600' : 'text-gray-800'}">${stock}</span>
+            </div>
+            <span class="text-xs px-2 py-1 rounded ${badgeClass}">${badgeText}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = html;
+}
+
+
+function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+        document.addEventListener('DOMContentLoaded', initItemSearchWidget);
+    </script>
+    <script src="js/item-suggestions.js"></script>
+</body>
+</html>
