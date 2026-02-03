@@ -37,7 +37,7 @@ A responsive landing page design for a healthcare service provider.
 
 ### Running GAMS 01
 ```bash
-cd "gams-01"
+cd "gams"
 npm install
 npm start
 # Server runs on http://localhost:3001
@@ -45,7 +45,7 @@ npm start
 
 ### Running Legal Web
 ```bash
-cd "legal-web/backend"
+cd "legal/backend"
 npm install
 npm start
 # Server runs on http://localhost:3009

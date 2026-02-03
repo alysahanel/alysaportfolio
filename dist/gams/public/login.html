@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AM System - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0067A8 0%, #72BCE9 50%, 	#00A4E0 100%);
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 103, 168, 0.3);
+        }
+        .btn-login {
+            transition: all 0.3s ease;
+        }
+        html { font-size: 14px; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex">
+        <div class="hidden lg:flex lg:w-1/2 gradient-bg items-center justify-center p-12">
+            <div class="text-center text-white">
+                <div class="mb-8">
+                    <div class="w-32 h-32 mx-auto bg-white bg-opacity-20 backdrop-blur-lg rounded-3xl flex items-center justify-center shadow-2xl">
+                        <img src="images/nipponlogo.svg" alt="Logo" class="h-16 w-16 lg:h-24 lg:w-24">
+                    </div>
+                </div>
+                <h1 class="text-6xl font-bold mb-4 drop-shadow-lg">AMMS</h1>
+                <p class="text-2xl font-light mb-8 drop-shadow-md">Alysa Milano Management System</p>
+                <div class="w-24 h-1 bg-white mx-auto mb-8 rounded-full opacity-60"></div>
+            </div>
+        </div>
+
+        <div class="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
+            <div class="w-full max-w-md">
+                <div class="lg:hidden text-center mb-8">
+                    <div class="w-20 h-20 mx-auto gradient-bg rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                        <i class="fas fa-building text-4xl text-white"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-800">AMMS</h2>
+                    <p class="text-gray-600 text-sm">Alysa Milano Management System</p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-xl p-8">
+                    <div class="mb-8">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">WELCOME</h3>
+                        <p class="text-gray-600">Login to get started</p>
+                    </div>
+
+                    <form id="loginForm">
+                        <div id="alertContainer" class="mb-4"></div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-semibold mb-2" for="username">
+                                Username
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i class="fas fa-user text-gray-400"></i>
+                                </div>
+                                <input type="text" 
+                                       class="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all" 
+                                       id="username" 
+                                       placeholder="Enter your username" 
+                                       required>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-gray-700 text-sm font-semibold mb-2" for="password">
+                                Password
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i class="fas fa-lock text-gray-400"></i>
+                                </div>
+                                <input type="password" 
+                                       class="w-full pl-12 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all" 
+                                       id="password" 
+                                       placeholder="Enter your password" 
+                                       required>
+                                <button class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600" 
+                                        type="button" 
+                                        id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button  type="submit" 
+                        class="btn-login w-full bg-[#72BCE9] text-white font-semibold py-3 rounded-xl hover:bg-[#5aaedc] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" 
+                        id="loginBtn"> Login
+                        </button>
+                    </form>
+
+                    <div class="mt-6 text-center text-sm text-gray-600 bg-blue-50 p-4 rounded-xl border border-blue-100">
+                        <p class="font-bold mb-2">Demo Accounts:</p>
+                        <ul class="text-left space-y-1 ml-4 list-disc">
+                            <li>Admin: <b>admin</b> / <b>admin123</b></li>
+                            <li>CS: <b>cs1</b> / <b>cs123</b></li>
+                            <li>User: <b>user1</b> / <b>user123</b></li>
+                        </ul>
+                    </div>
+
+                    <div class="mt-6 text-center">
+                        <div class="flex items-center justify-center space-x-2 text-sm text-gray-600">
+                            <i class="fas fa-info-circle text-blue-500"></i>
+                            <span>Contact Admin to get an account</span>
+                        </div>
+                    </div>
+                </div>
+            
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (localStorage.getItem('token')) {
+            window.location.href = '/dashboard';
+        }
+
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const alertContainer = document.getElementById('alertContainer');
+
+            alertContainer.innerHTML = '';
+
+            if (!username || !password) {
+                showAlert('Username and password must be filled in', 'danger');
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+
+            try {
+                const response = await fetch('/gams/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+
+                    showAlert('Login successful! Redirecting...', 'success');
+
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 1000);
+                } else {
+                    showAlert(data.message || 'Login failed. Please check your username and password.', 'danger');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showAlert('An error occurred. Please try again.', 'danger');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+            }
+        });
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertDiv = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700';
+            
+            alertDiv.className = `${bgColor} border-l-4 p-4 rounded-lg mb-4 flex items-center justify-between`;
+            alertDiv.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+                <button type="button" class="text-xl leading-none hover:opacity-75" onclick="this.parentElement.remove()">×</button>
+            `;
+            alertContainer.appendChild(alertDiv);
+
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            }
+        });
+
+    </script>
+</body>
+</html>

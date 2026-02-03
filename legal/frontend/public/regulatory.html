@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regulasi</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <link rel="stylesheet" href="./assets/global-sidebar.css" />
+  
+  <script defer src="assets/regulatory.js"></script>
+  <script src="./assets/global-sidebar.js" defer></script>
+
+  <style>
+    body { 
+      font-family: 'Poppins', sans-serif; 
+      background-color: #f9fafb;
+    }
+    
+    .gradient-bg { 
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%); 
+    }
+    
+    .hero-title { 
+      text-shadow: 2px 4px 8px rgba(0,0,0,.2); 
+    }
+
+    .dept-btn {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.875rem;
+    }
+    
+    .dept-btn:hover,
+    .dept-btn.active {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.8);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .reg-table {
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      width: 100%;
+      background: white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .reg-table thead th {
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%);
+      color: white;
+      font-weight: 600;
+      padding: 16px 12px;
+      text-align: left;
+      font-size: 0.813rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: none;
+    }
+
+    .reg-table thead tr.dept-row th {
+      background: linear-gradient(135deg, #0f4c81 0%, #1e5ba8 100%);
+      font-size: 0.875rem;
+      padding: 18px 12px;
+    }
+    
+    .reg-table tbody td {
+      padding: 14px 12px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 0.813rem;
+      vertical-align: top;
+    }
+    
+    .reg-table tbody tr {
+      transition: background-color 0.2s ease;
+    }
+    
+    .reg-table tbody tr:hover {
+      background-color: #f0f9ff;
+    }
+    
+    .reg-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .status-terpenuhi,
+    .status-dalam-proses,
+    .status-tidak-terpenuhi {
+      color: #fff !important;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.3px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      display: inline-block;
+      line-height: 1;
+      text-align: center;
+      min-width: 80px;
+    }
+
+    .status-terpenuhi {
+      background: #10b981;
+    }
+
+    .status-dalam-proses {
+      background: #f59e0b;
+    }
+
+    .status-tidak-terpenuhi {
+      background: #ef4444;
+    }
+
+    .bg-merah { background-color: #fee2e2 !important; }
+    .bg-pink { background-color: #fce7f3 !important; }
+    .bg-kuning { background-color: #fef3c7 !important; }
+    .bg-hijau { background-color: #d1fae5 !important; }
+
+    button.primary {
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.875rem;
+    }
+    
+    button.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(30, 91, 168, 0.3);
+    }
+    
+    button.secondary {
+      background: white;
+      color: #1e5ba8;
+      border: 2px solid #1e5ba8;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.875rem;
+    }
+    
+    button.secondary:hover {
+      background: #f0f9ff;
+      border-color: #4db8e8;
+    }
+    
+    button.primary.small,
+    button.secondary.small {
+      padding: 10px 20px;
+      font-size: 0.813rem;
+    }
+
+    button.danger {
+      background: #ef4444;
+      color: white;
+      border: none;
+    }
+
+    button.danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-edit {
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.75rem;
+    }
+    
+    .btn-edit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(30, 91, 168, 0.3);
+    }
+
+    .modal {
+      border-radius: 20px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+      max-width: 800px;
+      background: white;
+    }
+    
+    .modal-header {
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%);
+      color: white;
+      padding: 24px 28px;
+      border-radius: 20px 20px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .modal-header .close {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .modal-header .close:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .modal-body {
+      max-height: 60vh;
+      overflow-y: auto;
+      padding: 28px;
+    }
+
+    .modal-actions {
+      padding: 20px 28px;
+      background: #f9fafb;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      gap: 12px;
+      border-radius: 0 0 20px 20px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-group.wide {
+      grid-column: span 2;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #4db8e8;
+      box-shadow: 0 0 0 3px rgba(77, 184, 232, 0.1);
+    }
+
+    .edit-toolbar {
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%);
+      color: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .edit-toolbar .bar-left {
+      font-weight: 600;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .edit-toolbar .bar-right {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .edit-toolbar button {
+      font-size: 0.813rem;
+      padding: 10px 18px;
+    }
+
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 40;
+    }
+
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 50;
+      width: 90%;
+      max-width: 800px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .topbar { display: none; }
+    
+    .hero-circle {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 600px;
+      height: 600px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      transform: translate(33%, 33%);
+    }
+
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .edit-toolbar {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+      }
+
+      .edit-toolbar .bar-right {
+        justify-content: stretch;
+      }
+
+      .edit-toolbar button {
+        flex: 1;
+        min-width: 120px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-group.wide {
+        grid-column: span 1;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50">
+  <button id="btnMenu" class="fixed top-5 left-5 z-50 bg-white p-3 rounded-lg shadow-lg md:hidden">
+    <i class="fas fa-bars text-xl text-gray-700"></i>
+  </button>
+
+  <main class="min-h-screen md:ml-64">
+    <section class="gradient-bg relative overflow-hidden px-6 py-8 md:px-12">
+      <div class="hero-circle"></div>
+
+      <div class="absolute top-6 right-6 z-20">
+        <div class="flex items-center gap-3 bg-white/10 backdrop-blur-sm px-5 py-3 rounded-2xl border border-white/20 shadow-2xl">
+          <div class="bg-gradient-to-br from-blue-400 to-cyan-300 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-6 transition-transform">
+            <i class="fas fa-user-shield text-white text-2xl"></i>
+          </div>
+          <div class="text-left">
+            <h1 class="text-white font-bold text-xl leading-none tracking-wide" style="text-shadow: 0 2px 4px rgba(0,0,0,0.1);">Compliance System</h1>
+            <p class="text-blue-100 font-medium text-sm tracking-[0.15em] mt-1">Alysa Milano</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="relative z-10 max-w-7xl mx-auto pt-20 pb-8">
+        <h1 class="hero-title text-white font-extrabold text-1xl md:text-2xl lg:text-3xl mb-2 tracking-tight">
+          Regulasi
+        </h1>
+        <h2 class="text-white font-semibold text-xl md:text-1xl lg:text-2xl mb-8 tracking-wide">
+          MANAJEMEN KEPATUHAN REGULASI
+        </h2>
+
+        <nav class="department-nav mb-6">
+          <div class="nav-container flex flex-wrap gap-3 justify-center md:justify-start">
+            <button class="dept-btn" data-dept="HRGA">
+              <i class="fas fa-users mr-2"></i>HRGA
+            </button>
+            <button class="dept-btn" data-dept="MAINTENANCE">
+              <i class="fas fa-tools mr-2"></i>Maintenance
+            </button>
+            <button class="dept-btn" data-dept="IT">
+              <i class="fas fa-laptop-code mr-2"></i>IT
+            </button>
+            <button class="dept-btn" data-dept="HSE">
+              <i class="fas fa-hard-hat mr-2"></i>HSE
+            </button>
+            <button class="dept-btn" data-dept="LEGAL_COMPLIANCE">
+              <i class="fas fa-balance-scale mr-2"></i>Legal Compliance
+            </button>
+            <button class="dept-btn" data-dept="PPIC_DMW_WAREHOUSE">
+              <i class="fas fa-warehouse mr-2"></i>PPIC DMW Warehouse
+            </button>
+          </div>
+        </nav>
+      </div>
+    </section>
+
+    <div class="container mx-auto px-6 py-8 max-w-7xl">
+      <div class="detail-actions flex justify-end mb-4">
+        <button id="btnEnterEdit" class="primary small flex items-center gap-2">
+          <i class="fas fa-edit"></i> Edit Data
+        </button>
+      </div>
+
+      <div id="editToolbar" class="edit-toolbar hidden">
+        <div class="bar-left">
+          <i class="fas fa-pen"></i> Mode Edit
+        </div>
+        <div class="bar-right">
+          <button id="btnAddRow" class="bg-white text-blue-600 px-5 py-2.5 rounded-lg font-semibold hover:bg-blue-50 transition flex items-center gap-2">
+            <i class="fas fa-plus"></i> Tambah Regulasi
+          </button>
+          <button id="btnExportCSV" class="bg-white/20 backdrop-blur text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-white/30 transition flex items-center gap-2">
+            <i class="fas fa-file-excel"></i> Ekspor Excel (CSV)
+          </button>
+          <button id="btnImport" class="bg-white/20 backdrop-blur text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-white/30 transition flex items-center gap-2">
+            <i class="fas fa-upload"></i> Impor Excel (CSV)
+          </button>
+          <input id="fileInput" type="file" accept=".csv,text/csv" style="display:none" />
+          <button id="btnExitEdit" class="bg-red-500 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-red-600 transition flex items-center gap-2">
+            <i class="fas fa-times"></i> Selesai Mengedit
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-6">
+        <div class="overflow-x-auto">
+          <table class="reg-table">
+            <colgroup>
+              <col style="width:3%">
+              <col style="width:19%">
+              <col style="width:12%">
+              <col style="width:7%">
+              <col style="width:23%">
+              <col style="width:19%">
+              <col style="width:3%">
+              <col style="width:12%">
+              <col style="width:2%">
+            </colgroup>
+            <thead>
+              <tr class="dept-row">
+                <th></th>
+                <th id="deptValue" colspan="5">HRGA</th>
+                <th>Total Regulasi</th>
+                <th id="totalRegulation">0</th>
+                <th id="th-actions-summary" class="hidden"></th>
+              </tr>
+              <tr class="dept-row">
+                <th colspan="6"></th>
+                <th>Total Pasal</th>
+                <th id="totalArticles">0</th>
+                <th id="th-actions-summary2" class="hidden"></th>
+              </tr>
+              <tr>
+                <th>NO</th>
+                <th>REGULASI</th>
+                <th>LINGKUP REGULASI</th>
+                <th>PASAL</th>
+                <th>DESKRIPSI REGULASI</th>
+                <th>KRITERIA YANG HARUS DIPENUHI</th>
+                <th>KEPATUHAN</th>
+                <th>JENIS SANKSI</th>
+                <th id="th-actions" class="hidden">AKSI</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="pager" class="flex flex-wrap items-center gap-4 justify-center md:justify-start">
+        <button id="btnPrevPage" class="secondary flex items-center gap-2">
+          <i class="fas fa-chevron-left"></i> Sebelumnya
+        </button>
+        <span class="text-gray-700 font-medium">Halaman: <span id="pageNo" class="font-bold text-blue-600">1</span></span>
+        <span class="text-gray-700 font-medium flex items-center gap-2">
+          Ukuran Halaman:
+          <select id="pageSizeSel" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <option value="25">25</option>
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+          </select>
+        </span>
+        <button id="btnNextPage" class="secondary flex items-center gap-2">
+          Berikutnya <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <div id="modalBackdrop" class="backdrop hidden"></div>
+  
+  <div id="editModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-header">
+      <h3 id="modalTitle">
+        <i class="fas fa-edit mr-2"></i> Edit Baris
+      </h3>
+      <button id="btnCloseModal" class="close" aria-label="Close">×</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="fRegulasi">Regulasi</label>
+          <input type="text" id="fRegulasi" />
+        </div>
+        
+        <div class="form-group">
+          <label for="fLingkup">Lingkup Regulasi</label>
+          <input type="text" id="fLingkup" />
+        </div>
+        
+        <div class="form-group">
+          <label for="fPasal">Pasal</label>
+          <input type="text" id="fPasal" />
+        </div>
+
+        <div class="form-group">
+          <label for="fKepatuhan">Kepatuhan</label>
+          <select id="fKepatuhan">
+            <option value="dalam-proses">Dalam Proses</option>
+            <option value="terpenuhi">Patuh</option>
+            <option value="tidak-terpenuhi">Tidak Patuh</option>
+          </select>
+        </div>
+        
+        <div class="form-group wide">
+          <label for="fDeskripsi">Deskripsi Regulasi</label>
+          <textarea id="fDeskripsi" rows="3"></textarea>
+        </div>
+        
+        <div class="form-group wide">
+          <label for="fKriteria">Kriteria yang harus dipenuhi</label>
+          <textarea id="fKriteria" rows="3"></textarea>
+        </div>
+        
+        <div class="form-group wide">
+          <label for="fHukuman">Jenis Sanksi</label>
+          <textarea id="fHukuman" rows="3"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="fWarnaHukuman">Warna Latar Sanksi</label>
+          <select id="fWarnaHukuman">
+            <option value="">Tidak Ada</option>
+            <option value="merah">Merah</option>
+            <option value="pink">Merah Muda</option>
+            <option value="kuning">Kuning</option>
+            <option value="hijau">Hijau</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-actions">
+      <button id="btnSave" type="button" class="primary flex items-center gap-2">
+        <i class="fas fa-save"></i> Simpan
+      </button>
+      <button id="btnDelete" type="button" class="secondary danger flex items-center gap-2">
+        <i class="fas fa-trash"></i> Hapus
+      </button>
+      <button id="btnCancel" type="button" class="secondary flex items-center gap-2">
+        <i class="fas fa-times"></i> Batal
+      </button>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+</body>
+</html>

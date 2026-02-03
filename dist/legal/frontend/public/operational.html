@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Operational Permit</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <style>
+    body { 
+      font-family: 'Poppins', sans-serif; 
+      background-color: #f9fafb;
+    }
+    .gradient-bg { 
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%); 
+    }
+    .hero-title { 
+      text-shadow: 2px 4px 8px rgba(0,0,0,.2); 
+    }
+    .hero-circle {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 600px;
+      height: 600px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      transform: translate(33%, 33%);
+    }
+    .modern-table {
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .modern-table thead th {
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%);
+      color: white;
+      font-weight: 600;
+      padding: 18px 16px;
+      text-align: left;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .modern-table tbody td {
+      padding: 16px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 0.875rem;
+    }
+    .modern-table tbody tr {
+      transition: background-color 0.2s ease;
+      background: white;
+    }
+    .modern-table tbody tr:hover {
+      background-color: #f0f9ff;
+    }
+    .modern-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    .status-badge {
+      color: #fff !important;
+      font-weight: 700;
+      font-size: 0.813rem;
+      letter-spacing: 0.3px;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      display: inline-block;
+      line-height: 1.2;
+      border: 1px solid rgba(255,255,255,0.85);
+      text-shadow: 0 1px 0 rgba(0,0,0,0.15);
+    }
+    .status-active {
+      background: #10b981;
+    }
+    .status-inactive {
+      background: #ef4444;
+    }
+    .status-expiring {
+      background: #f59e0b;
+    }
+    button.btn-primary {
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.875rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    button.btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(30, 91, 168, 0.3);
+    }
+    button.btn-secondary {
+      background: white;
+      color: #1e5ba8;
+      border: 2px solid #1e5ba8;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.875rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    button.btn-secondary:hover {
+      background: #f0f9ff;
+      border-color: #4db8e8;
+    }
+    .btn-edit-table {
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.813rem;
+    }
+    .btn-edit-table:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(30, 91, 168, 0.3);
+    }
+    .modal-container {
+      border-radius: 20px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+      max-width: 800px;
+    }
+    .modal-header-gradient {
+      background: linear-gradient(135deg, #1e5ba8 0%, #4db8e8 100%);
+      color: white;
+      padding: 24px 28px;
+      border-radius: 20px 20px 0 0;
+    }
+    .toast-success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+    }
+    .toast-error {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+    }
+    .toast-info {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+    }
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: #4db8e8;
+      box-shadow: 0 0 0 3px rgba(77, 184, 232, 0.1);
+    }
+    .form-input:disabled {
+      background-color: #f3f4f6;
+      cursor: not-allowed;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+    .preview-table {
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    .preview-table thead th {
+      background: #f0f9ff;
+      color: #1e5ba8;
+      font-weight: 600;
+      padding: 12px;
+      text-align: left;
+      font-size: 0.813rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .preview-table tbody td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 0.813rem;
+    }
+    .preview-table tbody tr:hover {
+      background-color: #f9fafb;
+    }
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50">
+  <div id="toast" class="fixed top-4 right-4 hidden z-50">
+    <div id="toastInner" class="px-6 py-4 rounded-xl shadow-2xl text-sm font-semibold"></div>
+  </div>
+
+  <button id="btnMenu" class="fixed top-5 left-5 z-50 bg-white p-3 rounded-lg shadow-lg md:hidden">
+    <i class="fas fa-bars text-xl text-gray-700"></i>
+  </button>
+
+  <main class="min-h-screen md:ml-64">
+    <section class="gradient-bg relative overflow-hidden px-6 py-12 md:px-12">
+      <div class="hero-circle"></div>
+
+      <div class="absolute top-6 right-6 z-20">
+        <div class="flex items-center gap-3 bg-white/10 backdrop-blur-sm px-5 py-3 rounded-2xl border border-white/20 shadow-2xl">
+          <div class="bg-gradient-to-br from-blue-400 to-cyan-300 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-6 transition-transform">
+            <i class="fas fa-user-shield text-white text-2xl"></i>
+          </div>
+          <div class="text-left">
+            <h1 class="text-white font-bold text-xl leading-none tracking-wide" style="text-shadow: 0 2px 4px rgba(0,0,0,0.1);">Compliance System</h1>
+            <p class="text-blue-100 font-medium text-sm tracking-[0.15em] mt-1">Alysa Milano</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="relative z-10 max-w-7xl mx-auto pt-8">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 class="hero-title text-white font-extrabold text-2xl md:text-3xl lg:text-4xl mb-2 tracking-tight flex items-center gap-3">
+              <i class="fas fa-certificate"></i>
+              Operational Permit
+            </h1>
+            <p class="text-white/90 text-base md:text-lg">
+              Kelola izin operasional dan masa berlakunya
+            </p>
+          </div>
+        </div>
+
+        <div id="actions" class="flex flex-wrap gap-3 mb-8"></div>
+      </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-6 py-8 md:px-12">
+      <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="modern-table min-w-full text-sm">
+            <thead id="thead" class="bg-sky-50"></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="layer" class="fixed inset-0 hidden z-40">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="backdrop"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="modal-container w-full max-w-2xl bg-white">
+        <div class="modal-header-gradient flex items-center justify-between">
+          <h3 id="layerTitle" class="text-2xl font-bold flex items-center gap-3">
+            <i class="fas fa-file-contract"></i>
+            Tambah Dokumen Baru
+          </h3>
+          <button id="btnClose" class="text-white hover:text-gray-200 text-4xl leading-none transition">×</button>
+        </div>
+
+        <div class="p-8">
+          <div class="grid md:grid-cols-2 gap-5">
+            <div class="md:col-span-2">
+              <label class="form-label">
+                <i class="fas fa-file-alt text-blue-600 mr-2"></i>
+                Dokumen
+              </label>
+              <input id="f_name" class="form-input" placeholder="Nama dokumen"/>
+            </div>
+            <div>
+              <label class="form-label">
+                <i class="fas fa-folder text-blue-600 mr-2"></i>
+                Kategori
+              </label>
+              <input id="f_category" class="form-input" placeholder="Kategori"/>
+            </div>
+            <div>
+              <label class="form-label">
+                <i class="fas fa-university text-blue-600 mr-2"></i>
+                Institusi
+              </label>
+              <input id="f_inst" class="form-input" placeholder="Institusi"/>
+            </div>
+            <div>
+              <label class="form-label">
+                <i class="fas fa-calendar-check text-blue-600 mr-2"></i>
+                Tanggal Berlaku
+              </label>
+              <input id="f_start" type="date" class="form-input"/>
+            </div>
+            <div>
+              <label class="form-label">
+                <i class="fas fa-calendar-times text-blue-600 mr-2"></i>
+                Tanggal Kedaluwarsa
+              </label>
+              <input id="f_exp" type="date" class="form-input"/>
+            </div>
+            <div>
+              <label class="form-label">
+                <i class="fas fa-bell text-blue-600 mr-2"></i>
+                Tanggal Pengingat
+              </label>
+              <input id="f_rem" type="date" class="form-input" disabled/>
+            </div>
+            <div>
+              <label class="form-label">
+                <i class="fas fa-toggle-on text-blue-600 mr-2"></i>
+                Status
+              </label>
+              <select id="f_inactive" class="form-input">
+                <option value="0">Active</option>
+                <option value="1">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="px-8 py-6 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+          <button id="f_cancel" class="btn-secondary">
+            <i class="fas fa-times"></i>
+            Batal
+          </button>
+          <button id="f_submit" class="btn-primary">
+            <i class="fas fa-save"></i>
+            Simpan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="importPreviewLayer" class="fixed inset-0 hidden z-40">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="importPreviewBackdrop"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="modal-container w-full max-w-5xl bg-white">
+        <div class="modal-header-gradient flex items-center justify-between">
+          <h3 class="text-2xl font-bold flex items-center gap-3">
+            <i class="fas fa-file-import"></i>
+            Pratinjau Impor — Operational Permit
+          </h3>
+          <button id="btnClosePreview" class="text-white hover:text-gray-200 text-4xl leading-none transition">×</button>
+        </div>
+        
+        <div class="p-6 space-y-4">
+          <div class="text-sm">
+            <span id="importStats" class="text-gray-600 font-medium">Memuat…</span>
+          </div>
+          
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
+            <div class="flex flex-wrap items-center gap-4">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input id="chkHideDup" type="checkbox" class="accent-blue-600" />
+                <span class="text-sm font-semibold text-gray-700">Sembunyikan duplikat</span>
+              </label>
+            </div>
+            <button id="btnCommitSelected" class="btn-primary">
+              <i class="fas fa-check-circle"></i>
+              Simpan yang dipilih (0)
+            </button>
+          </div>
+          
+          <div class="overflow-auto border-2 border-gray-200 rounded-xl max-h-[60vh]">
+            <table class="preview-table min-w-full text-xs">
+              <thead>
+                <tr>
+                  <th class="p-3 w-12">
+                    <input id="chkAll" type="checkbox" class="accent-blue-600"/>
+                  </th>
+                  <th class="p-3 text-left">Dokumen</th>
+                  <th class="p-3 text-left">Kategori</th>
+                  <th class="p-3 text-left">Institusi</th>
+                  <th class="p-3 text-left">Mulai</th>
+                  <th class="p-3 text-left">Kedaluwarsa</th>
+                  <th class="p-3 text-left">Pengingat</th>
+                  <th class="p-3 text-left">Status</th>
+                  <th class="p-3 text-left">Duplikat</th>
+                </tr>
+              </thead>
+              <tbody id="previewBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./assets/js/pages/operational2.js"></script>
+  <script src="./assets/global-sidebar.js" defer></script>
+</body>
+</html>

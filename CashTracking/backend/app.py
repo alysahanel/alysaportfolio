@@ -10,8 +10,22 @@ import os
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
 
+class PrefixMiddleware(object):
+    def __init__(self, app, prefix=''):
+        self.app = app
+        self.prefix = prefix
+
+    def __call__(self, environ, start_response):
+        if environ['PATH_INFO'].startswith(self.prefix):
+            environ['PATH_INFO'] = environ['PATH_INFO'][len(self.prefix):]
+            environ['SCRIPT_NAME'] = self.prefix
+            return self.app(environ, start_response)
+        return self.app(environ, start_response)
+
 # Vercel/Render/Demo Adaptation
 if os.environ.get('VERCEL') or os.environ.get('RENDER'):
+    if os.environ.get('VERCEL'):
+        app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix='/cashtracking/api')
     app.config['SESSION_TYPE'] = 'cookie' # Use default cookie-based session
     DATABASE = ':memory:' # Use in-memory DB for read-only environment
 else:

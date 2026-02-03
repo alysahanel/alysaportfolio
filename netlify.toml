@@ -1,0 +1,52 @@
+[build]
+  publish = "dist"
+  command = "node build-static.js"
+
+[[redirects]]
+  from = "/gams/*"
+  to = "/gams/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/legal/*"
+  to = "/legal/:splat"
+  status = 200
+
+# CashTracking SPA Fallback
+[[redirects]]
+  from = "/cashtracking/*"
+  to = "/cashtracking/index.html"
+  status = 200
+
+# Healthcare Web
+[[redirects]]
+  from = "/healthcare-web/*"
+  to = "/healthcare-web/:splat"
+  status = 200
+
+# Redirect trailing slashes for consistency
+[[redirects]]
+  from = "/gams"
+  to = "/gams/"
+  status = 301
+
+[[redirects]]
+  from = "/legal"
+  to = "/legal/"
+  status = 301
+
+[[redirects]]
+  from = "/cashtracking"
+  to = "/cashtracking/"
+  status = 301
+
+[[redirects]]
+  from = "/healthcare-web"
+  to = "/healthcare-web/"
+  status = 301
+
+# Fallback for root
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -2,21 +2,21 @@
   "version": 2,
   "builds": [
     {
-      "src": "gams-01/api/index.js",
+      "src": "gams/api/index.js",
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
-          "gams-01/public/**"
+          "gams/public/**"
         ]
       }
     },
     {
-      "src": "legal-web/api/index.js",
+      "src": "legal/api/index.js",
       "use": "@vercel/node",
       "config": {
         "includeFiles": [
-          "legal-web/frontend/public/**",
-          "legal-web/backend/public-assets/**"
+          "legal/frontend/public/**",
+          "legal/backend/public-assets/**"
         ]
       }
     },
@@ -33,30 +33,186 @@
       "use": "@vercel/static"
     },
     {
-      "src": "Healthcare Web/**",
+      "src": "healthcare-web/**",
       "use": "@vercel/static"
     },
     {
       "src": "CashTracking/frontend/build/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "gams/public/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "legal/frontend/public/**",
       "use": "@vercel/static"
     }
   ],
   "rewrites": [
     {
       "source": "/gams/api/:match*",
-      "destination": "/gams-01/api/index.js"
-    },
-    {
-      "source": "/gams/:match*",
-      "destination": "/gams-01/api/index.js"
+      "destination": "/gams/api/index.js"
     },
     {
       "source": "/legal/api/:match*",
-      "destination": "/legal-web/api/index.js"
+      "destination": "/legal/api/index.js"
+    },
+    {
+      "source": "/cashtracking/api/:match*",
+      "destination": "/CashTracking/backend/api/index.py"
+    },
+    {
+      "source": "/gams",
+      "destination": "/gams/public/dashboard.html"
+    },
+    {
+      "source": "/gams/",
+      "destination": "/gams/public/dashboard.html"
+    },
+    {
+      "source": "/gams/login",
+      "destination": "/gams/public/login.html"
+    },
+    {
+      "source": "/gams/dashboard",
+      "destination": "/gams/public/dashboard.html"
+    },
+    {
+      "source": "/gams/requests",
+      "destination": "/gams/public/requests.html"
+    },
+    {
+      "source": "/gams/stock",
+      "destination": "/gams/public/stock.html"
+    },
+    {
+      "source": "/gams/calendar",
+      "destination": "/gams/public/calendar.html"
+    },
+    {
+      "source": "/gams/accounts",
+      "destination": "/gams/public/accounts.html"
+    },
+    {
+      "source": "/gams/stock-report",
+      "destination": "/gams/public/stock-report.html"
+    },
+    {
+      "source": "/gams/:match*",
+      "destination": "/gams/public/:match*"
+    },
+    {
+      "source": "/legal",
+      "destination": "/legal/frontend/public/dashboard.html"
+    },
+    {
+      "source": "/legal/",
+      "destination": "/legal/frontend/public/dashboard.html"
+    },
+    {
+      "source": "/legal/dashboard",
+      "destination": "/legal/frontend/public/dashboard.html"
+    },
+    {
+      "source": "/legal/company",
+      "destination": "/legal/frontend/public/company.html"
+    },
+    {
+      "source": "/legal/operational",
+      "destination": "/legal/frontend/public/operational.html"
+    },
+    {
+      "source": "/legal/safety",
+      "destination": "/legal/frontend/public/safety.html"
+    },
+    {
+      "source": "/legal/regulatory",
+      "destination": "/legal/frontend/public/regulatory.html"
+    },
+    {
+      "source": "/legal/elibrary",
+      "destination": "/legal/frontend/public/elibrary.html"
+    },
+    {
+      "source": "/legal/license-permit",
+      "destination": "/legal/frontend/public/license-permit.html"
+    },
+    {
+      "source": "/legal/import-review",
+      "destination": "/legal/frontend/public/import-review.html"
+    },
+    {
+      "source": "/legal/elibrary-import-review",
+      "destination": "/legal/frontend/public/elibrary-import-review.html"
     },
     {
       "source": "/legal/:match*",
-      "destination": "/legal-web/api/index.js"
+      "destination": "/legal/frontend/public/:match*"
+    },
+    {
+      "source": "/dashboard.html",
+      "destination": "/legal/frontend/public/dashboard.html"
+    },
+    {
+      "source": "/company.html",
+      "destination": "/legal/frontend/public/company.html"
+    },
+    {
+      "source": "/company",
+      "destination": "/legal/frontend/public/company.html"
+    },
+    {
+      "source": "/operational.html",
+      "destination": "/legal/frontend/public/operational.html"
+    },
+    {
+      "source": "/operational",
+      "destination": "/legal/frontend/public/operational.html"
+    },
+    {
+      "source": "/safety.html",
+      "destination": "/legal/frontend/public/safety.html"
+    },
+    {
+      "source": "/safety",
+      "destination": "/legal/frontend/public/safety.html"
+    },
+    {
+      "source": "/license-permit.html",
+      "destination": "/legal/frontend/public/license-permit.html"
+    },
+    {
+      "source": "/license-permit",
+      "destination": "/legal/frontend/public/license-permit.html"
+    },
+    {
+      "source": "/regulatory.html",
+      "destination": "/legal/frontend/public/regulatory.html"
+    },
+    {
+      "source": "/regulatory",
+      "destination": "/legal/frontend/public/regulatory.html"
+    },
+    {
+      "source": "/elibrary.html",
+      "destination": "/legal/frontend/public/elibrary.html"
+    },
+    {
+      "source": "/elibrary",
+      "destination": "/legal/frontend/public/elibrary.html"
+    },
+    {
+      "source": "/healthcare-web",
+      "destination": "/healthcare-web/index.html"
+    },
+    {
+      "source": "/healthcare-web/",
+      "destination": "/healthcare-web/index.html"
+    },
+    {
+      "source": "/healthcare-web/:match*",
+      "destination": "/healthcare-web/:match*"
     },
     {
       "source": "/cashtracking/static/:match*",
@@ -73,10 +229,6 @@
     {
       "source": "/cashtracking/logo192.png",
       "destination": "/CashTracking/frontend/build/logo192.png"
-    },
-    {
-      "source": "/cashtracking/api/:match*",
-      "destination": "/CashTracking/backend/api/index.py"
     },
     {
       "source": "/cashtracking/:match*",

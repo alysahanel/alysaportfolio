@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// --- GAMS 01 Rewrites ---
+// --- GAMS Rewrites ---
 // Proxy API to running backend
 app.use('/gams/api', createProxyMiddleware({
     target: 'http://localhost:3001',
@@ -41,35 +41,50 @@ app.use('/api', createProxyMiddleware({
     }
 }));
 
-// Serve GAMS Frontend
-app.use('/gams', express.static(path.join(__dirname, 'gams-01/public'), {
-    index: 'login.html' // Default to login page
-}));
+// Serve GAMS Project Root to support 'gams/public/...' paths
+app.use('/gams', express.static(path.join(__dirname, 'gams/public')));
 
-// Map root-level routes used by GAMS pages
+// Handle GAMS root request locally
+app.get('/gams', (req, res) => {
+    res.sendFile(path.join(__dirname, 'gams/public', 'dashboard.html'));
+});
+app.get('/gams/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'gams/public', 'dashboard.html'));
+});
+
+// Serve Healthcare Web
+app.use('/healthcare-web', express.static(path.join(__dirname, 'healthcare-web')));
+
+// Redirects for trailing slashes
+app.get('/gams', (req, res) => res.redirect('/gams/'));
+app.get('/legal', (req, res) => res.redirect('/legal/'));
+app.get('/cashtracking', (req, res) => res.redirect('/cashtracking/'));
+app.get('/healthcare-web', (req, res) => res.redirect('/healthcare-web/'));
+
+// Map root-level routes used by GAMS pages (if any rely on root access, though they should use relative paths)
 app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'gams-01/public', 'login.html'));
+    res.sendFile(path.join(__dirname, 'gams/public', 'login.html'));
 });
 app.get('/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, 'gams-01/public', 'dashboard.html'));
+    res.sendFile(path.join(__dirname, 'gams/public', 'dashboard.html'));
 });
 app.get('/dashboard.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'legal-web/frontend/public', 'dashboard.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'dashboard.html'));
 });
 app.get('/requests', (req, res) => {
-    res.sendFile(path.join(__dirname, 'gams-01/public', 'requests.html'));
+    res.sendFile(path.join(__dirname, 'gams/public', 'requests.html'));
 });
 app.get('/stock', (req, res) => {
-    res.sendFile(path.join(__dirname, 'gams-01/public', 'stock.html'));
+    res.sendFile(path.join(__dirname, 'gams/public', 'stock.html'));
 });
 app.get('/calendar', (req, res) => {
-    res.sendFile(path.join(__dirname, 'gams-01/public', 'calendar.html'));
+    res.sendFile(path.join(__dirname, 'gams/public', 'calendar.html'));
 });
 app.get('/accounts', (req, res) => {
-    res.sendFile(path.join(__dirname, 'gams-01/public', 'accounts.html'));
+    res.sendFile(path.join(__dirname, 'gams/public', 'accounts.html'));
 });
 app.get('/stock-report', (req, res) => {
-    res.sendFile(path.join(__dirname, 'gams-01/public', 'stock-report.html'));
+    res.sendFile(path.join(__dirname, 'gams/public', 'stock-report.html'));
 });
 
 // --- Legal Web Rewrites ---
@@ -85,70 +100,73 @@ app.use('/legal/api', createProxyMiddleware({
     }
 }));
 
-// Serve Legal Web Frontend
-app.use('/legal', express.static(path.join(__dirname, 'legal-web/frontend/public'), {
-    index: 'dashboard.html' // Default to dashboard
-}));
+// Serve Legal Web Project Root to support 'legal/frontend/public/...' paths
+app.use('/legal', express.static(path.join(__dirname, 'legal/frontend/public')));
+
+// Handle Legal Web root request locally
+app.get('/legal/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'dashboard.html'));
+});
 
 // Support absolute '/assets' for Legal Web pages that reference root paths
-app.use('/assets', express.static(path.join(__dirname, 'legal-web/frontend/public/assets')));
+app.use('/assets', express.static(path.join(__dirname, 'legal/frontend/public/assets')));
 
 // Map common Legal Web friendly routes to static files
 app.get('/legal/license-permit', (req, res) => {
-    res.sendFile(path.join(__dirname, 'legal-web/frontend/public', 'license-permit.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'license-permit.html'));
 });
 app.get('/legal/regulatory', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Legal web/frontend/public', 'regulatory.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'regulatory.html'));
 });
 app.get('/legal/elibrary', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Legal web/frontend/public', 'elibrary.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'elibrary.html'));
 });
 app.get('/legal/operational', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Legal web/frontend/public', 'operational.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'operational.html'));
 });
 app.get('/legal/company', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Legal web/frontend/public', 'company.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'company.html'));
 });
 app.get('/legal/safety', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Legal web/frontend/public', 'safety.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'safety.html'));
 });
 
 // Root routes mapping to Legal Web pages for absolute navigations
 app.get('/license-permit', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Legal web/frontend/public', 'license-permit.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'license-permit.html'));
 });
 app.get('/license-permit.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Legal web/frontend/public', 'license-permit.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'license-permit.html'));
 });
 app.get('/company', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Legal web/frontend/public', 'company.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'company.html'));
 });
 app.get('/company.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Legal web/frontend/public', 'company.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'company.html'));
 });
 app.get('/operational', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Legal web/frontend/public', 'operational.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'operational.html'));
 });
 app.get('/operational.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Legal web/frontend/public', 'operational.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'operational.html'));
 });
 app.get('/safety', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Legal web/frontend/public', 'safety.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'safety.html'));
 });
 app.get('/safety.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Legal web/frontend/public', 'safety.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'safety.html'));
 });
 app.get('/regulatory', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Legal web/frontend/public', 'regulatory.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'regulatory.html'));
 });
 app.get('/regulatory.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Legal web/frontend/public', 'regulatory.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'regulatory.html'));
 });
 app.get('/elibrary', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Legal web/frontend/public', 'elibrary.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'elibrary.html'));
 });
 app.get('/elibrary.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Legal web/frontend/public', 'elibrary.html'));
+    res.sendFile(path.join(__dirname, 'legal/frontend/public', 'elibrary.html'));
 });
 
 // --- CashTracking Rewrites ---
@@ -173,15 +191,12 @@ app.get('/cashtracking/*', (req, res) => {
 });
 
 // --- Healthcare Web Rewrites ---
-app.use('/healthcare', express.static(path.join(__dirname, 'Healthcare Web')));
-
-
 app.listen(PORT, () => {
     console.log(`\n🚀 Portfolio Server running at http://localhost:${PORT}`);
     console.log(`\nSub-projects available at:`);
-    console.log(`- GAMS: http://localhost:${PORT}/gams`);
-    console.log(`- Legal: http://localhost:${PORT}/legal`);
-    console.log(`- CashTracking: http://localhost:${PORT}/cashtracking`);
-    console.log(`- Healthcare: http://localhost:${PORT}/healthcare`);
+    console.log(`- GAMS: http://localhost:${PORT}/gams/`);
+    console.log(`- Legal: http://localhost:${PORT}/legal/`);
+    console.log(`- CashTracking: http://localhost:${PORT}/cashtracking/`);
+    console.log(`- Healthcare: http://localhost:${PORT}/healthcare-web/`);
     console.log(`\n⚠️  Ensure backends are running on ports 3001, 3009, 4000 for full functionality.`);
 });

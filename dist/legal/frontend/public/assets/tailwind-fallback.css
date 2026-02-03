@@ -1,0 +1,45 @@
+/* Minimal fallback CSS to keep layout readable when Tailwind CDN fails */
+
+/* Layout utilities */
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 0.5rem; }
+.gap-4 { gap: 1rem; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.max-w-7xl { max-width: 80rem; }
+.p-4 { padding: 1rem; }
+.p-6 { padding: 1.5rem; }
+.px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+.py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+.px-4 { padding-left: 1rem; padding-right: 1rem; }
+.py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+.px-5 { padding-left: 1.25rem; padding-right: 1.25rem; }
+
+/* Typography */
+.text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+.text-2xl { font-size: 1.5rem; line-height: 2rem; }
+.font-semibold { font-weight: 600; }
+.text-white { color: #fff; }
+.text-sky-700 { color: #0369a1; }
+
+/* Colors and backgrounds */
+.bg-white { background-color: #fff; }
+.bg-white\/90 { background-color: #ffffff; }
+.bg-slate-50 { background-color: #f8fafc; }
+.bg-sky-600 { background-color: #0284c7; }
+.bg-emerald-600 { background-color: #059669; }
+
+/* Borders & radius */
+.border { border: 1px solid #e5e7eb; }
+.border-t { border-top: 1px solid #e5e7eb; }
+.rounded { border-radius: 0.25rem; }
+
+/* Visibility */
+.hidden { display: none; }
+
+/* Simple hover underline utility */
+.hover\:underline:hover { text-decoration: underline; }
+
+/* Button baseline */
+button { cursor: pointer; }
