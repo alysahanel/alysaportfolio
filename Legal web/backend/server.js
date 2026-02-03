@@ -122,7 +122,7 @@ const DB_USER = process.env.DB_USER || 'root';
 const DB_PASS = process.env.DB_PASS || '';
 const DB_NAME = process.env.DB_NAME || 'legal_web';
 
-const USE_MOCK_DB = true; // Toggle for demo
+const USE_MOCK_DB = process.env.USE_MOCK_DB !== 'false'; // Toggle for demo (Default: Mock)
 
 let pool;
 

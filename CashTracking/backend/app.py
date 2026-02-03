@@ -10,8 +10,8 @@ import os
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
 
-# Vercel/Demo Adaptation
-if os.environ.get('VERCEL'):
+# Vercel/Render/Demo Adaptation
+if os.environ.get('VERCEL') or os.environ.get('RENDER'):
     app.config['SESSION_TYPE'] = 'cookie' # Use default cookie-based session
     DATABASE = ':memory:' # Use in-memory DB for read-only environment
 else:

@@ -2,7 +2,7 @@ const mysql = require('mysql2/promise');
 require('dotenv').config();
 
 // Toggle for Mock Database
-const USE_MOCK_DB = true; // Set to true to bypass MySQL
+const USE_MOCK_DB = process.env.USE_MOCK_DB !== 'false'; // Default to true (Mock), set to 'false' to use Real DB
 
 if (USE_MOCK_DB) {
     console.log('--- RUNNING IN MOCK DATABASE MODE ---');
