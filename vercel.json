@@ -23,6 +23,18 @@
     {
       "src": "CashTracking/backend/api/index.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "*.{html,css,js,jpg,jpeg,png,pdf,webp,ico,svg}",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "images/**",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "Healthcare Web/**",
+      "use": "@vercel/static"
     }
   ],
   "rewrites": [
