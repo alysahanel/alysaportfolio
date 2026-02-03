@@ -35,6 +35,10 @@
     {
       "src": "Healthcare Web/**",
       "use": "@vercel/static"
+    },
+    {
+      "src": "CashTracking/frontend/build/**",
+      "use": "@vercel/static"
     }
   ],
   "rewrites": [
