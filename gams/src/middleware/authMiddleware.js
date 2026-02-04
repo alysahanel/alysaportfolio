@@ -18,7 +18,7 @@ const isAuthenticated = (req, res, next) => {
   
   try {
     console.log('Verifying token with secret:', process.env.JWT_SECRET);
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'ga_system_secret_key');
     console.log('Token decoded successfully:', decoded);
     req.user = decoded;
     next();

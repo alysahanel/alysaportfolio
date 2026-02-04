@@ -31,7 +31,7 @@ class AuthController {
           pic_name: user.pic_name,
           department: user.department
         },
-        process.env.JWT_SECRET,
+        process.env.JWT_SECRET || 'ga_system_secret_key',
         { expiresIn: '24h' }
       );
       
@@ -94,7 +94,7 @@ class AuthController {
       }
       
       try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'ga_system_secret_key');
         return res.status(200).json({
           success: true,
           user: {
