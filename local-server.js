@@ -55,11 +55,11 @@ app.get('/gams/', (req, res) => {
 // Serve Healthcare Web
 app.use('/healthcare-web', express.static(path.join(__dirname, 'healthcare-web')));
 
-// Redirects for trailing slashes
-app.get('/gams', (req, res) => res.redirect('/gams/'));
-app.get('/legal', (req, res) => res.redirect('/legal/'));
-app.get('/cashtracking', (req, res) => res.redirect('/cashtracking/'));
-app.get('/healthcare-web', (req, res) => res.redirect('/healthcare-web/'));
+// Redirects for trailing slashes - REMOVED to prevent loops (Express Static handles this or we use strict routing)
+// app.get('/gams', (req, res) => res.redirect('/gams/'));
+// app.get('/legal', (req, res) => res.redirect('/legal/'));
+// app.get('/cashtracking', (req, res) => res.redirect('/cashtracking/'));
+// app.get('/healthcare-web', (req, res) => res.redirect('/healthcare-web/'));
 
 // Map root-level routes used by GAMS pages (if any rely on root access, though they should use relative paths)
 app.get('/login', (req, res) => {
@@ -172,13 +172,22 @@ app.get('/elibrary.html', (req, res) => {
 // --- CashTracking Rewrites ---
 // Proxy API to running backend
 app.use('/cashtracking/api', createProxyMiddleware({
-    target: 'http://localhost:4000',
+    target: 'http://localhost:5000',
     changeOrigin: true,
     pathRewrite: {
-        '^/cashtracking/api': '', // /cashtracking/api/transactions -> /transactions
+        '^/cashtracking/api': '/cashtracking/api', // Flask app expects full path or stripped?
+        // Wait, app.py has PrefixMiddleware which STRIPS the prefix.
+        // If I send /cashtracking/api/login -> Flask receives /cashtracking/api/login
+        // PrefixMiddleware strips it to /login.
+        // So I should NOT strip it here if PrefixMiddleware is active.
+        // But PrefixMiddleware is ONLY active if VERCEL env var is set.
+        // Locally, it is NOT set.
+        // So locally Flask expects /register, /login etc.
+        // So I MUST strip /cashtracking/api.
+        '^/cashtracking/api': '', 
     },
     onError: (err, req, res) => {
-        res.status(502).send('CashTracking Backend (Port 4000) not running.');
+        res.status(502).send('CashTracking Backend (Port 5000) not running.');
     }
 }));
 

@@ -1,66 +1,37 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "gams/api/index.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": [
-          "gams/public/**"
-        ]
-      }
-    },
-    {
-      "src": "legal/api/index.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": [
-          "legal/frontend/public/**",
-          "legal/backend/public-assets/**"
-        ]
-      }
-    },
-    {
-      "src": "CashTracking/backend/api/index.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "*.{html,css,js,jpg,jpeg,png,pdf,webp,ico,svg}",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "images/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "healthcare-web/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "CashTracking/frontend/build/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "gams/public/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "legal/frontend/public/**",
-      "use": "@vercel/static"
-    }
-  ],
   "rewrites": [
     {
+      "source": "/cashtracking/api/:match*",
+      "destination": "/api/cashtracking"
+    },
+    {
+      "source": "/cashtracking/static/:match*",
+      "destination": "/CashTracking/frontend/build/static/:match*"
+    },
+    {
+      "source": "/cashtracking/manifest.json",
+      "destination": "/CashTracking/frontend/build/manifest.json"
+    },
+    {
+      "source": "/cashtracking/favicon.ico",
+      "destination": "/CashTracking/frontend/build/favicon.ico"
+    },
+    {
+      "source": "/cashtracking/logo192.png",
+      "destination": "/CashTracking/frontend/build/logo192.png"
+    },
+    {
       "source": "/gams/api/:match*",
-      "destination": "/gams/api/index.js"
+      "destination": "/api/gams"
     },
     {
       "source": "/legal/api/:match*",
-      "destination": "/legal/api/index.js"
+      "destination": "/api/legal"
     },
     {
-      "source": "/cashtracking/api/:match*",
-      "destination": "/CashTracking/backend/api/index.py"
+      "source": "/gams/public/:match*",
+      "destination": "/gams/public/:match*"
     },
     {
       "source": "/gams",
@@ -111,20 +82,8 @@
       "destination": "/legal/frontend/public/dashboard.html"
     },
     {
-      "source": "/legal/dashboard",
-      "destination": "/legal/frontend/public/dashboard.html"
-    },
-    {
-      "source": "/legal/company",
-      "destination": "/legal/frontend/public/company.html"
-    },
-    {
-      "source": "/legal/operational",
-      "destination": "/legal/frontend/public/operational.html"
-    },
-    {
-      "source": "/legal/safety",
-      "destination": "/legal/frontend/public/safety.html"
+      "source": "/legal/license-permit",
+      "destination": "/legal/frontend/public/license-permit.html"
     },
     {
       "source": "/legal/regulatory",
@@ -135,72 +94,32 @@
       "destination": "/legal/frontend/public/elibrary.html"
     },
     {
-      "source": "/legal/license-permit",
-      "destination": "/legal/frontend/public/license-permit.html"
+      "source": "/legal/operational",
+      "destination": "/legal/frontend/public/operational.html"
     },
     {
-      "source": "/legal/import-review",
-      "destination": "/legal/frontend/public/import-review.html"
+      "source": "/legal/company",
+      "destination": "/legal/frontend/public/company.html"
     },
     {
-      "source": "/legal/elibrary-import-review",
-      "destination": "/legal/frontend/public/elibrary-import-review.html"
+      "source": "/legal/safety",
+      "destination": "/legal/frontend/public/safety.html"
     },
     {
       "source": "/legal/:match*",
       "destination": "/legal/frontend/public/:match*"
     },
     {
-      "source": "/dashboard.html",
-      "destination": "/legal/frontend/public/dashboard.html"
+      "source": "/cashtracking",
+      "destination": "/CashTracking/frontend/build/index.html"
     },
     {
-      "source": "/company.html",
-      "destination": "/legal/frontend/public/company.html"
+      "source": "/cashtracking/",
+      "destination": "/CashTracking/frontend/build/index.html"
     },
     {
-      "source": "/company",
-      "destination": "/legal/frontend/public/company.html"
-    },
-    {
-      "source": "/operational.html",
-      "destination": "/legal/frontend/public/operational.html"
-    },
-    {
-      "source": "/operational",
-      "destination": "/legal/frontend/public/operational.html"
-    },
-    {
-      "source": "/safety.html",
-      "destination": "/legal/frontend/public/safety.html"
-    },
-    {
-      "source": "/safety",
-      "destination": "/legal/frontend/public/safety.html"
-    },
-    {
-      "source": "/license-permit.html",
-      "destination": "/legal/frontend/public/license-permit.html"
-    },
-    {
-      "source": "/license-permit",
-      "destination": "/legal/frontend/public/license-permit.html"
-    },
-    {
-      "source": "/regulatory.html",
-      "destination": "/legal/frontend/public/regulatory.html"
-    },
-    {
-      "source": "/regulatory",
-      "destination": "/legal/frontend/public/regulatory.html"
-    },
-    {
-      "source": "/elibrary.html",
-      "destination": "/legal/frontend/public/elibrary.html"
-    },
-    {
-      "source": "/elibrary",
-      "destination": "/legal/frontend/public/elibrary.html"
+      "source": "/cashtracking/:match*",
+      "destination": "/CashTracking/frontend/build/index.html"
     },
     {
       "source": "/healthcare-web",
@@ -209,30 +128,6 @@
     {
       "source": "/healthcare-web/",
       "destination": "/healthcare-web/index.html"
-    },
-    {
-      "source": "/healthcare-web/:match*",
-      "destination": "/healthcare-web/:match*"
-    },
-    {
-      "source": "/cashtracking/static/:match*",
-      "destination": "/CashTracking/frontend/build/static/:match*"
-    },
-    {
-      "source": "/cashtracking/manifest.json",
-      "destination": "/CashTracking/frontend/build/manifest.json"
-    },
-    {
-      "source": "/cashtracking/favicon.ico",
-      "destination": "/CashTracking/frontend/build/favicon.ico"
-    },
-    {
-      "source": "/cashtracking/logo192.png",
-      "destination": "/CashTracking/frontend/build/logo192.png"
-    },
-    {
-      "source": "/cashtracking/:match*",
-      "destination": "/CashTracking/frontend/build/index.html"
     }
   ]
 }

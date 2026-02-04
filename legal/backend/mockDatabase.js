@@ -8,10 +8,18 @@ const mockData = {
     reg_hse: [
         { id: 1, no: 1, regulasi: 'PP 50/2012', lingkup: 'K3', pasal: 'All', deskripsi: 'Penerapan SMK3', kriteria: 'Wajib', kepatuhan: 'patuh', jenisHukuman: 'Administratif', warnaHukuman: 'yellow' }
     ],
-    reg_maintenance: [],
-    reg_legal_compliance: [],
-    reg_ppic_dmw_warehouse: [],
-    reg_fat: [],
+    reg_maintenance: [
+        { id: 1, no: 1, regulasi: 'Permenaker 38/2016', lingkup: 'K3 Pesawat Tenaga & Produksi', pasal: 'All', deskripsi: 'Keselamatan Mesin', kriteria: 'Wajib', kepatuhan: 'patuh', jenisHukuman: 'Administratif', warnaHukuman: 'green' }
+    ],
+    reg_legal_compliance: [
+        { id: 1, no: 1, regulasi: 'UU 40/2007', lingkup: 'Perseroan Terbatas', pasal: 'All', deskripsi: 'Tata kelola perusahaan', kriteria: 'Wajib', kepatuhan: 'patuh', jenisHukuman: 'Perdata', warnaHukuman: 'green' }
+    ],
+    reg_ppic_dmw_warehouse: [
+        { id: 1, no: 1, regulasi: 'Permendag 25/2022', lingkup: 'Impor', pasal: 'All', deskripsi: 'Kebijakan Impor', kriteria: 'Wajib', kepatuhan: 'patuh', jenisHukuman: 'Administratif', warnaHukuman: 'yellow' }
+    ],
+    reg_fat: [
+        { id: 1, no: 1, regulasi: 'UU 7/2021', lingkup: 'Perpajakan', pasal: 'All', deskripsi: 'Harmonisasi Peraturan Perpajakan', kriteria: 'Wajib', kepatuhan: 'patuh', jenisHukuman: 'Denda', warnaHukuman: 'green' }
+    ],
     
     company_legal_entities: [
         { id: 1, doc_name: 'Akta Pendirian PT Alysa Milano', doc_number: 'AHU-0012345', category: 'Akta', institution: 'Kemenkumham', approval_date: '2020-01-01', inactive: 0, created_at: new Date() },
@@ -24,9 +32,16 @@ const mockData = {
     safety_licenses: [
         { id: 1, name: 'Budi Santoso', document: 'Sertifikat K3', type: 'Sertifikat', institution: 'Kemnaker', start_date: '2022-01-01', expired_date: '2025-01-01', remind_date: '2024-07-01', inactive: 0 }
     ],
-    elibrary: [],
-    elibrary_uu: [],
-    elibrary_pp: [],
+    elibrary: [
+        { id: 1, title: 'UU Ketenagakerjaan', category: 'UU', year: 2003, description: 'Undang-Undang No. 13 Tahun 2003', file_path: '/assets/uu-13-2003.pdf' },
+        { id: 2, title: 'PP K3', category: 'PP', year: 2012, description: 'Peraturan Pemerintah No. 50 Tahun 2012', file_path: '/assets/pp-50-2012.pdf' }
+    ],
+    elibrary_uu: [
+        { id: 1, title: 'UU Ketenagakerjaan', category: 'UU', year: 2003, description: 'Undang-Undang No. 13 Tahun 2003', file_path: '/assets/uu-13-2003.pdf' }
+    ],
+    elibrary_pp: [
+        { id: 1, title: 'PP K3', category: 'PP', year: 2012, description: 'Peraturan Pemerintah No. 50 Tahun 2012', file_path: '/assets/pp-50-2012.pdf' }
+    ],
     elibrary_perpres: [],
     elibrary_perda: [],
     elibrary_kawasan: [],

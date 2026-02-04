@@ -1,51 +1,71 @@
-(function(){
-  const mountSidebar = async () => {
-    try {
-      if (!document.querySelector('link[href$="global-sidebar.css"]')) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = './assets/global-sidebar.css';
-        document.head.appendChild(link);
-      }
-      const resp = await fetch('./assets/sidebar.html', { cache: 'no-cache' });
-      const html = await resp.text();
-      const temp = document.createElement('div');
-      temp.innerHTML = html.trim();
-      const sidebar = temp.firstElementChild;
-      document.body.appendChild(sidebar);
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Global Sidebar script initializing...');
 
-      let pageToggle = document.getElementById('btnMenu');
-      if (!pageToggle) {
-        const fab = document.createElement('button');
-        fab.id = 'btnMenu';
-        fab.className = 'fixed top-4 left-4 z-50 p-3 bg-white shadow rounded-full text-gray-800 hover:bg-gray-100';
-        fab.innerHTML = '<i class="fas fa-bars"></i>';
-        document.body.appendChild(fab);
-        pageToggle = fab;
-      }
+    // Function to initialize sidebar logic after HTML is injected
+    const initSidebarLogic = () => {
+        const sidebar = document.getElementById('sidebar');
+        const btnMenu = document.getElementById('btnMenu'); // Mobile toggle button on page
+        const gsToggle = document.getElementById('gsToggle'); // Toggle button inside sidebar
 
-      const stateKey = 'globalSidebarOpen';
-      const setOpen = (open) => {
-        sidebar.classList.toggle('open', open);
-        document.body.classList.toggle('sidebar-open', open);
-        localStorage.setItem(stateKey, open ? '1' : '0');
-      };
+        if (!sidebar) {
+            console.warn('Sidebar element not found!');
+            return;
+        }
 
-      const saved = localStorage.getItem(stateKey);
-      setOpen(saved === '1');
+        // Toggle function
+        const toggleSidebar = (e) => {
+            if (e) e.preventDefault();
+            sidebar.classList.toggle('open');
+            document.body.classList.toggle('sidebar-open');
+        };
 
-      const toggle = () => setOpen(!sidebar.classList.contains('open'));
-      sidebar.querySelector('#gsToggle')?.addEventListener('click', toggle);
-      pageToggle.addEventListener('click', toggle);
+        // Event Listeners
+        if (btnMenu) {
+            btnMenu.addEventListener('click', toggleSidebar);
+            console.log('Mobile menu button attached');
+        }
 
-    } catch (e) {
-      console.warn('Failed to mount sidebar:', e);
-    }
-  };
+        if (gsToggle) {
+            gsToggle.addEventListener('click', toggleSidebar);
+        }
+    };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', mountSidebar);
-  } else {
-    mountSidebar();
-  }
-})();
+    // Load sidebar.html
+    // We try multiple paths to be robust
+    const paths = [
+        './assets/sidebar.html',
+        '../assets/sidebar.html',
+        '/assets/sidebar.html',
+        '/legal/assets/sidebar.html'
+    ];
+
+    const loadSidebar = async () => {
+        for (const path of paths) {
+            try {
+                const response = await fetch(path);
+                if (response.ok) {
+                    const html = await response.text();
+                    
+                    // Check if sidebar already exists
+                    if (document.getElementById('sidebar')) return;
+
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = html;
+                    
+                    const sidebarElement = tempDiv.querySelector('aside');
+                    if (sidebarElement) {
+                        document.body.insertBefore(sidebarElement, document.body.firstChild);
+                        console.log(`Sidebar loaded from ${path}`);
+                        initSidebarLogic();
+                        return; // Success
+                    }
+                }
+            } catch (e) {
+                // Continue to next path
+            }
+        }
+        console.error('Failed to load sidebar from any path');
+    };
+
+    loadSidebar();
+});

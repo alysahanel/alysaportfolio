@@ -1,51 +1,27 @@
-(function(){
-  const mountSidebar = async () => {
-    try {
-      if (!document.querySelector('link[href$="global-sidebar.css"]')) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = './assets/global-sidebar.css';
-        document.head.appendChild(link);
-      }
-      const resp = await fetch('./assets/sidebar.html', { cache: 'no-cache' });
-      const html = await resp.text();
-      const temp = document.createElement('div');
-      temp.innerHTML = html.trim();
-      const sidebar = temp.firstElementChild;
-      document.body.appendChild(sidebar);
-
-      let pageToggle = document.getElementById('btnMenu');
-      if (!pageToggle) {
-        const fab = document.createElement('button');
-        fab.id = 'btnMenu';
-        fab.className = 'fixed top-4 left-4 z-50 p-3 bg-white shadow rounded-full text-gray-800 hover:bg-gray-100';
-        fab.innerHTML = '<i class="fas fa-bars"></i>';
-        document.body.appendChild(fab);
-        pageToggle = fab;
-      }
-
-      const stateKey = 'globalSidebarOpen';
-      const setOpen = (open) => {
-        sidebar.classList.toggle('open', open);
-        document.body.classList.toggle('sidebar-open', open);
-        localStorage.setItem(stateKey, open ? '1' : '0');
-      };
-
-      const saved = localStorage.getItem(stateKey);
-      setOpen(saved === '1');
-
-      const toggle = () => setOpen(!sidebar.classList.contains('open'));
-      sidebar.querySelector('#gsToggle')?.addEventListener('click', toggle);
-      pageToggle.addEventListener('click', toggle);
-
-    } catch (e) {
-      console.warn('Failed to mount sidebar:', e);
-    }
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', mountSidebar);
-  } else {
-    mountSidebar();
-  }
-})();
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Global Sidebar script loaded');
+    // Attempt to load sidebar.html if it exists
+    fetch('./assets/sidebar.html')
+        .then(response => {
+            if (!response.ok) throw new Error('Sidebar HTML not found');
+            return response.text();
+        })
+        .then(html => {
+            // Inject sidebar into the page
+            // Assuming the sidebar should be at the start of body or specific container
+            // For now, let's append it or try to find a container
+            const sidebarContainer = document.createElement('div');
+            sidebarContainer.innerHTML = html;
+            document.body.insertBefore(sidebarContainer, document.body.firstChild);
+            
+            // Re-initialize any sidebar logic (e.g., toggles)
+            const btnMenu = document.getElementById('btnMenu');
+            if (btnMenu) {
+                btnMenu.addEventListener('click', () => {
+                    // Toggle logic here if needed
+                    console.log('Menu clicked');
+                });
+            }
+        })
+        .catch(err => console.warn('Sidebar failed to load:', err));
+});

@@ -26,11 +26,13 @@ class PrefixMiddleware(object):
 if os.environ.get('VERCEL') or os.environ.get('RENDER'):
     if os.environ.get('VERCEL'):
         app.wsgi_app = PrefixMiddleware(app.wsgi_app, prefix='/cashtracking/api')
-    app.config['SESSION_TYPE'] = 'cookie' # Use default cookie-based session
+    # Use default Flask sessions (cookie-based) for serverless/demo
+    # Do NOT set SESSION_TYPE or initialize Flask-Session
     DATABASE = ':memory:' # Use in-memory DB for read-only environment
 else:
     app.config['SESSION_TYPE'] = 'filesystem'
     DATABASE = 'cashtrack.db'
+    Session(app)
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -47,6 +49,24 @@ def get_db():
             password = hash_password('password')
             cur.execute("INSERT OR IGNORE INTO users (email, username, password_hash) VALUES (?, ?, ?)",
                         ('demo@example.com', 'demo', password))
+            
+            # Insert dummy transactions for demo
+            cur.execute("SELECT id FROM users WHERE username='demo'")
+            user_row = cur.fetchone()
+            if user_row:
+                uid = user_row[0]
+                # Check if transactions exist
+                cur.execute("SELECT count(*) FROM transactions WHERE user_id=?", (uid,))
+                if cur.fetchone()[0] == 0:
+                    now = datetime.now()
+                    dummy_txs = [
+                        (uid, 'income', 5000000, 'Salary', 'Monthly Salary', now),
+                        (uid, 'expense', 50000, 'Food', 'Lunch', now),
+                        (uid, 'expense', 20000, 'Transport', 'Taxi', now),
+                        (uid, 'expense', 150000, 'Utilities', 'Internet Bill', now)
+                    ]
+                    cur.executemany("INSERT INTO transactions (user_id, type, amount, category, description, date) VALUES (?, ?, ?, ?, ?, ?)", dummy_txs)
+
             db.commit()
             
     return db
@@ -57,14 +77,15 @@ def close_connection(exception):
     if db is not None:
         db.close()
 
-if not os.environ.get('VERCEL'):
-    Session(app)
+if not os.environ.get('VERCEL') and not os.environ.get('RENDER'):
+    # This block was moving Session(app) up, ensuring we don't init it for Vercel/Render
+    pass 
 
 CORS(app, supports_credentials=True)
 
 # Remove the initial db setup block as it's handled in get_db for memory
 # or pre-existing for file
-if not os.environ.get('VERCEL'):
+if not os.environ.get('VERCEL') and not os.environ.get('RENDER'):
     with app.app_context():
         if os.path.exists(DATABASE):
              # Ensure tables exist
@@ -178,4 +199,4 @@ def add_transaction():
     return jsonify({'message': 'Transaction added'})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=4000)
+    app.run(debug=True, port=5000)

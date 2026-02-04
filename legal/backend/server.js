@@ -15,6 +15,7 @@ dotenv.config();
 const app = express();
 const router = express.Router();
 const PORT = process.env.PORT || 3009;
+const DB_NAME = process.env.DB_NAME || 'legal_web';
 
 // Database Connection
 const USE_MOCK_DB = process.env.USE_MOCK_DB !== 'false'; // Default to true (Mock)
@@ -28,7 +29,7 @@ if (USE_MOCK_DB) {
         host: process.env.DB_HOST || 'localhost',
         user: process.env.DB_USER || 'root',
         password: process.env.DB_PASSWORD || '',
-        database: process.env.DB_NAME || 'legal_db',
+        database: DB_NAME,
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0
@@ -142,16 +143,6 @@ app.use('/legal', router);
 
 app.use('/api', (req, _res, next) => { next(); });
 
-const DB_HOST = process.env.DB_HOST || 'localhost';
-const DB_PORT = Number(process.env.DB_PORT || 3307);
-const DB_USER = process.env.DB_USER || 'root';
-const DB_PASS = process.env.DB_PASS || '';
-const DB_NAME = process.env.DB_NAME || 'legal_web';
-
-const USE_MOCK_DB = process.env.USE_MOCK_DB !== 'false'; // Toggle for demo (Default: Mock)
-
-let pool;
-
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
 try { if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR); } catch {}
 const upload = multer({
@@ -217,16 +208,14 @@ async function ensureDeptTable(dept) {
 async function initDb() {
   if (USE_MOCK_DB) {
     console.log('--- RUNNING IN MOCK DATABASE MODE (Legal Web) ---');
-    const { pool: mockPool } = await import('./mockDatabase.js');
-    pool = mockPool;
     return;
   }
 
   pool = await mysql.createPool({
-    host: DB_HOST,
-    port: DB_PORT,
-    user: DB_USER,
-    password: DB_PASS,
+    host: process.env.DB_HOST || 'localhost',
+    port: Number(process.env.DB_PORT || 3307),
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
