@@ -26,7 +26,7 @@
             <div class="text-center text-white">
                 <div class="mb-8">
                     <div class="w-32 h-32 mx-auto bg-white bg-opacity-20 backdrop-blur-lg rounded-3xl flex items-center justify-center shadow-2xl">
-                        <img src="images/nipponlogo.svg" alt="Logo" class="h-16 w-16 lg:h-24 lg:w-24">
+                        <img src="/gams/images/nipponlogo.svg" alt="Logo" class="h-16 w-16 lg:h-24 lg:w-24">
                     </div>
                 </div>
                 <h1 class="text-6xl font-bold mb-4 drop-shadow-lg">AMMS</h1>
@@ -99,9 +99,9 @@
                     <div class="mt-6 text-center text-sm text-gray-600 bg-blue-50 p-4 rounded-xl border border-blue-100">
                         <p class="font-bold mb-2">Demo Accounts:</p>
                         <ul class="text-left space-y-1 ml-4 list-disc">
-                            <li>Admin: <b>admin</b> / <b>admin123</b></li>
-                            <li>CS: <b>cs1</b> / <b>cs123</b></li>
-                            <li>User: <b>user1</b> / <b>user123</b></li>
+                            <li>Admin: <b>admin</b> / <b>password123</b></li>
+                            <li>CS: <b>cs1</b> / <b>password123</b></li>
+                            <li>User: <b>user1</b> / <b>password123</b></li>
                         </ul>
                     </div>
 
@@ -119,7 +119,7 @@
 
     <script>
         if (localStorage.getItem('token')) {
-            window.location.href = '/dashboard';
+            window.location.href = '/gams/dashboard.html';
         }
 
         document.getElementById('togglePassword').addEventListener('click', function() {
@@ -173,7 +173,7 @@
                     showAlert('Login successful! Redirecting...', 'success');
 
                     setTimeout(() => {
-                        window.location.href = '/dashboard';
+                        window.location.href = '/gams/dashboard.html';
                     }, 1000);
                 } else {
                     showAlert(data.message || 'Login failed. Please check your username and password.', 'danger');

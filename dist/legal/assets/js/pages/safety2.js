@@ -10,7 +10,7 @@ const tbody   = document.getElementById('tbody');
 const layer = document.getElementById('layer'), backdrop = document.getElementById('backdrop');
 const btnClose = document.getElementById('btnClose'), layerTitle = document.getElementById('layerTitle');
 const btnBackCatTop = document.getElementById('btnBackCatTop');
-btnBackCatTop && (btnBackCatTop.onclick = ()=>{ location.href = '/license-permit.html'; });
+btnBackCatTop && (btnBackCatTop.onclick = ()=>{ location.href = '/legal/license-permit.html'; });
 
 const f_name=document.getElementById('f_name'),
       f_document=document.getElementById('f_document'),
@@ -279,7 +279,7 @@ function bindManageControls(){
 
         const existingSet = new Set();
         try {
-          const existingRes = await fetch('/api/safety');
+          const existingRes = await fetch('/legal/api/safety');
           if (existingRes.ok){
             const existing = await existingRes.json();
             existing.forEach(r=>{

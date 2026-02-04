@@ -22,7 +22,7 @@ const f_inactive = document.getElementById('f_inactive');
 const f_submit   = document.getElementById('f_submit');
 const f_cancel   = document.getElementById('f_cancel');
 const btnBackCatTop = document.getElementById('btnBackCatTop');
-btnBackCatTop && (btnBackCatTop.onclick = ()=>{ location.href = '/license-permit.html'; });
+btnBackCatTop && (btnBackCatTop.onclick = ()=>{ location.href = '/legal/license-permit.html'; });
 
 let cache = [];
 let currentId = null;
@@ -445,7 +445,7 @@ function _csvChangeFactory(importUI){
         }
         const existingSet = new Set();
         try {
-          const ex = await fetch('/api/operational');
+          const ex = await fetch('/legal/api/operational');
           if (ex.ok){
             const existRows = await ex.json();
             existRows.forEach(r=>{

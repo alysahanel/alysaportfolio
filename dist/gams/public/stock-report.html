@@ -24,7 +24,7 @@
         <aside id="sidebar" class="w-64 bg-white shadow-lg fixed h-screen flex flex-col sidebar z-20">
             <div class="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100 p-5">
                 <div class="flex items-center justify-center gap-3">
-                    <img src="images/nipponlogo.svg" alt="Nippon Steel Logo" class="h-10 w-10">
+                    <img src="/gams/images/nipponlogo.svg" alt="Nippon Steel Logo" class="h-10 w-10">
                     <h4 class="text-lg font-bold text-blue-600">AMMS</h4>
                 </div>
                 <div class="mt-2 text-center text-xs text-blue-500" id="userInfo"></div>
@@ -182,8 +182,10 @@
   </div>
 </div>
 
+<script src="/gams/js/app.js"></script>
 <script>
 let _alertTimers = { error: null, success: null };
+// ... alert functions ...
 function showErrorAlert(message, { autoHideMs = 3000 } = {}) {
   const box = document.getElementById("alert-error");
   const msg = document.getElementById("alert-error-message");
@@ -211,73 +213,25 @@ function hideAlert(id) {
   if (id === "alert-error") clearTimeout(_alertTimers.error);
   if (id === "alert-success") clearTimeout(_alertTimers.success);
 }
-const sidebar = document.getElementById('sidebar');
-const mainContent = document.getElementById('mainContent');
-const sidebarToggle = document.getElementById('sidebarToggle');
-let sidebarVisible = true;
-sidebarToggle.addEventListener('click', function() {
-    sidebarVisible = !sidebarVisible;
-    if (sidebarVisible) {
-        sidebar.classList.remove('sidebar-hidden');
-        mainContent.classList.remove('content-expanded');
-        mainContent.classList.add('ml-64');
-    } else {
-        sidebar.classList.add('sidebar-hidden');
-        mainContent.classList.add('content-expanded');
-        mainContent.classList.remove('ml-64');
-    }
-});
-let reportData = [];
-function setupSidebar(userRole) {
-    const sidebarMenu = document.getElementById('sidebarMenu');
-    let menuItems = [];
-    if (userRole === 'admin') {
-        menuItems = [
-            { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard' },
-            { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests' },
-            { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock' },
-            { icon: 'fas fa-calendar', text: 'Calendar', href: '/calendar' },
-            { icon: 'fas fa-users', text: 'Account Management', href: '/accounts' }
-        ];
-    } else if (userRole === 'cs') {
-        menuItems = [
-            { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard' },
-            { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests' },
-            { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock' }
-        ];
-    }
-    sidebarMenu.innerHTML = menuItems.map(item => `
-        <li>
-            <a href="${item.href}" class="flex items-center gap-3 px-4 py-3 rounded-lg ${item.active ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'} transition-colors">
-                <i class="${item.icon}"></i>
-                <span class="font-medium">${item.text}</span>
-            </a>
-        </li>
-    `).join('');
-}
-function checkAuth() {
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (!token) { window.location.href = '/login'; return; }
+
+// Page specific auth success hook (called by app.js)
+window.onPageAuthSuccess = function(user) {
     if (!['admin', 'cs'].includes(user.role)) {
         showErrorAlert('Access denied. Only admin and CS can view stock reports.');
-        window.location.href = '/requests';
+        window.location.href = '/gams/requests.html';
         return;
     }
-    setupSidebar(user.role);
-    if (user.role && user.full_name) {
-        document.getElementById('userInfo').textContent = `${user.full_name} | ${user.role.toUpperCase()}`;
-    }
     loadStockReport();
-}
+};
+
+let reportData = [];
+
 async function loadStockReport() {
     const currentToken = localStorage.getItem('token');
     if (!currentToken) { throw new Error('No authentication token found'); }
     try {
         const cacheBuster = Date.now() + Math.random();
         console.log('=== LOADING STOCK REPORT ===');
-        console.log('Cache buster:', cacheBuster);
-        console.log('Token exists:', !!currentToken);
         const response = await fetch(`/gams/api/stock/report?_cb=${cacheBuster}`, {
             headers: {
                 'Authorization': `Bearer ${currentToken}`,
@@ -287,12 +241,11 @@ async function loadStockReport() {
                 'Expires': '0'
             }
         });
-        console.log('Response status:', response.status);
-        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+        
         if (response.status === 401) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = '/login';
+            window.location.href = '/gams/login.html';
             return;
         }
         if (!response.ok) {
@@ -300,24 +253,9 @@ async function loadStockReport() {
             throw new Error(errorData.message || 'Failed to load stock report');
         }
         const result = await response.json();
-        console.log('=== FRESH API RESPONSE ===');
-        console.log('Full result:', JSON.stringify(result, null, 2));
-        console.log('Result success:', result.success);
-        console.log('Result data type:', typeof result.data);
-        console.log('Result data length:', result.data ? result.data.length : 'N/A');
-        if (result.data && result.data.length > 0) {
-            console.log('=== FIRST ITEM DETAILED ANALYSIS ===');
-            const firstItem = result.data[0];
-            console.log('First item raw:', JSON.stringify(firstItem, null, 2));
-            console.log('itemId value:', firstItem.itemId, 'type:', typeof firstItem.itemId);
-            console.log('itemName value:', firstItem.itemName, 'type:', typeof firstItem.itemName);
-            console.log('transactionDate value:', firstItem.transactionDate, 'type:', typeof firstItem.transactionDate);
-        }
+        
         if (result.success) {
             reportData = result.data || [];
-            console.log('=== SETTING reportData ===');
-            console.log('reportData assigned, length:', reportData.length);
-            console.log('reportData first item after assignment:', reportData[0]);
             loadReportData(reportData);
         } else {
             throw new Error(result.message || 'Failed to load stock report');
@@ -331,6 +269,7 @@ async function loadStockReport() {
         `;
     }
 }
+
 function loadReportData(data = reportData) {
     const tbody = document.getElementById('reportTableBody');
     tbody.innerHTML = '';
@@ -407,7 +346,7 @@ async function getReport() {
         if (response.status === 401) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = '/login';
+            window.location.href = '/gams/login.html';
             return;
         }
         if (!response.ok) { throw new Error('Failed to get filtered report'); }
@@ -493,7 +432,7 @@ async function exportToXLS() {
         if (response.status === 401) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = '/login';
+            window.location.href = '/gams/login.html';
             return;
         }
         if (!response.ok) { throw new Error('Failed to export stock report'); }
@@ -512,9 +451,8 @@ async function exportToXLS() {
         showErrorAlert('Failed to export stock report: ' + error.message);
     }
 }
-function logout() { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = '/login'; }
 document.addEventListener('DOMContentLoaded', function() {
-    checkAuth();
+    // checkAuth() is handled by app.js
     const today = new Date();
     const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
     document.getElementById('endDate').value = today.toISOString().split('T')[0];

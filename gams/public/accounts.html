@@ -33,7 +33,7 @@
         <aside id="sidebar" class="w-64 bg-white shadow-lg fixed h-screen flex flex-col sidebar z-20">
             <div class="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100 p-5">
                 <div class="flex items-center justify-center gap-3">
-                    <img src="images/nipponlogo.svg" alt="Nippon Steel Logo" class="h-10 w-10">
+                    <img src="/gams/images/nipponlogo.svg" alt="Nippon Steel Logo" class="h-10 w-10">
                     <h4 class="text-lg font-bold text-blue-600">AMMS</h4>
                 </div>
                 <div class="mt-2 text-center text-xs text-blue-500" id="userInfo"></div>
@@ -316,40 +316,9 @@ function resolveConfirmation(result) {
     }
 }
 
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        let sidebarVisible = true;
-
-        sidebarToggle.addEventListener('click', function() {
-            sidebarVisible = !sidebarVisible;
-            if (sidebarVisible) {
-                sidebar.classList.remove('sidebar-hidden');
-                mainContent.classList.remove('content-expanded');
-                mainContent.classList.add('ml-64');
-            } else {
-                sidebar.classList.add('sidebar-hidden');
-                mainContent.classList.add('content-expanded');
-                mainContent.classList.remove('ml-64');
-            }
-        });
-
-        const token = localStorage.getItem('token');
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-
-        if (!token || !user.id) {
-            window.location.href = '/login';
-        }
-
-        if (user.role !== 'admin') {
-            showErrorAlert('You do not have access to this page');
-            window.location.href = '/requests';
-        }
-
-        document.getElementById('userInfo').textContent = `${user.full_name} | ${user.role.toUpperCase()}`;
-
         let accounts = [];
         let departments = [];
+        let user = {};
 
         const departmentList = [
             'HRGA Legal', 'CS', 'WH',
@@ -358,35 +327,20 @@ function resolveConfirmation(result) {
             'IT', 'Sales', 'Maintenance'
         ];
 
-        function initializePage() {
-            setupSidebar();
+        window.onPageAuthSuccess = function(authUser) {
+            user = authUser;
+            // Ensure role compatibility
+            if (!user.role && user.role_name) user.role = user.role_name;
+
+            if (user.role !== 'admin') {
+                showErrorAlert('You do not have access to this page');
+                window.location.href = '/gams/requests.html';
+                return;
+            }
+            
             loadDepartments();
             loadAccounts();
-        }
-
-        function setupSidebar() {
-            const sidebarMenu = document.getElementById('sidebarMenu');
-            let menuItems = [];
-
-            if (user.role === 'admin') {
-                menuItems = [
-                    { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard' },
-                    { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests' },
-                    { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock' },
-                    { icon: 'fas fa-calendar', text: 'Calendar', href: '/calendar' },
-                    { icon: 'fas fa-users', text: 'Account Management', href: '/accounts', active: true }
-                ];
-            }
-
-            sidebarMenu.innerHTML = menuItems.map(item => `
-                <li>
-                    <a href="${item.href}" class="flex items-center gap-3 px-4 py-3 rounded-lg ${item.active ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'} transition-colors">
-                        <i class="${item.icon}"></i>
-                        <span class="font-medium">${item.text}</span>
-                    </a>
-                </li>
-            `).join('');
-        }
+        };
 
         function loadDepartments() {
             departments = departmentList;
@@ -460,7 +414,7 @@ function resolveConfirmation(result) {
                         localStorage.removeItem('token');
                         localStorage.removeItem('user');
                         showErrorAlert('Session expired. Please login again.');
-                        window.location.href = '/login';
+                        window.location.href = '/gams/login.html';
                         return;
                     }
                     
@@ -825,12 +779,7 @@ function resolveConfirmation(result) {
                 showErrorAlert('Failed to export accounts data');
             });
         }
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = '/login';
-        }
-        document.addEventListener('DOMContentLoaded', initializePage);
     </script>
+    <script src="/gams/js/app.js"></script>
 </body>
 </html>

@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 
-  <script src="./assets/global-sidebar.js" defer></script>
+  <script src="/legal/assets/global-sidebar.js" defer></script>
 
   <style>
     body { 
@@ -129,19 +129,19 @@
         </h2>
 
         <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
-          <div class="license-card" onclick="navigateLP(['/company','/company.html'])">
+          <div class="license-card" onclick="location.href='/legal/company.html'">
             <h2 class="license-card-title">Company & Legal Entity</h2>
             <div class="license-card-count" id="countCompany">–</div>
             <div class="license-card-items">Items</div>
           </div>
 
-          <div class="license-card" onclick="navigateLP(['/operational','/operational.html'])">
+          <div class="license-card" onclick="location.href='/legal/operational.html'">
             <h2 class="license-card-title">Operational Permit</h2>
             <div class="license-card-count" id="countOperational">–</div>
             <div class="license-card-items">Items</div>
           </div>
 
-          <div class="license-card" onclick="navigateLP(['/safety','/safety.html'])">
+          <div class="license-card" onclick="location.href='/legal/safety.html'">
             <h2 class="license-card-title">Safety License</h2>
             <div class="license-card-count" id="countSafety">–</div>
             <div class="license-card-items">Items</div>

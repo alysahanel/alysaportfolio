@@ -28,6 +28,7 @@ class AuthController {
           id: user.id, 
           username: user.username, 
           role: user.role,
+          pic_name: user.pic_name,
           department: user.department
         },
         process.env.JWT_SECRET,
@@ -50,6 +51,7 @@ class AuthController {
           id: user.id,
           username: user.username,
           full_name: user.full_name,
+          pic_name: user.pic_name,
           role: user.role,
           department: user.department
         }
@@ -99,6 +101,7 @@ class AuthController {
             id: decoded.id,
             username: decoded.username,
             role: decoded.role,
+            pic_name: decoded.pic_name,
             department: decoded.department
           }
         });

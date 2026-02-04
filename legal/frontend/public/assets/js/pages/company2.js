@@ -23,7 +23,7 @@ const f_submit = document.getElementById('f_submit');
 const f_cancel = document.getElementById('f_cancel');
 const f_approval = document.getElementById('f_approval');
 const btnBackCatTop = document.getElementById('btnBackCatTop');
-if (btnBackCatTop) btnBackCatTop.onclick = ()=>{ location.href = '/license-permit.html'; };
+if (btnBackCatTop) btnBackCatTop.onclick = ()=>{ location.href = '/legal/license-permit.html'; };
 
 const importUI = {
   layer: document.getElementById('importPreviewLayer'),
@@ -127,13 +127,13 @@ function renderTopActions(){
       <button id="btnBackCat" class="px-3 py-2 border rounded">← Kembali ke Kategori</button>
     `;  
     document.getElementById('btnBackView').onclick = () => switchMode('view');
-    document.getElementById('btnBackCat').onclick = () => { location.href = '/license-permit.html'; };
+    document.getElementById('btnBackCat').onclick = () => { location.href = '/legal/license-permit.html'; };
   } else {
     actions.innerHTML = `
       <button id="btnGoManage" class="px-3 py-2 bg-sky-600 text-white rounded">Kelola</button>
       <button id="btnBackCat" class="px-3 py-2 border rounded">← Kembali ke Kategori</button>`;
     document.getElementById('btnGoManage').onclick = () => switchMode('manage');
-    document.getElementById('btnBackCat').onclick = () => { location.href = '/license-permit.html'; };
+    document.getElementById('btnBackCat').onclick = () => { location.href = '/legal/license-permit.html'; };
   }
 }
 
@@ -282,7 +282,7 @@ function bindManageControls(){
         }
         const existingSet = new Set();
         try {
-          const ex = await fetch('/api/company');
+          const ex = await fetch('/legal/api/company');
           if (ex.ok){
             const existRows = await ex.json();
             existRows.forEach(r=>{

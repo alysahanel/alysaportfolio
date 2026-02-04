@@ -2,7 +2,7 @@
   const API_BASE = '/gams/api';
 
   document.addEventListener('DOMContentLoaded', () => {
-    const ids = ['searchItem', 'searchItemSimple', 'itemSearch', 'dashboardItemSearch'];
+    const ids = ['searchItem', 'searchItemSimple', 'itemSearch', 'dashboardItemSearch', 'itemSearchInput'];
     ids.forEach((id) => {
       const el = document.getElementById(id);
       if (el) setupAutocomplete(el);

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -43,7 +43,7 @@
         <aside id="sidebar" class="w-64 bg-white shadow-lg fixed h-screen flex flex-col sidebar z-20">
             <div class="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100 p-5">
                 <div class="flex items-center justify-center gap-3">
-                    <img src="images/nipponlogo.svg" alt="Nippon Steel Logo" class="h-10 w-10">
+                    <img src="/gams/images/nipponlogo.svg" alt="Nippon Steel Logo" class="h-10 w-10">
                     <h4 class="text-lg font-bold text-blue-600">AMMS</h4>
                 </div>
                 <div class="mt-2 text-center text-xs text-blue-500" id="userInfo"></div>
@@ -350,6 +350,8 @@
         </div>
       </div>
     </div>
+    <script src="/gams/js/app.js"></script>
+    <script src="/gams/js/item-suggestions.js"></script>
     <script>
 let _alertTimers = { error: null, success: null };
 function showErrorAlert(message, { autoHideMs = 3000 } = {}) {
@@ -423,37 +425,18 @@ function resolveInput(value) {
         inputModalResolver = null;
     }
 }
-const sidebar = document.getElementById('sidebar');
-const mainContent = document.getElementById('mainContent');
-const sidebarToggle = document.getElementById('sidebarToggle');
-let sidebarVisible = true;
-sidebarToggle.addEventListener('click', function() {
-    sidebarVisible = !sidebarVisible;
-    if (sidebarVisible) {
-        sidebar.classList.remove('sidebar-hidden');
-        mainContent.classList.remove('content-expanded');
-        mainContent.classList.add('ml-64');
-    } else {
-        sidebar.classList.add('sidebar-hidden');
-        mainContent.classList.add('content-expanded');
-        mainContent.classList.remove('ml-64');
-    }
-});
-const token = localStorage.getItem('token');
-const user = JSON.parse(localStorage.getItem('user') || '{}');
-if (!token || !user.id) {
-    window.location.href = '/login';
-}
-document.getElementById('userInfo').textContent = `${user.full_name} | ${(user.role || '').toUpperCase()}`;
-document.getElementById('headerUserName').textContent = user.full_name;
+// Sidebar and Auth handled by app.js
 let currentRequestId = null;
-function initializePage() {
-    setupSidebar();
+let user = null; // Global user variable for this page
+
+// Page specific initialization hook (called by app.js)
+window.onPageAuthSuccess = function(authUser) {
+    user = authUser;
     setupActionButtons();
     setupTableHeader();
     setupDepartmentFilter();
     loadRequests();
-}
+};
 function setupDepartmentFilter() {
     const departmentFilter = document.getElementById('searchDepartment').closest('.col-md-3');
     const departmentSelect = document.getElementById('searchDepartment');
@@ -485,38 +468,7 @@ function loadDepartmentOptions() {
         departmentSelect.appendChild(option);
     });
 }
-function setupSidebar() {
-    const sidebarMenu = document.getElementById('sidebarMenu');
-    let menuItems = [];
-    if (user.role === 'admin') {
-        menuItems = [
-            { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard' },
-            { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests', active: true },
-            { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock' },
-            { icon: 'fas fa-calendar', text: 'Calendar', href: '/calendar' },
-            { icon: 'fas fa-users', text: 'Account Management', href: '/accounts' }
-        ];
-    } else if (user.role === 'cs') {
-        menuItems = [
-            { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard' },
-            { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests', active: true },
-            { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock' }
-        ];
-    } else if (user.role === 'user') {
-        menuItems = [
-            { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard' },
-            { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests', active: true }
-        ];
-    }
-    sidebarMenu.innerHTML = menuItems.map(item => `
-        <li>
-            <a href="${item.href}" class="flex items-center gap-3 px-4 py-3 rounded-lg ${item.active ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'} transition-colors">
-                <i class="${item.icon}"></i>
-                <span class="font-medium">${item.text}</span>
-            </a>
-        </li>
-    `).join('');
-}
+// Sidebar handled by app.js
 function setupActionButtons() {
     const actionButtons = document.getElementById('actionButtons');
     if (user.role === 'user') {
@@ -542,7 +494,7 @@ async function loadRequests() {
     try {
         const token = localStorage.getItem('token');
         if (!token) {
-            window.location.href = '/login';
+            window.location.href = '/gams/login.html';
             return;
         }
         const response = await fetch('/gams/api/requests', {
@@ -555,7 +507,7 @@ async function loadRequests() {
             if (response.status === 401) {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
-                window.location.href = '/login';
+                window.location.href = '/gams/login.html';
                 return;
             }
             throw new Error('Failed to load requests');
@@ -636,6 +588,7 @@ function renderRequestsTable(requests) {
     }).join('');
 }
 async function filterRequests() {
+    const token = localStorage.getItem('token');
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
     const searchItem = document.getElementById('searchItem').value;
@@ -646,7 +599,7 @@ async function filterRequests() {
     if (searchItem) params.append('item', searchItem);
     if (searchDepartment) params.append('department', searchDepartment);
     try {
-        const response = await fetch(`/api/requests?${params.toString()}`, {
+        const response = await fetch(`/gams/api/requests?${params.toString()}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -678,7 +631,7 @@ async function exportToExcel() {
         const endDate = document.getElementById('endDate').value;
         const searchItem = document.getElementById('searchItem').value;
         const searchDepartment = document.getElementById('searchDepartment').value;
-        let url = '/api/export/requests';
+        let url = '/gams/api/export/requests';
         const params = [];
         if (startDate) params.push(`startDate=${startDate}`);
         if (endDate) params.push(`endDate=${endDate}`);
@@ -697,7 +650,7 @@ async function exportToExcel() {
         if (response.status === 401) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = '/login';
+            window.location.href = '/gams/login.html';
             return;
         }
         if (!response.ok) {
@@ -810,7 +763,7 @@ async function saveRequest() {
             if (!currentToken) {
                 throw new Error('No authentication token found');
             }
-            const url = currentRequestId ? `/api/requests/${currentRequestId}` : '/api/requests';
+            const url = currentRequestId ? `/gams/api/requests/${currentRequestId}` : '/gams/api/requests';
             const method = currentRequestId ? 'PUT' : 'POST';
             const response = await fetch(url, {
                 method: method,
@@ -888,7 +841,7 @@ async function saveRequest() {
         if (!currentToken) {
             throw new Error('No authentication token found');
         }
-        const url = currentRequestId ? `/api/requests/${currentRequestId}` : '/api/requests';
+        const url = currentRequestId ? `/gams/api/requests/${currentRequestId}` : '/gams/api/requests';
         const method = currentRequestId ? 'PUT' : 'POST';
         const response = await fetch(url, {
             method: method,
@@ -914,7 +867,7 @@ async function addComment(requestId) {
     const comment = await showInputModal('Add Comment', 'Enter Comment:');
     if (!comment) return;
     try {
-        const response = await fetch(`/api/requests/${requestId}/comment`, {
+        const response = await fetch(`/gams/api/requests/${requestId}/comment`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -933,7 +886,7 @@ async function addComment(requestId) {
 async function approveRequest(requestId) {
     if (!await showConfirmModal('Confirm Approval', 'Approve this request?')) return;
     try {
-        const response = await fetch(`/api/requests/${requestId}/status`, {
+        const response = await fetch(`/gams/api/requests/${requestId}/status`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -953,7 +906,7 @@ async function rejectRequest(requestId) {
     const comment = await showInputModal('Reason for rejection:', 'Please enter the reason for rejection');
     if (!comment) return;
     try {
-        const response = await fetch(`/api/requests/${requestId}/status`, {
+        const response = await fetch(`/gams/api/requests/${requestId}/status`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -995,7 +948,7 @@ async function saveDeliveryInfo() {
         return;
     }
     try {
-        const response = await fetch(`/api/requests/${currentDeliveryRequestId}/delivery`, {
+        const response = await fetch(`/gams/api/requests/${currentDeliveryRequestId}/delivery`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -1021,12 +974,12 @@ async function saveDeliveryInfo() {
 function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '/login';
+    window.location.href = '/gams/login.html';
 }
 let itemsData = [];
 async function loadItemsForDropdown() {
     try {
-        const response = await fetch('/api/items', {
+        const response = await fetch('/gams/api/items', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

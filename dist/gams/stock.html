@@ -39,7 +39,7 @@
         <aside id="sidebar" class="w-64 bg-white shadow-lg fixed h-screen flex flex-col sidebar z-20">
             <div class="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100 p-5">
                 <div class="flex items-center justify-center gap-3">
-                    <img src="images/nipponlogo.svg" alt="Nippon Steel Logo" class="h-10 w-10">
+                    <img src="/gams/images/nipponlogo.svg" alt="Nippon Steel Logo" class="h-10 w-10">
                     <h4 class="text-lg font-bold text-blue-600">AMMS</h4>
                 </div>
                 <div class="mt-2 text-center text-xs text-blue-500" id="userInfo"></div>
@@ -343,9 +343,12 @@
     </div>
 
 
+    <script src="/gams/js/app.js"></script>
     <script>
 
 let _alertTimers = { error: null, success: null };
+let user = {};
+let itemsData = [];
 
 function showErrorAlert(message, { autoHideMs = 3000 } = {}) {
   const box = document.getElementById("alert-error");
@@ -378,24 +381,6 @@ function hideAlert(id) {
   if (id === "alert-success") clearTimeout(_alertTimers.success);
 }  
 
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        let sidebarVisible = true;
-
-        sidebarToggle.addEventListener('click', function() {
-            sidebarVisible = !sidebarVisible;
-            if (sidebarVisible) {
-                sidebar.classList.remove('sidebar-hidden');
-                mainContent.classList.remove('content-expanded');
-                mainContent.classList.add('ml-64');
-            } else {
-                sidebar.classList.add('sidebar-hidden');
-                mainContent.classList.add('content-expanded');
-                mainContent.classList.remove('ml-64');
-            }
-        });
-
         // Modal helper functions
         function closeEditStockModal() {
             document.getElementById('editStockModal').classList.add('hidden');
@@ -412,59 +397,25 @@ function hideAlert(id) {
             document.getElementById('editItemModal').classList.remove('flex');
         }
 
-        const token = localStorage.getItem('token');
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        window.onPageAuthSuccess = function(authUser) {
+            user = authUser;
+            
+            if (user.role === 'user') {
+                showErrorAlert('You do not have access to this page');
+                window.location.href = '/gams/requests.html';
+                return;
+            }
 
-        if (!token || !user.id) {
-            window.location.href = '/login';
-        }
-
-        if (user.role === 'user') {
-            showErrorAlert('You do not have access to this page');
-            window.location.href = '/requests';
-        }
-
-        document.getElementById('userInfo').textContent = `${user.full_name} | ${(user.role || '').toUpperCase()}`;
-
-        let itemsData = [];
-
-        function initializePage() {
-            setupSidebar();
+            // User info is set by app.js in sidebar, but we might want to ensure it's available
+            
             loadItems();
             loadItemsForDropdown();
             
-            document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
-        }
-
-        function setupSidebar() {
-            const sidebarMenu = document.getElementById('sidebarMenu');
-            let menuItems = [];
-
-            if (user.role === 'admin') {
-                menuItems = [
-                    { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard' },
-                    { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests' },
-                    { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock', active: true },
-                    { icon: 'fas fa-calendar', text: 'Calendar', href: '/calendar' },
-                    { icon: 'fas fa-users', text: 'Account Management', href: '/accounts' }
-                ];
-            } else if (user.role === 'cs') {
-                menuItems = [
-                    { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard' },
-                    { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests' },
-                    { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock', active: true }
-                ];
+            const inputDate = document.getElementById('inputDate');
+            if (inputDate) {
+                inputDate.value = new Date().toISOString().split('T')[0];
             }
-
-            sidebarMenu.innerHTML = menuItems.map(item => `
-                <li>
-                    <a href="${item.href}" class="flex items-center gap-3 px-4 py-3 rounded-lg ${item.active ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'} transition-colors">
-                        <i class="${item.icon}"></i>
-                        <span class="font-medium">${item.text}</span>
-                    </a>
-                </li>
-            `).join('');
-        }
+        };
 
         async function loadItems() {
             try {
@@ -509,7 +460,7 @@ function hideAlert(id) {
                     throw new Error('No authentication token found');
                 }
 
-                const response = await fetch('/api/items', {
+                const response = await fetch('/gams/api/items', {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`,
                         'Content-Type': 'application/json'
@@ -765,7 +716,7 @@ function hideAlert(id) {
                         return;
                     }
 
-                    const response = await fetch('/api/items', {
+                    const response = await fetch('/gams/api/items', {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${currentToken}`,
@@ -788,7 +739,7 @@ function hideAlert(id) {
                 } else if (itemSelect.value) {
                     const itemId = parseInt(itemSelect.value);
                     
-                    const response = await fetch(`/api/stock/update/${itemId}`, {
+                    const response = await fetch(`/gams/api/stock/update/${itemId}`, {
                         method: 'PUT',
                         headers: {
                             'Authorization': `Bearer ${currentToken}`,
@@ -852,7 +803,7 @@ function hideAlert(id) {
             }
 
             try {
-                const response = await fetch(`/api/stock/report?startDate=${startDate}&endDate=${endDate}`, {
+                const response = await fetch(`/gams/api/stock/report?startDate=${startDate}&endDate=${endDate}`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -912,7 +863,7 @@ function hideAlert(id) {
                 return;
             }
 
-            fetch('/api/export/stock', {
+            fetch('/gams/api/export/stock', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -951,7 +902,7 @@ function hideAlert(id) {
             const startDate = document.getElementById('reportStartDate').value;
             const endDate = document.getElementById('reportEndDate').value;
             
-            let url = '/api/export/stock-report';
+            let url = '/gams/api/export/stock-report';
             if (startDate && endDate) {
                 url += `?startDate=${startDate}&endDate=${endDate}`;
             }
@@ -994,7 +945,7 @@ function hideAlert(id) {
                     return;
                 }
 
-                const response = await fetch(`/api/items/${itemId}`, {
+                const response = await fetch(`/gams/api/items/${itemId}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -1044,7 +995,7 @@ function hideAlert(id) {
                     return;
                 }
 
-                const response = await fetch(`/api/items/${itemId}`, {
+                const response = await fetch(`/gams/api/items/${itemId}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1114,7 +1065,7 @@ function resolveConfirmation(result) {
             }
 
             try {
-                const response = await fetch(`/api/items/${itemId}`, {
+                const response = await fetch(`/gams/api/items/${itemId}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${currentToken}`,
@@ -1139,7 +1090,7 @@ function resolveConfirmation(result) {
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = '/login';
+            window.location.href = '/gams/login.html';
         }
 
         document.addEventListener('DOMContentLoaded', initializePage);

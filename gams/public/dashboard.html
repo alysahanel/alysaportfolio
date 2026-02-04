@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -33,7 +33,7 @@
         <aside id="sidebar" class="w-64 bg-white shadow-lg fixed h-screen flex flex-col sidebar z-20">
             <div class="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100 p-5">
                 <div class="flex items-center justify-center gap-3">
-                    <img src="images/nipponlogo.svg" alt="Nippon Steel Logo" class="h-10 w-10">
+                    <img src="/gams/images/nipponlogo.svg" alt="Nippon Steel Logo" class="h-10 w-10">
                     <h4 class="text-lg font-bold text-blue-600">AMMS</h4>
                 </div>
                 <div class="mt-2 text-center text-xs text-blue-500" id="userInfo"></div>
@@ -189,6 +189,8 @@
 </div>
 
 
+    <script src="/gams/js/app.js"></script>
+    <script src="/gams/js/item-suggestions.js"></script>
     <script>
 
 let _alertTimers = { error: null, success: null };
@@ -225,113 +227,32 @@ function hideAlert(id) {
   if (id === "alert-success") clearTimeout(_alertTimers.success);
 }
 
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('mainContent');
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        let sidebarVisible = true;
-
-        sidebarToggle.addEventListener('click', function() {
-            sidebarVisible = !sidebarVisible;
-            if (sidebarVisible) {
-                sidebar.classList.remove('sidebar-hidden');
-                mainContent.classList.remove('content-expanded');
-                mainContent.classList.add('ml-64');
-            } else {
-                sidebar.classList.add('sidebar-hidden');
-                mainContent.classList.add('content-expanded');
-                mainContent.classList.remove('ml-64');
-            }
-        });
-
         function closeModal() {
             document.getElementById('addItemModal').classList.add('hidden');
             document.getElementById('addItemModal').classList.remove('flex');
         }
 
-        let user = null;
-
-        async function checkAuthentication() {
-            try {
-                const token = localStorage.getItem('token');
-                
-                const response = await fetch('/gams/api/auth/check', {
-                    method: 'GET',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': token ? `Bearer ${token}` : ''
-                    }
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.success) {
-                        user = result.user;
-                        return true;
-                    }
-                }
-                
-                window.location.href = '/login';
-                return false;
-            } catch (error) {
-                console.error('Auth check error:', error);
-                window.location.href = '/login';
-                return false;
-            }
-        }
-
-        async function initializeDashboard() {
-            const isAuthenticated = await checkAuthentication();
-            if (!isAuthenticated) return;
-
+        // Page specific initialization hook
+        window.onPageAuthSuccess = function(authUser) {
+            user = authUser;
+            
             document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US');
-            document.getElementById('userInfo').textContent = `${user.full_name} | ${(user.role || '').toUpperCase()}`;
-            document.getElementById('headerUserName').textContent = user.full_name;
-
-            setupSidebar();
+            
+            // Header user info is already set by app.js, but we can update it if needed or specific to this page
+            // app.js sets #userInfo and #headerUserName
+            
             loadDashboardContent();
+            
+            // Initialize item search widget if available
+            if (typeof setupItemSearch === 'function') {
+                setupItemSearch(); 
+            }
             
             setInterval(() => {
                 loadDashboardContent();
                 console.log('Dashboard auto-refreshed at:', new Date().toLocaleTimeString());
             }, 30000);
-        }
-
-        function setupSidebar() {
-            const sidebarMenu = document.getElementById('sidebarMenu');
-            let menuItems = [];
-
-            if (user.role === 'admin') {
-                menuItems = [
-                    { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard', active: true },
-                    { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests' },
-                    { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock' },
-                    { icon: 'fas fa-calendar', text: 'Calendar', href: '/calendar' },
-                    { icon: 'fas fa-users', text: 'Account Management', href: '/accounts' },
-                
-                ];
-            } else if (user.role === 'cs') {
-                menuItems = [
-                    { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard', active: true },
-                    { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests' },
-                    { icon: 'fas fa-boxes', text: 'Item Stock', href: '/stock' }
-                ];
-            } else if (user.role === 'user') {
-                menuItems = [
-                    { icon: 'fas fa-tachometer-alt', text: 'Dashboard', href: '/dashboard', active: true },
-                    { icon: 'fas fa-clipboard-list', text: 'Requests', href: '/requests' }
-                ];
-            }
-
-            sidebarMenu.innerHTML = menuItems.map(item => `
-                <li>
-                    <a href="${item.href}" class="flex items-center gap-3 px-4 py-3 rounded-lg ${item.active ? 'bg-blue-500 text-white' : 'text-gray-700 hover:bg-gray-100'} transition-colors">
-                        <i class="${item.icon}"></i>
-                        <span class="font-medium">${item.text}</span>
-                    </a>
-                </li>
-            `).join('');
-        }
+        };
 
         async function loadDashboardContent() {
             try {
@@ -648,7 +569,7 @@ function hideAlert(id) {
                                 </div>
                                 <hr class="my-4">
                                 <div class="text-center">
-                                    <a href="/requests" class="inline-block bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">
+                                    <a href="/gams/requests.html" class="inline-block bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">
                                         <i class="fas fa-plus"></i> Create New Request
                                     </a>
                                 </div>
@@ -711,7 +632,7 @@ function hideAlert(id) {
                     <td class="px-6 py-4 text-sm text-gray-700">${item.min_stock}</td>
                     <td class="px-6 py-4 text-sm text-gray-700">${item.pending_quantity || 0}</td>
                     <td class="px-6 py-4">
-                        <a href="/stock" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors inline-flex items-center gap-1">
+                        <a href="/gams/stock.html" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors inline-flex items-center gap-1">
                             <i class="fas fa-plus"></i> Add Stock
                         </a>
                     </td>
@@ -910,7 +831,7 @@ function hideAlert(id) {
             try {
                 const token = localStorage.getItem('token');
 
-                const response = await fetch(`/api/items/search?q=${encodeURIComponent(searchTerm)}`, {
+                const response = await fetch(`/gams/api/items/search?q=${encodeURIComponent(searchTerm)}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -955,7 +876,7 @@ function hideAlert(id) {
 
                 const token = localStorage.getItem('token');
 
-                const response = await fetch('/api/calendar/events/today', {
+                const response = await fetch('/gams/api/calendar/events/today', {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -979,8 +900,8 @@ function hideAlert(id) {
                             <strong class="text-gray-800">${event.title}</strong>
                             <div class="text-gray-600 text-sm">
                                 ${event.event_time || event.start_time ? (event.event_time || event.start_time) + ' WIB' : 'All day'}
-                                ${event.location ? ' • ' + event.location : ''}
-                                ${event.description ? ' • ' + event.description : ''}
+                                ${event.location ? ' â€¢ ' + event.location : ''}
+                                ${event.description ? ' â€¢ ' + event.description : ''}
                             </div>
                         </div>
                     `).join('');
@@ -1006,7 +927,7 @@ function hideAlert(id) {
                 if (!weeklyDiv) return;
 
                 const token = localStorage.getItem('token');
-                const response = await fetch('/api/calendar/events/this-week', {
+                const response = await fetch('/gams/api/calendar/events/this-week', {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -1049,8 +970,8 @@ function hideAlert(id) {
                         <li class="mb-1">
                             <span class="text-gray-800 font-medium">${ev.title}</span>
                             <span class="text-gray-600 text-sm">
-                                ${ev.event_time || ev.start_time ? ' • ' + (ev.event_time || ev.start_time) + ' WIB' : ''}
-                                ${ev.location ? ' • ' + ev.location : ''}
+                                ${ev.event_time || ev.start_time ? ' â€¢ ' + (ev.event_time || ev.start_time) + ' WIB' : ''}
+                                ${ev.location ? ' â€¢ ' + ev.location : ''}
                             </span>
                         </li>
                     `).join('');
@@ -1098,7 +1019,7 @@ function hideAlert(id) {
                 const startDate = `${y}-${m}-01`;
                 const endDate = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
 
-                const res = await fetch(`/api/calendar/events/range?startDate=${startDate}&endDate=${endDate}`, {
+                const res = await fetch(`/gams/api/calendar/events/range?startDate=${startDate}&endDate=${endDate}`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -1127,7 +1048,7 @@ function hideAlert(id) {
         function openEventModal(dateKey) {
             const modal = document.getElementById('eventModal');
             const label = new Date(dateKey).toLocaleDateString('en-US', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
-            document.getElementById('eventModalDate').textContent = `• ${label}`;
+            document.getElementById('eventModalDate').textContent = `â€¢ ${label}`;
             modal.classList.remove('hidden');
             modal.classList.add('flex');
             fetchEventsByDate(dateKey);
@@ -1142,7 +1063,7 @@ function hideAlert(id) {
         async function fetchEventsByDate(dateKey) {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch(`/api/calendar/events/date/${dateKey}`, {
+                const res = await fetch(`/gams/api/calendar/events/date/${dateKey}`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -1175,7 +1096,7 @@ function hideAlert(id) {
                         <div class="flex justify-between items-start">
                             <div>
                                 <div class="font-semibold text-gray-800">${ev.title}</div>
-                                <div class="text-gray-600 text-sm">${displayTime}${ev.location ? ' • '+ev.location : ''}</div>
+                                <div class="text-gray-600 text-sm">${displayTime}${ev.location ? ' â€¢ '+ev.location : ''}</div>
                                 ${ev.description ? `<div class='text-gray-500 text-sm'>${ev.description}</div>` : ''}
                             </div>
                             ${canEdit ? `<button class="text-blue-600 hover:text-blue-800 text-sm" onclick="toggleEditForm('${id}')"><i class='fas fa-edit'></i> Edit</button>` : ''}
@@ -1239,7 +1160,7 @@ function hideAlert(id) {
                     return;
                 }
 
-                const res = await fetch(`/api/calendar/events/${id}`, {
+                const res = await fetch(`/gams/api/calendar/events/${id}`, {
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
@@ -1303,7 +1224,7 @@ function initItemSearchWidget() {
 async function fetchItemsByQuery(query) {
   try {
     const token = localStorage.getItem('token');
-    const res = await fetch(`/api/items/search?q=${encodeURIComponent(query)}`, {
+    const res = await fetch(`/gams/api/items/search?q=${encodeURIComponent(query)}`, {
       method: 'GET',
       credentials: 'include',
       headers: {
@@ -1344,7 +1265,7 @@ function renderItemResults(items) {
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <div class="font-medium text-gray-800">${item.item_name || '-'}</div>
-            <div class="text-sm text-gray-500">ID: ${item.item_id || item.id || '-'} • Unit: ${item.unit || '-'}</div>
+            <div class="text-sm text-gray-500">ID: ${item.item_id || item.id || '-'} â€¢ Unit: ${item.unit || '-'}</div>
             ${item.detail ? `<div class="text-sm text-gray-600">${item.detail}</div>` : ''}
           </div>
           <div class="flex items-center gap-3">
@@ -1366,12 +1287,11 @@ function renderItemResults(items) {
 function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = '/login';
+            window.location.href = '/gams/login.html';
         }
 
-        document.addEventListener('DOMContentLoaded', initializeDashboard);
+        
         document.addEventListener('DOMContentLoaded', initItemSearchWidget);
     </script>
-    <script src="js/item-suggestions.js"></script>
 </body>
 </html>

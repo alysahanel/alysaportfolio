@@ -12,10 +12,30 @@ function setupEventListeners() {
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
     }
+
+    // Sidebar toggle
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    
+    if (sidebarToggle && sidebar && mainContent) {
+        sidebarToggle.addEventListener('click', function() {
+            const isHidden = sidebar.classList.contains('sidebar-hidden');
+            if (isHidden) {
+                sidebar.classList.remove('sidebar-hidden');
+                mainContent.classList.remove('content-expanded');
+                mainContent.classList.add('ml-64');
+            } else {
+                sidebar.classList.add('sidebar-hidden');
+                mainContent.classList.add('content-expanded');
+                mainContent.classList.remove('ml-64');
+            }
+        });
+    }
 }
 async function checkAuth() {
     try {
-        showLoading(true);
+        // showLoading(true); // Loading UI not present in all pages, removing or handling gracefully
         const token = localStorage.getItem('token');
         
         const headers = {
@@ -34,56 +54,35 @@ async function checkAuth() {
         if (response.ok) {
             const data = await response.json();
             if (data.success) {
-            currentUser = data.user;
-            showMainApp();
-            window.location.href = 'dashboard.html';
-            return;
+                currentUser = data.user;
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                // Initialize page
+                const userDisplayName = document.getElementById('userDisplayName');
+                if (userDisplayName && currentUser) userDisplayName.textContent = currentUser.pic_name;
+                
+                setupSidebar();
+
+                // Page specific initialization hook
+                if (typeof window.onPageAuthSuccess === 'function') {
+                    window.onPageAuthSuccess(currentUser);
+                }
+                
+                // Do not redirect if already on a protected page
+                return;
+            }
         }
-        }
-        showLoginPage();
+        // Auth failed
+        window.location.href = '/gams/login.html';
     } catch (error) {
         console.error('Auth check error:', error);
-        showLoginPage();
+        window.location.href = '/gams/login.html';
     } finally {
-        showLoading(false);
+        // showLoading(false);
     }
 }
-async function handleLogin(e) {
-    e.preventDefault();
-    
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    
-    try {
-        showLoading(true);
-        const response = await fetch(`${API_BASE}/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify({ username, password })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            currentUser = data.user;
-            if (data.token) {
-                localStorage.setItem('token', data.token);
-            }
-            showMainApp();
-            window.location.href = 'dashboard.html';
-        } else {
-            showError('loginError', data.message);
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        showError('loginError', 'Terjadi kesalahan saat login');
-    } finally {
-        showLoading(false);
-    }
-}
+
+// Removed handleLogin as it is handled by login.html inline script
 
 async function logout() {
     try {
@@ -96,22 +95,76 @@ async function logout() {
     }
     localStorage.removeItem('token');
     currentUser = null;
-    showLoginPage();
-}
-function showLoginPage() {
-    document.getElementById('loginPage').classList.remove('d-none');
-    document.getElementById('mainApp').classList.add('d-none');
+    window.location.href = '/gams/login.html';
 }
 
-function showMainApp() {
-    document.getElementById('loginPage').classList.add('d-none');
-    document.getElementById('mainApp').classList.remove('d-none');
-    document.getElementById('userDisplayName').textContent = currentUser.pic_name;
-    setupSidebar();
-}
+// Removed showLoginPage and showMainApp as they are SPA specific and not used in MPA structure
 
 function setupSidebar() {
-    return;
+    const sidebarMenu = document.getElementById('sidebarMenu');
+    if (!sidebarMenu) return;
+
+    let menuItems = [];
+
+    if (currentUser && currentUser.role === 'admin') {
+        menuItems = [
+            { id: 'dashboard', label: 'Dashboard', icon: 'fa-home', href: '/gams/dashboard.html' },
+            { id: 'requests', label: 'Requests', icon: 'fa-clipboard-list', href: '/gams/requests.html' },
+            { id: 'stock', label: 'Item Stock', icon: 'fa-boxes', href: '/gams/stock.html' },
+            { id: 'report', label: 'Stock Report', icon: 'fa-chart-line', href: '/gams/stock-report.html' },
+            { id: 'calendar', label: 'Calendar', icon: 'fa-calendar-alt', href: '/gams/calendar.html' },
+            { id: 'accounts', label: 'Accounts', icon: 'fa-users-cog', href: '/gams/accounts.html' }
+        ];
+    } else if (currentUser && currentUser.role === 'cs') {
+        menuItems = [
+            { id: 'dashboard', label: 'Dashboard', icon: 'fa-home', href: '/gams/dashboard.html' },
+            { id: 'requests', label: 'Requests', icon: 'fa-clipboard-check', href: '/gams/requests.html' },
+            { id: 'stock', label: 'Item Stock', icon: 'fa-boxes', href: '/gams/stock.html' },
+            { id: 'report', label: 'Stock Report', icon: 'fa-chart-bar', href: '/gams/stock-report.html' }
+        ];
+    } else {
+        // Regular User
+        menuItems = [
+            { id: 'dashboard', label: 'Dashboard', icon: 'fa-home', href: '/gams/dashboard.html' },
+            { id: 'requests', label: 'My Requests', icon: 'fa-clipboard-list', href: '/gams/requests.html' },
+            { id: 'stock', label: 'Item Stock', icon: 'fa-box', href: '/gams/stock.html' }
+        ];
+    }
+
+    const currentPath = window.location.pathname;
+
+    sidebarMenu.innerHTML = menuItems.map(item => {
+        let isActive = currentPath.includes(item.href);
+        
+        // Special case for Stock Report page which should highlight Item Stock menu
+        if (item.id === 'stock' && currentPath.includes('stock-report.html')) {
+            isActive = true;
+        }
+
+        const activeClass = isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900';
+        
+        return `
+            <li>
+                <a href="${item.href}" class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${activeClass}">
+                    <i class="fas ${item.icon} w-5 text-center"></i>
+                    <span class="font-medium">${item.label}</span>
+                </a>
+            </li>
+        `;
+    }).join('');
+    
+    // Update user info
+    const userInfo = document.getElementById('userInfo');
+    if (userInfo && currentUser) {
+        const role = (currentUser.role || '').toUpperCase();
+        const name = currentUser.pic_name || currentUser.full_name || currentUser.username || '';
+        userInfo.textContent = role && name ? `${role} - ${name}` : (name || role);
+    }
+    
+    const headerUserName = document.getElementById('headerUserName');
+    if (headerUserName && currentUser) {
+        headerUserName.textContent = currentUser.pic_name || currentUser.full_name || currentUser.username;
+    }
 }
 function loadPage(page) {
     currentPage = page;
@@ -130,22 +183,22 @@ function loadPage(page) {
     pageTitle.textContent = titles[page] || 'Requests';
     switch (page) {
         case 'requests':
-            window.location.href = 'requests.html';
+            window.location.href = '/gams/requests.html';
             break;
         case 'stock':
-            window.location.href = 'stock.html';
+            window.location.href = '/gams/stock.html';
             break;
         case 'calendar':
-            window.location.href = 'calendar.html';
+            window.location.href = '/gams/calendar.html';
             break;
         case 'accounts':
-            window.location.href = 'accounts.html';
+            window.location.href = '/gams/accounts.html';
             break;
         case 'profile':
-            window.location.href = 'profile.html';
+            window.location.href = '/gams/profile.html';
             break;
         default:
-            window.location.href = 'requests.html';
+            window.location.href = '/gams/requests.html';
     }
 }
 async function loadDashboard() {
@@ -166,7 +219,7 @@ async function loadDashboard() {
 function renderDashboard(data) {
     const contentArea = document.getElementById('contentArea');
     
-    if (currentUser.role_name === 'admin' || currentUser.role_name === 'cs') {
+    if (currentUser.role === 'admin' || currentUser.role === 'cs') {
         contentArea.innerHTML = `
             <div class="row mb-4">
                 <div class="col-md-3 mb-3">
@@ -282,7 +335,7 @@ function renderDashboard(data) {
                         </div>
                     </div>
                 </div>
-                ${currentUser.role_name === 'cs' ? `
+                ${currentUser.role === 'cs' ? `
                 <div class="col-md-4 mb-3">
                     <div class="card dashboard-card warning">
                         <div class="card-body">
@@ -357,7 +410,7 @@ function renderItems(items) {
                     <i class="fas fa-search"></i>
                 </button>
             </div>
-            ${currentUser.role_name === 'admin' || currentUser.role_name === 'cs' ? `
+            ${currentUser.role === 'admin' || currentUser.role === 'cs' ? `
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">
                 <i class="fas fa-plus me-2"></i>Tambah Item
             </button>
@@ -377,7 +430,7 @@ function renderItems(items) {
                                 <th>Stock</th>
                                 <th>Min Stock</th>
                                 <th>Status</th>
-                                ${currentUser.role_name === 'admin' || currentUser.role_name === 'cs' ? '<th>Actions</th>' : ''}
+                                ${currentUser.role === 'admin' || currentUser.role === 'cs' ? '<th>Actions</th>' : ''}
                             </tr>
                         </thead>
                         <tbody>
@@ -394,7 +447,7 @@ function renderItems(items) {
                                             ${item.stock <= item.min_stock ? 'Low Stock' : 'Available'}
                                         </span>
                                     </td>
-                                    ${currentUser.role_name === 'admin' || currentUser.role_name === 'cs' ? `
+                                    ${currentUser.role === 'admin' || currentUser.role === 'cs' ? `
                                     <td>
                                         <button class="btn btn-sm btn-primary" onclick="editItem(${item.id})">
                                             <i class="fas fa-edit"></i>
@@ -450,7 +503,7 @@ function renderRequests(requests) {
                                 <th>PIC</th>
                                 <th>Status</th>
                                 <th>Date</th>
-                                ${currentUser.role_name === 'admin' || currentUser.role_name === 'cs' ? '<th>Actions</th>' : ''}
+                                ${currentUser.role === 'admin' || currentUser.role === 'cs' ? '<th>Actions</th>' : ''}
                             </tr>
                         </thead>
                         <tbody>
@@ -463,7 +516,7 @@ function renderRequests(requests) {
                                     <td>${req.pic}</td>
                                     <td><span class="badge bg-${getStatusColor(req.status)}">${req.status}</span></td>
                                     <td>${formatDate(req.formatted_req_date || req.req_date)}</td>
-                                    ${(currentUser.role_name === 'admin' || currentUser.role_name === 'cs') && req.status === 'pending' ? `
+                                    ${(currentUser.role === 'admin' || currentUser.role === 'cs') && req.status === 'pending' ? `
                                     <td>
                                         <button class="btn btn-sm btn-success me-1" onclick="approveRequest(${req.id})">
                                             <i class="fas fa-check"></i>
@@ -709,7 +762,7 @@ function loadUsers() {
 
 async function fetchUsers() {
     try {
-        const response = await fetch('/api/users', {
+        const response = await fetch('/gams/api/users', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -944,7 +997,7 @@ async function createUser() {
     }
 
     try {
-        const response = await fetch('/api/users', {
+        const response = await fetch('/gams/api/users', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -992,7 +1045,7 @@ async function resetPassword(userId) {
     if (!newPassword) return;
 
     try {
-        const response = await fetch(`/api/users/${userId}/password`, {
+        const response = await fetch(`/gams/api/users/${userId}/password`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
