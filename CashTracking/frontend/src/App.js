@@ -9,11 +9,23 @@ export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
-
-    fetch("/cashtracking/api/check", {
-      credentials: "include"
-    })
-      .then(res => setLoggedIn(res.ok));
+    const checkAuth = async () => {
+      try {
+        const res = await fetch("/cashtracking/api/check", {
+          credentials: "include"
+        });
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          setLoggedIn(res.ok);
+        } else {
+          // Fallback for static hosting (Netlify) where API returns HTML
+          setLoggedIn(localStorage.getItem("cashtracking_user") !== null);
+        }
+      } catch (e) {
+        setLoggedIn(localStorage.getItem("cashtracking_user") !== null);
+      }
+    };
+    checkAuth();
   }, []);
 
   return (

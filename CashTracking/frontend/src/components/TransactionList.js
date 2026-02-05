@@ -3,17 +3,29 @@ import React, { useEffect, useState } from 'react';
 const TransactionList = () => {
   const [transactions, setTransactions] = useState([]);
 
-useEffect(() => {
-  fetch('/cashtracking/api/transactions', {
-    credentials: 'include',
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      console.log("Dari backend:", data); 
-      setTransactions(data);
+  useEffect(() => {
+    fetch('/cashtracking/api/transactions', {
+      credentials: 'include',
     })
-    .catch((err) => console.error('Failed to fetch', err));
-}, []);
+      .then(async (res) => {
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+           const data = await res.json();
+           setTransactions(data);
+        } else {
+           throw new Error("Not JSON");
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to fetch', err);
+        // Fallback Mock Data for Demo
+        setTransactions([
+          { id: 1, type: 'Income', category: 'Salary', amount: 5000000, description: 'Monthly Salary (Demo)', date: new Date().toISOString() },
+          { id: 2, type: 'Expense', category: 'Food', amount: 45000, description: 'Lunch (Demo)', date: new Date(Date.now() - 86400000).toISOString() },
+          { id: 3, type: 'Expense', category: 'Transport', amount: 25000, description: 'Taxi (Demo)', date: new Date(Date.now() - 172800000).toISOString() }
+        ]);
+      });
+  }, []);
 
   const formatRupiah = (number) => {
     return new Intl.NumberFormat('id-ID', {

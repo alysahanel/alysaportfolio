@@ -7,18 +7,38 @@ export default function LoginPage({ onLogin }) {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const res = await fetch("/cashtracking/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(form),
-    });
-    const data = await res.json();
-    if (res.ok) {
+    
+    try {
+      const res = await fetch("/cashtracking/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(form),
+      });
+
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const data = await res.json();
+        if (res.ok) {
+          onLogin();
+          navigate("/");
+          return;
+        } else {
+          alert(data.message);
+          return;
+        }
+      }
+    } catch (error) {
+      console.log("API unavailable, trying mock login...");
+    }
+
+    // Fallback: Mock Login for Static Demo
+    if (form.username === "demo" && form.password === "demo123") {
+      localStorage.setItem("cashtracking_user", "demo");
       onLogin();
       navigate("/");
     } else {
-      alert(data.message);
+      alert("Login failed. For demo, use User: demo, Pass: demo123");
     }
   };
 
