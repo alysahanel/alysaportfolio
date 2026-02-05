@@ -62,6 +62,7 @@ async function checkAuth() {
                 if (userDisplayName && currentUser) userDisplayName.textContent = currentUser.pic_name;
                 
                 setupSidebar();
+                checkPageAccess(currentUser);
 
                 // Page specific initialization hook
                 if (typeof window.onPageAuthSuccess === 'function') {
@@ -126,8 +127,7 @@ function setupSidebar() {
         // Regular User
         menuItems = [
             { id: 'dashboard', label: 'Dashboard', icon: 'fa-home', href: '/gams/dashboard.html' },
-            { id: 'requests', label: 'My Requests', icon: 'fa-clipboard-list', href: '/gams/requests.html' },
-            { id: 'stock', label: 'Item Stock', icon: 'fa-box', href: '/gams/stock.html' }
+            { id: 'requests', label: 'My Requests', icon: 'fa-clipboard-list', href: '/gams/requests.html' }
         ];
     }
 
@@ -166,6 +166,32 @@ function setupSidebar() {
         headerUserName.textContent = currentUser.pic_name || currentUser.full_name || currentUser.username;
     }
 }
+function checkPageAccess(user) {
+    const path = window.location.pathname;
+    
+    // Pages restricted to Admin only
+    const adminOnly = ['/gams/accounts.html', '/gams/calendar.html'];
+    
+    // Pages restricted to Admin and CS (Stock Management)
+    const stockPages = ['/gams/stock.html', '/gams/stock-report.html'];
+    
+    // Check Admin Only pages
+    if (adminOnly.some(p => path.includes(p))) {
+        if (user.role !== 'admin') {
+            window.location.href = '/gams/dashboard.html';
+            return;
+        }
+    }
+    
+    // Check Stock pages
+    if (stockPages.some(p => path.includes(p))) {
+        if (user.role !== 'admin' && user.role !== 'cs') {
+            window.location.href = '/gams/dashboard.html';
+            return;
+        }
+    }
+}
+
 function loadPage(page) {
     currentPage = page;
     document.querySelectorAll('.sidebar .nav-link').forEach(link => {

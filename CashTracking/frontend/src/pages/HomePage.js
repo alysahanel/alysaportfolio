@@ -11,11 +11,11 @@ export default function HomePage() {
     })
       .then((res) => {
         if (!res.ok) {
-          window.location.href = "/login";
+          window.location.href = "/cashtracking/login";
         }
       })
       .catch(() => {
-        window.location.href = "/login";
+        window.location.href = "/cashtracking/login";
       });
   }, []);
 

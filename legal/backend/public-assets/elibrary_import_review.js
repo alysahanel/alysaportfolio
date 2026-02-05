@@ -1,4 +1,4 @@
-const API_BASE = '/legal/api/elibrary-import-review';
+const API_BASE = '/legal/api/elibrary';
 
 function showToast(message, type = 'info') {
   try {
@@ -21,7 +21,7 @@ function norm(s) {
 }
 
 async function fetchExisting(category) {
-  const res = await fetch(`${API_BASE}/api/elibrary/${encodeURIComponent(category)}`);
+  const res = await fetch(`${API_BASE}/${encodeURIComponent(category)}`);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   return Array.isArray(data) ? data : [];
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const category = params.get('category') || '';
   document.getElementById('catLabel').textContent = category;
   const backBtn = document.getElementById('btnBack');
-  if (backBtn) backBtn.addEventListener('click', () => { location.href = `elibrary.html?category=${encodeURIComponent(category)}`; });
+  if (backBtn) backBtn.addEventListener('click', () => { location.href = `/legal/elibrary.html?category=${encodeURIComponent(category)}`; });
 
   try {
     const existing = await fetchExisting(category);
@@ -137,13 +137,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         const combined = latest.concat(finalRowsToAppend);
         combined.forEach((r, i) => { r.no = i + 1; });
-        const res = await fetch(`${API_BASE}/api/elibrary/${encodeURIComponent(category)}/save`, {
+        const res = await fetch(`${API_BASE}/${encodeURIComponent(category)}/save`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(combined)
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         showToast(`Impor disimpan: +${finalRowsToAppend.length} baris, total ${combined.length}.`, 'success');
         localStorage.removeItem('elibrary_import_review_data');
-        setTimeout(() => { location.href = `elibrary.html?category=${encodeURIComponent(category)}`; }, 800);
+        setTimeout(() => { location.href = `/legal/elibrary.html?category=${encodeURIComponent(category)}`; }, 800);
       } catch (err) {
         showToast('Gagal menyimpan impor: ' + err.message, 'error');
       }

@@ -27,6 +27,12 @@ export default function LoginPage({ onLogin }) {
       <div className="auth-box">
         <form onSubmit={handleLogin}>
           <h2>Welcome Back</h2>
+          
+          <div style={{ marginBottom: '1.5rem', fontSize: '0.85rem', color: '#555', background: 'rgba(255,255,255,0.9)', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}>
+            <p style={{ margin: '0 0 5px 0', fontWeight: 'bold' }}>Demo Credentials:</p>
+            <p style={{ margin: '2px 0' }}>User: <strong>demo</strong> | Pass: <strong>demo123</strong></p>
+          </div>
+
           <input placeholder="Username" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} required />
           <input type="password" placeholder="Password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required />
           <button type="submit">Login</button>

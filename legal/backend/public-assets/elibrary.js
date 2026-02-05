@@ -198,522 +198,317 @@ function showRegulationDetail(category) {
         const counts = resp.ok ? await resp.json() : null;
         const total = counts && counts[category] ? Number(counts[category]) : null;
         window.ELibTotalPages = total ? Math.ceil(total / pageSize) : null;
-      } catch { window.ELibTotalPages = null; }
+      } catch {}
+      await refreshDetailPage();
+      startDetailAutoRefresh();
     })();
 
-    loadCategoryFromServer(category).then(data => {
-        rows = normalizeRows(data || []);
-        renderTable();
-        if (hierarchyBtn) hierarchyBtn.style.display = 'block';
-        if (nextBtn) nextBtn.style.display = 'block';
-        const prevBtn = document.getElementById('prevBtn');
-        const pageNoEl = document.getElementById('pageNo');
-        if (prevBtn) prevBtn.disabled = currentPage <= 1;
-        if (pageNoEl) pageNoEl.textContent = String(currentPage);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        startDetailAutoRefresh();
-        stopCountsAutoRefresh();
-    }).catch(() => {
-        rows = [];
-        renderTable();
-    });
+    if (hierarchyBtn) hierarchyBtn.style.display = 'inline-flex';
 }
 
-function normalizeRows(list) {
-    return (list || []).map((it, idx) => ({
-        id: Number(it.id || 0),
-        no: Number(it.no ?? idx + 1),
-        departemen: String(it.departemen || ''),
-        regulasi: String(it.regulasi || ''),
-        lingkup: String(it.lingkup || ''),
-        status: ((String((it.status || '')).toLowerCase().trim() === 'tidak berlaku')
-              || (String((it.status || '')).toLowerCase().trim() === 'tidak-berlaku')
-              || (String((it.status || '')).toLowerCase().trim() === 'not applicable'))
-                ? 'Tidak Berlaku' : 'Berlaku',
-        link: String(it.link || ''),
-        notes: String(it.notes || '')
-    }));
+async function refreshDetailPage() {
+    if (!currentCategory) return;
+    const fresh = await loadCategoryFromServer(currentCategory);
+    rows = normalizeRows(fresh || []);
+    renderTable();
+    updatePaginationUI();
+}
+
+function updatePaginationUI(){
+    const pageNoEl = document.getElementById('pageNo');
+    const btnPrev = document.getElementById('prevBtn');
+    const btnNext = document.getElementById('nextBtn');
+    if (pageNoEl) pageNoEl.textContent = String(currentPage);
+    if (btnPrev) btnPrev.disabled = currentPage <= 1;
+    if (btnNext) {
+        const knownTotalPages = typeof window.ELibTotalPages === 'number' ? window.ELibTotalPages : null;
+        const allowNext = knownTotalPages != null ? (currentPage < knownTotalPages) : (rows.length === pageSize);
+        btnNext.disabled = !allowNext;
+    }
+}
+
+function normalizeRows(raw) {
+    if (!Array.isArray(raw)) return [];
+    return raw.map((r, i) => {
+        if (!r.id) r.id = Date.now() + Math.random(); 
+        r.no = (currentPage - 1) * pageSize + (i + 1);
+        return r;
+    });
 }
 
 function renderTable() {
     if (!detailTableBody) return;
     detailTableBody.innerHTML = '';
-    if (thActions) thActions.className = isEditing ? '' : 'hidden';
-    if (elibraryTable) {
-        elibraryTable.classList.remove('view-mode', 'edit-mode');
-        elibraryTable.classList.add(isEditing ? 'edit-mode' : 'view-mode');
-    }
-
-    rows.forEach((item, idx) => {
+    
+    rows.forEach((row, index) => {
         const tr = document.createElement('tr');
-        const statusBadge = `<span class="status-${item.status.toLowerCase() === 'berlaku' ? 'active' : 'inactive'}">${item.status}</span>`;
-        const aksi = isEditing ? `<button class="btn-edit" onclick="window.openEditModal(${idx})">Edit</button>` : '';
-        const safeHref = item.link ? encodeURI(item.link) : '';
-        const regulasiCell = item.link ? `<a href="${safeHref}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.regulasi)}</a>` : `${escapeHtml(item.regulasi)}`;
-        const displayNo = ((currentPage - 1) * pageSize) + idx + 1;
-        tr.innerHTML = `
-            <td>${displayNo}</td>
-            <td>${escapeHtml(item.departemen)}</td>
-            <td>${regulasiCell}</td>
-            <td>${escapeHtml(item.lingkup)}</td>
-            <td>${statusBadge}</td>
-            <td>${escapeHtml(item.notes)}</td>
-            ${isEditing ? `<td>${aksi}</td>` : ''}
-        `;
+        tr.className = 'hover:bg-gray-50 transition-colors';
+        
+        if (isEditing) {
+            tr.innerHTML = `
+                <td class="p-3 text-center w-16">${row.no || index + 1}</td>
+                <td class="p-3"><input type="text" class="w-full border rounded p-1" value="${row.year || ''}" onchange="updateRow(${index}, 'year', this.value)"></td>
+                <td class="p-3"><input type="text" class="w-full border rounded p-1" value="${row.number || ''}" onchange="updateRow(${index}, 'number', this.value)"></td>
+                <td class="p-3"><input type="text" class="w-full border rounded p-1" value="${row.title || ''}" onchange="updateRow(${index}, 'title', this.value)"></td>
+                <td class="p-3"><input type="text" class="w-full border rounded p-1" value="${row.desc || ''}" onchange="updateRow(${index}, 'desc', this.value)"></td>
+                <td class="p-3"><input type="text" class="w-full border rounded p-1" value="${row.file || ''}" onchange="updateRow(${index}, 'file', this.value)"></td>
+                <td class="p-3 text-center">
+                    <button class="text-red-500 hover:text-red-700" onclick="deleteRow(${index})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+        } else {
+            const displayNo = row.no || ((currentPage - 1) * pageSize + index + 1);
+            tr.innerHTML = `
+                <td class="p-3 text-center text-gray-500">${displayNo}</td>
+                <td class="p-3 font-medium text-gray-900">${row.year || '-'}</td>
+                <td class="p-3 text-blue-600 font-medium">${row.number || '-'}</td>
+                <td class="p-3 text-gray-800">${row.title || '-'}</td>
+                <td class="p-3 text-gray-600 text-sm max-w-md truncate" title="${row.desc || ''}">${row.desc || '-'}</td>
+                <td class="p-3 text-center">
+                    ${row.file ? `<a href="${row.file}" target="_blank" class="text-blue-500 hover:text-blue-700 transition-colors"><i class="fas fa-file-pdf text-lg"></i></a>` : '<span class="text-gray-300"><i class="fas fa-minus"></i></span>'}
+                </td>
+                ${isEditing ? '<td class="p-3"></td>' : ''}
+            `;
+            tr.addEventListener('click', (e) => {
+                if (!isEditing && !e.target.closest('a')) openEditModal(row, index);
+            });
+            tr.style.cursor = isEditing ? 'default' : 'pointer';
+        }
         detailTableBody.appendChild(tr);
     });
+
+    if (thActions) thActions.style.display = isEditing ? 'table-cell' : 'none';
 }
 
-function setEditMode(flag) {
-    isEditing = !!flag;
-    if (editToolbar) {
-        if (isEditing) editToolbar.classList.remove('hidden');
-        else editToolbar.classList.add('hidden');
-    }
-    renderTable();
-    if (currentCategory) {
-        if (isEditing) stopDetailAutoRefresh();
-        else startDetailAutoRefresh();
+function updateRow(index, field, value) {
+    if (rows[index]) {
+        rows[index][field] = value;
+        rows[index].__modified = true;
     }
 }
 
-function openEditModal(idx) {
-    const editModal = document.getElementById('editModal');
-    const modalBackdrop = document.getElementById('modalBackdrop');
-    const fDepartemen = document.getElementById('fDepartemen');
-    const fRegulasi = document.getElementById('fRegulasi');
-    const fLingkup = document.getElementById('fLingkup');
-    const fStatus = document.getElementById('fStatus');
-    const fLink = document.getElementById('fLink');
-    const fNotes = document.getElementById('fNotes');
-    const row = rows[idx];
-    if (!row) return;
-    openEditModal.currentIndex = idx;
-    if (fDepartemen) fDepartemen.value = row.departemen;
-    if (fRegulasi) fRegulasi.value = row.regulasi;
-    if (fLingkup) fLingkup.value = row.lingkup;
-    if (fStatus) {
-        const s = (row.status || '').toLowerCase();
-        fStatus.value = (s === 'tidak berlaku' || s === 'tidak-berlaku' || s === 'not applicable') ? 'not-applicable' : 'applicable';
-    }
-    if (fLink) fLink.value = row.link || '';
-    if (fNotes) fNotes.value = row.notes || '';
-    if (editModal) { editModal.classList.remove('hidden'); editModal.classList.add('show'); }
-    if (modalBackdrop) modalBackdrop.classList.remove('hidden');
-}
-window.openEditModal = openEditModal;
-
-function closeEditModal() {
-    const editModal = document.getElementById('editModal');
-    const modalBackdrop = document.getElementById('modalBackdrop');
-    if (editModal) { editModal.classList.remove('show'); editModal.classList.add('hidden'); }
-    if (modalBackdrop) modalBackdrop.classList.add('hidden');
-}
-
-function createOrGetErrorEl(id) {
-    let el = document.getElementById(id);
-    if (!el) {
-        el = document.createElement('div');
-        el.id = id;
-        el.style.color = '#c0392b';
-        el.style.fontSize = '12px';
-        el.style.marginTop = '4px';
-        const fLink = document.getElementById('fLink');
-        if (fLink && fLink.parentElement) fLink.parentElement.appendChild(el);
-    }
-    return el;
-}
-
-function clearErrorEl(id) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = '';
-}
-
-function isValidUrl(str) {
-    try {
-        const u = new URL(str);
-        return u.protocol === 'http:' || u.protocol === 'https:';
-    } catch (e) {
-        return false;
-    }
-}
-
-function showToast(message, type = 'success') {
-    let toast = document.getElementById('toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'toast';
-        toast.style.position = 'fixed';
-        toast.style.bottom = '20px';
-        toast.style.left = '50%';
-        toast.style.transform = 'translateX(-50%)';
-        toast.style.padding = '10px 14px';
-        toast.style.borderRadius = '6px';
-        toast.style.color = '#fff';
-        toast.style.fontSize = '14px';
-        toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
-        toast.style.zIndex = '10000';
-        toast.style.transition = 'opacity 0.3s.ease';
-        document.body.appendChild(toast);
-    }
-    toast.style.background = type === 'success' ? '#2ecc71' : '#e74c3c';
-    toast.textContent = message;
-    toast.style.opacity = '1';
-    setTimeout(() => { toast.style.opacity = '0'; }, 1800);
-}
-
-async function saveRowFromModal() {
-    const idx = openEditModal.currentIndex;
-    if (idx === undefined || !rows[idx]) return;
-    const fDepartemen = document.getElementById('fDepartemen');
-    const fRegulasi = document.getElementById('fRegulasi');
-    const fLingkup = document.getElementById('fLingkup');
-    const fStatus = document.getElementById('fStatus');
-    const fLink = document.getElementById('fLink');
-    const fNotes = document.getElementById('fNotes');
-
-    let linkVal = (fLink && fLink.value || '').trim();
-    if (linkVal) {
-        if (!/^https?:\/\//i.test(linkVal) && /\w+\./.test(linkVal)) {
-            const prefixed = 'https://' + linkVal;
-            if (isValidUrl(prefixed)) { linkVal = prefixed; if (fLink) fLink.value = linkVal; }
-        }
-        if (!isValidUrl(linkVal)) {
-            const err = createOrGetErrorEl('fLinkError');
-            err.textContent = 'Link tidak valid. Gunakan format http(s)://...';
-            return;
-        } else {
-            clearErrorEl('fLinkError');
-        }
-    } else {
-        clearErrorEl('fLinkError');
-    }
-
-    rows[idx] = {
-        ...rows[idx],
-        departemen: (fDepartemen && fDepartemen.value || '').trim(),
-        regulasi: (fRegulasi && fRegulasi.value || '').trim(),
-        lingkup: (fLingkup && fLingkup.value || '').trim(),
-        status: ((fStatus && fStatus.value) === 'not-applicable') ? 'Tidak Berlaku' : 'Berlaku',
-        link: linkVal,
-        notes: (fNotes && fNotes.value || '').trim()
-    };
-    
-    closeEditModal();
-
-    if (!currentCategory) return;
-    try {
-        const rowId = Number(rows[idx]?.id || 0);
-        const dbNo = Number(rows[idx]?.no || 0);
-        let j = null;
-        if (newRowIndex === idx) {
-            const resp = await fetch(`/api/elibrary/${encodeURIComponent(currentCategory)}/append`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify([rows[idx]]) });
-            try { j = await resp.json(); } catch {}
-            if (!resp.ok || (j && j.error)) throw new Error(j && j.detail ? j.detail : ('HTTP ' + resp.status));
-            newRowIndex = null;
-            try {
-              const targetNo = j && Number(j.lastNo || 0) ? Number(j.lastNo) : null;
-              if (targetNo) {
-                const targetPage = Math.ceil(targetNo / pageSize);
-                currentPage = targetPage;
-                saveElibPage(currentCategory, currentPage);
-              } else {
-                const countsResp = await fetch('/api/elibrary-counts');
-                const counts = countsResp.ok ? await countsResp.json() : null;
-                const total = counts && counts[currentCategory] ? Number(counts[currentCategory]) : null;
-                if (total) { currentPage = Math.ceil(total / pageSize); saveElibPage(currentCategory, currentPage); }
-              }
-            } catch {}
-        } else {
-            const targetUrl = rowId ? `/api/elibrary/${encodeURIComponent(currentCategory)}/id/${rowId}` : `/api/elibrary/${encodeURIComponent(currentCategory)}/${dbNo}`;
-            const resp = await fetch(targetUrl, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(rows[idx]) });
-            try { j = await resp.json(); } catch {}
-            if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            if (j && j.error) throw new Error(j.error);
-            if (j && Number(j.updated || 0) === 0) {
-              const a = await fetch(`/api/elibrary/${encodeURIComponent(currentCategory)}/append`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify([rows[idx]]) });
-              let aj = null; try { aj = await a.json(); } catch {}
-              if (!a.ok || (aj && aj.error)) throw new Error(aj && aj.detail ? aj.detail : ('HTTP ' + a.status));
-              newRowIndex = null;
-              try {
-                const targetNo = aj && Number(aj.lastNo || 0) ? Number(aj.lastNo) : null;
-                if (targetNo) {
-                  const targetPage = Math.ceil(targetNo / pageSize);
-                  currentPage = targetPage;
-                  saveElibPage(currentCategory, currentPage);
-                } else {
-                  const countsResp = await fetch('/api/elibrary-counts');
-                  const counts = countsResp.ok ? await countsResp.json() : null;
-                  const total = counts && counts[currentCategory] ? Number(counts[currentCategory]) : null;
-                  if (total) { currentPage = Math.ceil(total / pageSize); saveElibPage(currentCategory, currentPage); }
-                }
-              } catch {}
-            }
-        }
-        const fresh = await loadCategoryFromServer(currentCategory);
-        rows = normalizeRows(fresh || []);
-        renderTable();
-        try {
-          const targetNo = (j && Number(j.lastNo || 0)) ? Number(j.lastNo) : null;
-          const idxOnPage = targetNo ? ((targetNo - 1) % pageSize) : null;
-          if (idxOnPage != null && detailTableBody && detailTableBody.children[idxOnPage]) {
-            detailTableBody.children[idxOnPage].style.background = '#e2f0ff';
-            detailTableBody.children[idxOnPage].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setTimeout(() => { if (detailTableBody.children[idxOnPage]) detailTableBody.children[idxOnPage].style.background = ''; }, 1500);
-          }
-        } catch {}
-        if (typeof updateCategoryCounts === 'function') updateCategoryCounts();
-        showToast('Data disimpan', 'success');
-        setEditMode(false);
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-        startDetailAutoRefresh();
-    } catch (e) {
-        showToast('Gagal menyimpan ke server', 'error');
-    }
-}
-
-async function deleteRowCurrent() {
-    const idx = openEditModal.currentIndex;
-    if (idx === undefined) return;
-
-    const ok = confirm('Are you sure you want to delete this data?');
-    if (!ok) return;
-    const rowId = Number(rows[idx]?.id || 0);
-    const dbNo = Number(rows[idx]?.no || 0);
-    closeEditModal();
-    if (!currentCategory || (!rowId && !dbNo)) return;
-    try {
-        const targetUrl = rowId ? `/api/elibrary/${encodeURIComponent(currentCategory)}/id/${rowId}` : `/api/elibrary/${encodeURIComponent(currentCategory)}/${dbNo}`;
-        const resp = await fetch(targetUrl, { method:'DELETE' });
-        let j = null; try { j = await resp.json(); } catch {}
-        if (!resp.ok || (j && j.error)) throw new Error(j && j.error ? j.error : ('HTTP ' + resp.status));
-        try { await fetch(`/api/elibrary/${encodeURIComponent(currentCategory)}/reindex`, { method:'POST' }); } catch {}
-        try {
-          const countsResp = await fetch('/api/elibrary-counts');
-          const counts = countsResp.ok ? await countsResp.json() : null;
-          const total = counts && counts[currentCategory] ? Number(counts[currentCategory]) : null;
-          const totalPages = total ? Math.ceil(total / pageSize) : 1;
-          if (currentPage > totalPages) { currentPage = totalPages; saveElibPage(currentCategory, currentPage); }
-        } catch {}
-        const fresh = await loadCategoryFromServer(currentCategory);
-        rows = normalizeRows(fresh || []);
-        renderTable();
-        if (typeof updateCategoryCounts === 'function') updateCategoryCounts();
-        showToast('Baris dihapus', 'success');
-    } catch (e) {
-        showToast('Gagal menghapus baris', 'error');
+function deleteRow(index) {
+    if (confirm('Are you sure you want to delete this row?')) {
+        rows[index].__deleted = true;
+        renderTable(); 
     }
 }
 
 function addRow() {
-    const idx = rows.length;
-    rows.push({ no: idx + 1, departemen: '', regulasi: '', lingkup: '', status: 'Berlaku', link: '', notes: '' });
-    newRowIndex = idx;
-    setEditMode(true);
-    openEditModal(idx);
+    const newRow = { id: Date.now(), year: '', number: '', title: '', desc: '', file: '', __new: true };
+    rows.push(newRow);
+    renderTable();
+    window.scrollTo(0, document.body.scrollHeight);
 }
 
-function exportCSV() {
+function setEditMode(active) {
+    isEditing = active;
+    if (editToolbar) editToolbar.style.display = active ? 'flex' : 'none';
+    if (btnEnterEdit) btnEnterEdit.style.display = active ? 'none' : 'inline-flex';
+    if (hierarchyBtn) hierarchyBtn.style.display = active ? 'none' : 'inline-flex';
+    if (thActions) thActions.style.display = active ? 'table-cell' : 'none';
+    renderTable();
+}
+
+function addScrollAnimations() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('opacity-100', 'translate-y-0');
+                entry.target.classList.remove('opacity-0', 'translate-y-4');
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.regulation-card').forEach(el => {
+        el.classList.add('opacity-0', 'translate-y-4', 'transition-all', 'duration-700');
+        observer.observe(el);
+    });
+}
+
+// Data Handling
+async function loadCategoryFromServer(cat) {
     try {
-        const headers = ['NO','DEPARTEMEN','REGULASI','LINGKUP REGULASI','STATUS','LINK','NOTES'];
-        const esc = (v) => '"' + String(v ?? '').replace(/"/g, '""') + '"';
-        const lines = [headers.join(',')];
-        rows.forEach(r => { const row = [r.no, r.departemen, r.regulasi, r.lingkup, r.status, r.link || '', r.notes || ''].map(esc).join(','); lines.push(row); });
-        const csvContent = lines.join('\r\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        const date = new Date().toISOString().split('T')[0];
-        a.href = url; a.download = `elibrary-${currentCategory || 'data'}-${date}.csv`;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    } catch (e) { alert('Failed to export CSV: ' + e.message); }
-}
-
-function parseCSV(text) {
-    const rows = []; let i = 0, cur = '', inQuotes = false; let row = [];
-    const pushCell = (arr, cell) => arr.push(cell.replace(/^\s+|\s+$/g, ''));
-    while (i < text.length) {
-        const ch = text[i++];
-        if (inQuotes) {
-            if (ch === '"') { if (text[i] === '"') { cur += '"'; i++; } else inQuotes = false; }
-            else { cur += ch; }
-        } else {
-            if (ch === '"') inQuotes = true;
-            else if (ch === ',') { pushCell(row, cur); cur = ''; }
-            else if (ch === '\n') { pushCell(row, cur); rows.push(row); row = []; cur = ''; }
-            else if (ch === '\r') { }
-            else { cur += ch; }
+        const res = await fetch(`${API_BASE}/category/${encodeURIComponent(cat)}?limit=${pageSize}&page=${currentPage}`);
+        if (res.ok) {
+             const data = await res.json();
+             return Array.isArray(data) ? data : [];
         }
-    }
-    if (cur.length || row.length) { pushCell(row, cur); rows.push(row); }
-    return rows;
-}
-
-function handleImportCSV(event) {
-    const file = event.target.files && event.target.files[0];
-    if (!file) return;
-    file.text().then(text => {
-        try {
-            const table = parseCSV(text);
-            if (!table.length) throw new Error('Empty CSV');
-            const headers = table[0].map(h => (h || '').trim().toLowerCase());
-            const hasIndo = ['no','departemen','regulasi','lingkup regulasi','status'].every(col => headers.includes(col));
-            const hasEng = ['no','department','regulation','regulation scope','status'].every(col => headers.includes(col));
-            if (!hasIndo && !hasEng) throw new Error('Invalid headers. Use columns: NO, DEPARTMENT, REGULATION, REGULATION SCOPE, STATUS');
-            const idx = (names) => {
-              const arr = Array.isArray(names) ? names : [names];
-              for (const n of arr) { const i = headers.indexOf(n); if (i >= 0) return i; }
-              return -1;
-            };
-            const importedRows = table.slice(1).map((r, i) => ({
-              no: Number(r[idx('no')]) || i + 1,
-              departemen: (r[idx(['departemen','department'])] || '').trim(),
-              regulasi: (r[idx(['regulasi','regulation'])] || '').trim(),
-              lingkup: (r[idx(['lingkup regulasi','regulation scope'])] || '').trim(),
-              status: ((r[idx('status')] || '').trim().toLowerCase() === 'not applicable'
-                   || (r[idx('status')] || '').trim().toLowerCase() === 'tidak berlaku'
-                   || (r[idx('status')] || '').trim().toLowerCase() === 'tidak-berlaku') ? 'Tidak Berlaku' : 'Berlaku',
-              link: idx('link') >= 0 ? (r[idx('link')] || '').trim() : '',
-              notes: idx('notes') >= 0 ? (r[idx('notes')] || '').trim() : ''
-            }));
-            try {
-              localStorage.setItem('elibrary_import_review_data', JSON.stringify({ category: currentCategory, rows: importedRows }));
-            } catch {}
-            location.href = `elibrary-import-review.html?category=${encodeURIComponent(currentCategory || '')}`;
-        } catch (e) { alert('Failed to read file: ' + e.message); event.target.value = ''; }
-        finally { event.target.value = ''; }
-    }).catch(err => { alert('Failed to read file: ' + err.message); event.target.value = ''; });
-}
-
-async function loadCategoryFromServer(category) {
-    try {
-        const resp = await fetch(`api/elibrary/${encodeURIComponent(category)}?limit=${pageSize}&page=${currentPage}`);
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        return await resp.json();
+        return [];
     } catch (e) {
-        console.warn('Failed to load category from server', category, e && e.message);
+        console.error('Failed to load category:', e);
         return [];
     }
 }
 
-async function refreshDetailPage() {
-    const data = await loadCategoryFromServer(currentCategory);
-    rows = normalizeRows(data || []);
-    renderTable();
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const pageNoEl = document.getElementById('pageNo');
-    if (prevBtn) prevBtn.disabled = currentPage <= 1;
+async function saveCategoryToServer(cat) {
     try {
-      const resp = await fetch('/api/elibrary-counts');
-      const counts = resp.ok ? await resp.json() : null;
-      const total = counts && counts[currentCategory] ? Number(counts[currentCategory]) : null;
-      const totalPages = total ? Math.ceil(total / pageSize) : null;
-      window.ELibTotalPages = totalPages || null;
-      if (nextBtn) nextBtn.disabled = totalPages ? (currentPage >= totalPages) : (rows.length < pageSize);
-    } catch { if (nextBtn) nextBtn.disabled = rows.length < pageSize; }
-    if (pageNoEl) pageNoEl.textContent = String(currentPage);
-    if (currentCategory) saveElibPage(currentCategory, currentPage);
-}
-
-async function saveCategoryToServer(category) {
-    try {
-        const payload = rows.map((r, i) => ({ no: i + 1, departemen: r.departemen, regulasi: r.regulasi, lingkup: r.lingkup, status: r.status, link: r.link || '', notes: r.notes || '' }));
-        const resp = await fetch(`/api/elibrary/${encodeURIComponent(category)}/save`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const data = await resp.json();
-        console.log('Saved elibrary category', category, data);
-    } catch (e) { alert('Gagal menyimpan ke server: ' + (e && e.message)); }
-}
-
-function addScrollAnimations() {
-    const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
-    const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => { if (entry.isIntersecting) { entry.target.style.opacity = '1'; entry.target.style.transform = 'translateY(0)'; } });
-    }, observerOptions);
-    const cards = document.querySelectorAll('.regulation-card');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0'; card.style.transform = 'translateY(30px)';
-        card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
-        observer.observe(card);
-    });
-}
-
-function formatRegulationText(text) { return text; }
-function escapeHtml(s) { return String(s || '').replace(/[&<>\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c])); }
-function searchRegulations(query) { console.log('Searching for:', query); }
-
-window.ELibrary = { showRegulationHierarchy, showRegulationDetail, searchRegulations };
-
-async function updateCategoryCounts() {
-    try {
-        let counts = null;
-        try {
-            const resp = await fetch('/api/elibrary-counts');
-            if (resp.ok) counts = await resp.json();
-        } catch {}
-
-        const cards = document.querySelectorAll('.regulation-card');
-        const tasks = Array.from(cards).map(async (card) => {
-            const cat = card.getAttribute('data-category');
-            const countEl = card.querySelector('.regulation-count');
-            if (!cat || !countEl) return;
-
-            if (counts && typeof counts[cat] !== 'undefined') {
-                countEl.textContent = `${Number(counts[cat] || 0)} Peraturan`;
-                return;
-            }
-            try {
-                const resp = await fetch(`/api/elibrary/${encodeURIComponent(cat)}`);
-                let list = [];
-                if (resp.ok) list = await resp.json();
-                const n = Array.isArray(list) ? list.length : 0;
-                countEl.textContent = `${n} Peraturan`;
-            } catch (e) {
-                countEl.textContent = `0 Peraturan`;
-            }
+        const toSave = rows.filter(r => r.__modified || r.__new || r.__deleted);
+        if (toSave.length === 0) return;
+        
+        const res = await fetch(`${API_BASE}/category/${encodeURIComponent(cat)}/sync`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(toSave)
         });
-        await Promise.all(tasks);
+        if (!res.ok) throw new Error('Sync failed');
     } catch (e) {
-        console.warn('Gagal memperbarui jumlah kategori:', e && e.message);
+        console.error('Failed to save category:', e);
+        alert('Failed to save changes. Check connection.');
     }
 }
 
-function startCountsAutoRefresh() {
-    if (autoRefreshCountsTimer) return;
-    autoRefreshCountsTimer = setInterval(() => {
-        if (regulationGrid && regulationGrid.style.display !== 'none') {
-            updateCategoryCounts();
+async function updateCategoryCounts() {
+    try {
+        const res = await fetch(`${API_BASE}-counts`);
+        if (res.ok) {
+            const counts = await res.json();
+            for (const [cat, count] of Object.entries(counts)) {
+                const el = document.querySelector(`.regulation-card[data-category="${cat}"] .regulation-count`);
+                if (el) el.textContent = count;
+            }
         }
-    }, 60000);
+    } catch {}
 }
 
-function stopCountsAutoRefresh() {
-    if (autoRefreshCountsTimer) {
-        clearInterval(autoRefreshCountsTimer);
-        autoRefreshCountsTimer = null;
+function exportCSV() {
+    if (!rows || !rows.length) return alert('No data to export');
+    const headers = ['Year', 'Number', 'Title', 'Description', 'File Link'];
+    const csvContent = [
+        headers.join(','),
+        ...rows.filter(r => !r.__deleted).map(r => 
+            [r.year, r.number, r.title, r.desc, r.file].map(f => `"${String(f||'').replace(/"/g, '""')}"`).join(',')
+        )
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `regulation_${currentCategory}_${new Date().toISOString().slice(0,10)}.csv`;
+    link.click();
+}
+
+function handleImportCSV(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        const text = evt.target.result;
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+        if (lines.length < 2) return; 
+        
+        // Skip header
+        for (let i = 1; i < lines.length; i++) {
+            // Simple CSV parser (assumes quotes)
+            const parts = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+            if (parts && parts.length >= 4) {
+                 const clean = s => s.replace(/^"|"$/g, '').replace(/""/g, '"');
+                 rows.push({
+                     id: Date.now() + Math.random(),
+                     year: clean(parts[0]||''),
+                     number: clean(parts[1]||''),
+                     title: clean(parts[2]||''),
+                     desc: clean(parts[3]||''),
+                     file: clean(parts[4]||''),
+                     __new: true
+                 });
+            }
+        }
+        renderTable();
+        alert(`Imported ${lines.length - 1} rows. Click Exit Edit to save.`);
+    };
+    reader.readAsText(file);
+    e.target.value = ''; 
+}
+
+// Modal Handling
+let currentRowRef = null;
+const modalTitle = document.getElementById('modalTitle');
+const inpYear = document.getElementById('inpYear');
+const inpNumber = document.getElementById('inpNumber');
+const inpTitle = document.getElementById('inpTitle');
+const inpDesc = document.getElementById('inpDesc');
+const inpFile = document.getElementById('inpFile');
+const editModal = document.getElementById('editModal');
+
+function openEditModal(row, index) {
+    currentRowRef = row;
+    newRowIndex = index;
+    if (modalTitle) modalTitle.textContent = row.title || 'Edit Regulation';
+    if (inpYear) inpYear.value = row.year || '';
+    if (inpNumber) inpNumber.value = row.number || '';
+    if (inpTitle) inpTitle.value = row.title || '';
+    if (inpDesc) inpDesc.value = row.desc || '';
+    if (inpFile) inpFile.value = row.file || '';
+    if (editModal) editModal.classList.remove('hidden');
+}
+
+function closeEditModal() {
+    if (editModal) editModal.classList.add('hidden');
+    currentRowRef = null;
+    newRowIndex = null;
+}
+
+function deleteRowCurrent() {
+    if (currentRowRef && confirm('Delete this regulation?')) {
+        currentRowRef.__deleted = true;
+        // In view mode, we probably want to save immediately or just hide it?
+        // Let's assume view mode deletion requires immediate sync or it's just local until refresh.
+        // For better UX, let's try to sync one deletion if not in edit mode.
+        if (!isEditing) {
+            saveCategoryToServer(currentCategory).then(() => {
+                refreshDetailPage();
+                closeEditModal();
+            });
+        } else {
+            renderTable();
+            closeEditModal();
+        }
+    }
+}
+
+function saveRowFromModal() {
+    if (currentRowRef) {
+        currentRowRef.year = inpYear.value;
+        currentRowRef.number = inpNumber.value;
+        currentRowRef.title = inpTitle.value;
+        currentRowRef.desc = inpDesc.value;
+        currentRowRef.file = inpFile.value;
+        currentRowRef.__modified = true;
+        
+        if (!isEditing) {
+             saveCategoryToServer(currentCategory).then(() => {
+                refreshDetailPage();
+                closeEditModal();
+            });
+        } else {
+            renderTable();
+            closeEditModal();
+        }
     }
 }
 
 function startDetailAutoRefresh() {
-    if (!currentCategory || isEditing) return;
     stopDetailAutoRefresh();
     autoRefreshDetailTimer = setInterval(async () => {
-        try {
-            const fresh = await loadCategoryFromServer(currentCategory);
-            const normalized = normalizeRows(fresh || []);
-            const changed = JSON.stringify(normalized) !== JSON.stringify(rows);
-            rows = normalized;
-            if (changed) renderTable();
-        } catch (e) {
+        if (!isEditing && currentCategory && document.visibilityState === 'visible') {
+            await refreshDetailPage();
         }
-    }, 15000);
+    }, 5000);
 }
 
 function stopDetailAutoRefresh() {
-    if (autoRefreshDetailTimer) {
-        clearInterval(autoRefreshDetailTimer);
-        autoRefreshDetailTimer = null;
-    }
+    if (autoRefreshDetailTimer) clearInterval(autoRefreshDetailTimer);
+    autoRefreshDetailTimer = null;
+}
+
+function startCountsAutoRefresh() {
+    if (autoRefreshCountsTimer) clearInterval(autoRefreshCountsTimer);
+    autoRefreshCountsTimer = setInterval(() => {
+        if (!currentCategory && document.visibilityState === 'visible') {
+            updateCategoryCounts();
+        }
+    }, 10000);
 }

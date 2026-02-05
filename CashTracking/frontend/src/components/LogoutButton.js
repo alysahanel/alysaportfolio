@@ -6,7 +6,7 @@ const LogoutButton = () => {
       credentials: "include",
     })
       .then(() => {
-        window.location.href = "/login";
+        window.location.href = "/cashtracking/login";
       })
       .catch((err) => {
         console.error("Logout error", err);

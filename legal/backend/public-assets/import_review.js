@@ -1,4 +1,4 @@
-const API_BASE = '/legal/api/import-review';
+const API_BASE = '/legal/api/regulations';
 
 function showToast(message, type = 'info') {
   try {
@@ -20,7 +20,7 @@ async function fetchExisting(dept) {
     const limit = 1000;
     let page = 1;
     while (true) {
-      const res = await fetch(`${API_BASE}/api/regulations/${encodeURIComponent(dept)}?limit=${limit}&page=${page}`);
+      const res = await fetch(`${API_BASE}/${encodeURIComponent(dept)}?limit=${limit}&page=${page}`);
       let data = [];
       try { data = await res.json(); } catch (_) { data = []; }
       if (!Array.isArray(data) || data.length === 0) break;
@@ -67,7 +67,7 @@ function renderRowEditable(row, idx, tbody) {
     try {
       const params = new URLSearchParams(location.search);
       const dept = params.get('dept') || 'HRGA';
-      const res = await fetch(`${API_BASE}/api/regulations/${encodeURIComponent(dept)}/append`, {
+      const res = await fetch(`${API_BASE}/${encodeURIComponent(dept)}/append`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify([row])
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const dept = params.get('dept') || 'HRGA';
   document.getElementById('deptLabel').textContent = dept;
   const backBtn = document.getElementById('btnBack');
-  if (backBtn) backBtn.addEventListener('click', () => { location.href = `regulatory.html?dept=${encodeURIComponent(dept)}`; });
+  if (backBtn) backBtn.addEventListener('click', () => { location.href = `/legal/regulatory.html?dept=${encodeURIComponent(dept)}`; });
 
   try {
     const existing = await fetchExisting(dept);
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         const combined = latest.concat(finalRowsToAppend);
         combined.forEach((r, i) => { r.no = i + 1; });
-        const start = await fetch(`${API_BASE}/api/regulations/${encodeURIComponent(dept)}/replace-start`, { method: 'POST' });
+        const start = await fetch(`${API_BASE}/${encodeURIComponent(dept)}/replace-start`, { method: 'POST' });
         if (!start.ok) throw new Error(`HTTP ${start.status}`);
 
         let i = 0;
@@ -157,14 +157,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             size = estimated;
             i++;
           }
-          const res = await fetch(`${API_BASE}/api/regulations/${encodeURIComponent(dept)}/append`, {
+          const res = await fetch(`${API_BASE}/${encodeURIComponent(dept)}/append`, {
             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(chunk)
           });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
         }
         showToast(`Impor disimpan: total ${combined.length} baris.`, 'success');
         localStorage.removeItem('import_review_data');
-        setTimeout(() => { location.href = `regulatory.html?dept=${encodeURIComponent(dept)}`; }, 800);
+        setTimeout(() => { location.href = `/legal/regulatory.html?dept=${encodeURIComponent(dept)}`; }, 800);
       } catch (err) {
         showToast('Gagal menyimpan impor: ' + err.message, 'error');
       }

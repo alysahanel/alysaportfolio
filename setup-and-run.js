@@ -76,8 +76,8 @@ startProcess('node', ['backend/server.js'], 'LEGAL', path.join(__dirname, 'legal
 
 // CashTracking (Port 5000)
 const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
-// Use RENDER=true to force In-Memory DB and Demo User creation
-startProcess(pythonCmd, ['backend/app.py'], 'CASH', path.join(__dirname, 'CashTracking'), { PORT: '5000', RENDER: 'true' });
+// Use RENDER=true to force In-Memory DB and Demo User creation (REMOVED to allow persistent local DB)
+startProcess(pythonCmd, ['backend/app.py'], 'CASH', path.join(__dirname, 'CashTracking'), { PORT: '5000' });
 
 // Proxy (Port 3000)
 setTimeout(() => {

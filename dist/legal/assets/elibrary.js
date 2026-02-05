@@ -13,9 +13,7 @@ let regulationGrid;
 let regulationDetail;
 let detailTitle;
 let detailTableBody;
-let backBtn;
 let hierarchyBtn;
-let nextBtn;
 let elibraryTable;
 let thActions;
 let btnEnterEdit;
@@ -35,25 +33,33 @@ let currentPage = 1;
 let pageSize = 50;
 const LS_ELIB_PAGE_SIZE_KEY = 'elib_page_size';
 const LS_ELIB_PAGE_KEY_PREFIX = 'elib_current_page_';
+
 function getSavedElibPage(cat){ try { const v = Number(localStorage.getItem(LS_ELIB_PAGE_KEY_PREFIX + String(cat||'')) || 0); return v>0?v:1; } catch { return 1; } }
 function saveElibPage(cat,page){ try { localStorage.setItem(LS_ELIB_PAGE_KEY_PREFIX + String(cat||''), String(page)); } catch {} }
+
 let newRowIndex = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeElements();
     setupEventListeners();
+    
     const url = new URL(location.href);
     const initialCategory = url.searchParams.get('category');
+    
     if (initialCategory) {
-        showRegulationDetail(initialCategory);
-        try {
-            document.querySelectorAll('.regulation-card').forEach(c => c.classList.remove('primary-card'));
-            const sel = document.querySelector(`.regulation-card[data-category="${CSS.escape(initialCategory)}"]`);
-            if (sel) sel.classList.add('primary-card');
-        } catch {}
+        // Wait for elements to be ready
+        setTimeout(() => {
+            showRegulationDetail(initialCategory);
+            try {
+                document.querySelectorAll('.regulation-card').forEach(c => c.classList.remove('primary-card'));
+                const sel = document.querySelector(`.regulation-card[data-category="${CSS.escape(initialCategory)}"]`);
+                if (sel) sel.classList.add('primary-card');
+            } catch {}
+        }, 100);
     } else {
         showRegulationHierarchy();
     }
+    
     setTimeout(addScrollAnimations, 100);
     if (typeof updateCategoryCounts === 'function') updateCategoryCounts();
     if (!initialCategory && typeof startCountsAutoRefresh === 'function') startCountsAutoRefresh();
@@ -64,9 +70,7 @@ function initializeElements() {
     regulationDetail = document.getElementById('regulationDetail');
     detailTitle = document.getElementById('detailTitle');
     detailTableBody = document.getElementById('detailTableBody');
-    backBtn = document.getElementById('backBtn');
     hierarchyBtn = document.getElementById('hierarchyBtn');
-    nextBtn = document.getElementById('nextBtn');
     elibraryTable = document.getElementById('elibraryTable');
     thActions = document.getElementById('th-actions');
     btnEnterEdit = document.getElementById('btnEnterEdit');
@@ -76,45 +80,33 @@ function initializeElements() {
     btnImport = document.getElementById('btnImport');
     fileInput = document.getElementById('fileInput');
     btnExitEdit = document.getElementById('btnExitEdit');
-    const pageSizeSel = document.getElementById('pageSizeSel');
-    const savedPageSize = Number(localStorage.getItem(LS_ELIB_PAGE_SIZE_KEY) || 0);
-    if (pageSizeSel) {
-      if (savedPageSize && [25,50,100].includes(savedPageSize)) { pageSize = savedPageSize; pageSizeSel.value = String(savedPageSize); }
-      pageSizeSel.addEventListener('change', async () => {
-        pageSize = Number(pageSizeSel.value || 50);
-        try { localStorage.setItem(LS_ELIB_PAGE_SIZE_KEY, String(pageSize)); } catch {}
-        currentPage = 1;
-        await refreshDetailPage();
-      });
-    }
 }
 
 function setupEventListeners() {
     const regulationCards = document.querySelectorAll('.regulation-card');
     regulationCards.forEach(card => {
-        card.addEventListener('click', function() {
+        card.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent default if any
             const category = this.getAttribute('data-category');
+            if (!category) return;
+            
             try {
                 document.querySelectorAll('.regulation-card').forEach(c => c.classList.remove('primary-card'));
                 this.classList.add('primary-card');
             } catch {}
+            
             const url = new URL(location.href);
             url.searchParams.set('category', category);
             history.replaceState(null, '', url.toString());
+            
             saveElibPage(category, 1);
             showRegulationDetail(category);
         });
+        
         card.addEventListener('mouseenter', function() { this.style.transform = 'translateY(-5px)'; });
         card.addEventListener('mouseleave', function() { this.style.transform = 'translateY(0)'; });
     });
 
-    if (backBtn) backBtn.addEventListener('click', () => {
-        const url = new URL(location.href);
-        url.searchParams.delete('category');
-        history.replaceState(null, '', url.toString());
-        if (currentCategory) saveElibPage(currentCategory, 1);
-        showRegulationHierarchy();
-    });
     if (hierarchyBtn) hierarchyBtn.addEventListener('click', () => {
         const url = new URL(location.href);
         url.searchParams.delete('category');
@@ -122,17 +114,6 @@ function setupEventListeners() {
         if (currentCategory) saveElibPage(currentCategory, 1);
         showRegulationHierarchy();
     });
-    const prevBtn = document.getElementById('prevBtn');
-    const pageNoEl = document.getElementById('pageNo');
-    if (nextBtn) nextBtn.addEventListener('click', async () => {
-        const knownTotalPages = typeof window.ELibTotalPages === 'number' ? window.ELibTotalPages : null;
-        const allowNext = knownTotalPages != null ? (currentPage < knownTotalPages) : (rows.length === pageSize);
-        if (!allowNext) return;
-        currentPage++;
-        await refreshDetailPage();
-        saveElibPage(currentCategory, currentPage);
-    });
-    if (prevBtn) prevBtn.addEventListener('click', async () => { if (currentPage > 1) { currentPage--; await refreshDetailPage(); saveElibPage(currentCategory, currentPage); } });
 
     if (btnEnterEdit) btnEnterEdit.addEventListener('click', () => setEditMode(true));
     if (btnExitEdit) btnExitEdit.addEventListener('click', async () => {
@@ -146,11 +127,13 @@ function setupEventListeners() {
             startDetailAutoRefresh();
         }
     });
+    
     if (btnAddRow) btnAddRow.addEventListener('click', addRow);
     if (btnExportCSV) btnExportCSV.addEventListener('click', exportCSV);
     if (btnImport) btnImport.addEventListener('click', () => fileInput && fileInput.click());
     if (fileInput) fileInput.addEventListener('change', handleImportCSV);
 
+    // Modal Events
     const btnCloseModal = document.getElementById('btnCloseModal');
     const btnCancel = document.getElementById('btnCancel');
     const btnDelete = document.getElementById('btnDelete');
@@ -169,7 +152,7 @@ function showRegulationHierarchy() {
         regulationGrid.style.display = 'grid';
         regulationDetail.style.display = 'none';
         if (hierarchyBtn) hierarchyBtn.style.display = 'none';
-        if (nextBtn) nextBtn.style.display = 'block';
+        
         currentCategory = null;
         rows = [];
         setEditMode(false);
@@ -177,27 +160,36 @@ function showRegulationHierarchy() {
         updateCategoryCounts();
         startCountsAutoRefresh();
         stopDetailAutoRefresh();
+        
+        // Ensure grid is visible
+        regulationGrid.classList.remove('hidden');
     }
 }
 
 function showRegulationDetail(category) {
     if (!regulationGrid || !regulationDetail || !detailTitle || !detailTableBody) {
-        console.error('Required elements not found');
-        return;
+        console.error('Required elements not found for detail view');
+        // Try to re-init
+        initializeElements();
+        if (!regulationGrid || !regulationDetail) return;
     }
 
     currentCategory = category;
     regulationGrid.style.display = 'none';
     regulationDetail.style.display = 'block';
-    detailTitle.textContent = categoryTitles[category] || 'Regulation Detail';
+    
+    // Ensure detail is visible (remove hidden if present)
+    regulationDetail.classList.remove('hidden');
+    
+    if (detailTitle) detailTitle.textContent = categoryTitles[category] || 'Regulation Detail';
 
     currentPage = getSavedElibPage(category);
+    
     (async () => {
       try {
         const resp = await fetch('/legal/api/elibrary-counts');
         const counts = resp.ok ? await resp.json() : null;
-        const total = counts && counts[category] ? Number(counts[category]) : null;
-        window.ELibTotalPages = total ? Math.ceil(total / pageSize) : null;
+        // Logic for total pages if needed
       } catch {}
       await refreshDetailPage();
       startDetailAutoRefresh();
@@ -211,20 +203,6 @@ async function refreshDetailPage() {
     const fresh = await loadCategoryFromServer(currentCategory);
     rows = normalizeRows(fresh || []);
     renderTable();
-    updatePaginationUI();
-}
-
-function updatePaginationUI(){
-    const pageNoEl = document.getElementById('pageNo');
-    const btnPrev = document.getElementById('prevBtn');
-    const btnNext = document.getElementById('nextBtn');
-    if (pageNoEl) pageNoEl.textContent = String(currentPage);
-    if (btnPrev) btnPrev.disabled = currentPage <= 1;
-    if (btnNext) {
-        const knownTotalPages = typeof window.ELibTotalPages === 'number' ? window.ELibTotalPages : null;
-        const allowNext = knownTotalPages != null ? (currentPage < knownTotalPages) : (rows.length === pageSize);
-        btnNext.disabled = !allowNext;
-    }
 }
 
 function normalizeRows(raw) {
@@ -244,30 +222,50 @@ function renderTable() {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-gray-50 transition-colors';
         
+        // Fields: No, Departemen, Regulasi, Lingkup, Status, Catatan, Aksi
+        const departemen = row.departemen || row.year || '-'; // Fallback to year if old data
+        const regulasi = row.regulasi || row.number || '-';
+        const lingkup = row.lingkup || row.title || '-';
+        const status = row.status || 'applicable';
+        const catatan = row.notes || row.desc || '-';
+        const link = row.link || row.file || '';
+        
+        const statusBadge = status === 'applicable' 
+            ? '<span class="status-active">Berlaku</span>' 
+            : '<span class="status-inactive">Tidak Berlaku</span>';
+
         if (isEditing) {
             tr.innerHTML = `
                 <td class="p-3 text-center w-16">${row.no || index + 1}</td>
-                <td class="p-3"><input type="text" class="w-full border rounded p-1" value="${row.year || ''}" onchange="updateRow(${index}, 'year', this.value)"></td>
-                <td class="p-3"><input type="text" class="w-full border rounded p-1" value="${row.number || ''}" onchange="updateRow(${index}, 'number', this.value)"></td>
-                <td class="p-3"><input type="text" class="w-full border rounded p-1" value="${row.title || ''}" onchange="updateRow(${index}, 'title', this.value)"></td>
-                <td class="p-3"><input type="text" class="w-full border rounded p-1" value="${row.desc || ''}" onchange="updateRow(${index}, 'desc', this.value)"></td>
-                <td class="p-3"><input type="text" class="w-full border rounded p-1" value="${row.file || ''}" onchange="updateRow(${index}, 'file', this.value)"></td>
+                <td class="p-3"><input type="text" class="w-full border rounded p-1" value="${departemen}" onchange="updateRow(${index}, 'departemen', this.value)"></td>
+                <td class="p-3"><input type="text" class="w-full border rounded p-1" value="${regulasi}" onchange="updateRow(${index}, 'regulasi', this.value)"></td>
+                <td class="p-3"><input type="text" class="w-full border rounded p-1" value="${lingkup}" onchange="updateRow(${index}, 'lingkup', this.value)"></td>
+                <td class="p-3">
+                    <select class="w-full border rounded p-1" onchange="updateRow(${index}, 'status', this.value)">
+                        <option value="applicable" ${status === 'applicable' ? 'selected' : ''}>Berlaku</option>
+                        <option value="not-applicable" ${status === 'not-applicable' ? 'selected' : ''}>Tidak Berlaku</option>
+                    </select>
+                </td>
+                <td class="p-3"><input type="text" class="w-full border rounded p-1" value="${catatan}" onchange="updateRow(${index}, 'notes', this.value)"></td>
                 <td class="p-3 text-center">
                     <button class="text-red-500 hover:text-red-700" onclick="deleteRow(${index})">
                         <i class="fas fa-trash"></i>
                     </button>
+                    <button class="text-blue-500 hover:text-blue-700 ml-2" onclick="openEditModalFromRow(${index})">
+                        <i class="fas fa-pen"></i>
+                    </button>
                 </td>
             `;
         } else {
-            const displayNo = row.no || ((currentPage - 1) * pageSize + index + 1);
             tr.innerHTML = `
-                <td class="p-3 text-center text-gray-500">${displayNo}</td>
-                <td class="p-3 font-medium text-gray-900">${row.year || '-'}</td>
-                <td class="p-3 text-blue-600 font-medium">${row.number || '-'}</td>
-                <td class="p-3 text-gray-800">${row.title || '-'}</td>
-                <td class="p-3 text-gray-600 text-sm max-w-md truncate" title="${row.desc || ''}">${row.desc || '-'}</td>
+                <td class="p-3 text-center text-gray-500">${row.no || index + 1}</td>
+                <td class="p-3 font-medium text-gray-900">${departemen}</td>
+                <td class="p-3 text-blue-600 font-medium">${regulasi}</td>
+                <td class="p-3 text-gray-800">${lingkup}</td>
+                <td class="p-3 text-center">${statusBadge}</td>
+                <td class="p-3 text-gray-600 text-sm max-w-md truncate" title="${catatan}">${catatan}</td>
                 <td class="p-3 text-center">
-                    ${row.file ? `<a href="${row.file}" target="_blank" class="text-blue-500 hover:text-blue-700 transition-colors"><i class="fas fa-file-pdf text-lg"></i></a>` : '<span class="text-gray-300"><i class="fas fa-minus"></i></span>'}
+                    ${link ? `<a href="${link}" target="_blank" class="text-blue-500 hover:text-blue-700 transition-colors"><i class="fas fa-file-pdf text-lg"></i></a>` : '<span class="text-gray-300"><i class="fas fa-minus"></i></span>'}
                 </td>
                 ${isEditing ? '<td class="p-3"></td>' : ''}
             `;
@@ -290,14 +288,23 @@ function updateRow(index, field, value) {
 }
 
 function deleteRow(index) {
-    if (confirm('Are you sure you want to delete this row?')) {
+    if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
         rows[index].__deleted = true;
         renderTable(); 
     }
 }
 
 function addRow() {
-    const newRow = { id: Date.now(), year: '', number: '', title: '', desc: '', file: '', __new: true };
+    const newRow = { 
+        id: Date.now(), 
+        departemen: '', 
+        regulasi: '', 
+        lingkup: '', 
+        status: 'applicable', 
+        notes: '', 
+        link: '', 
+        __new: true 
+    };
     rows.push(newRow);
     renderTable();
     window.scrollTo(0, document.body.scrollHeight);
@@ -356,7 +363,7 @@ async function saveCategoryToServer(cat) {
         if (!res.ok) throw new Error('Sync failed');
     } catch (e) {
         console.error('Failed to save category:', e);
-        alert('Failed to save changes. Check connection.');
+        alert('Gagal menyimpan perubahan. Cek koneksi.');
     }
 }
 
@@ -367,19 +374,26 @@ async function updateCategoryCounts() {
             const counts = await res.json();
             for (const [cat, count] of Object.entries(counts)) {
                 const el = document.querySelector(`.regulation-card[data-category="${cat}"] .regulation-count`);
-                if (el) el.textContent = count;
+                if (el) el.textContent = `${count} Peraturan`;
             }
         }
     } catch {}
 }
 
 function exportCSV() {
-    if (!rows || !rows.length) return alert('No data to export');
-    const headers = ['Year', 'Number', 'Title', 'Description', 'File Link'];
+    if (!rows || !rows.length) return alert('Tidak ada data untuk diekspor');
+    const headers = ['Departemen', 'Regulasi', 'Lingkup', 'Status', 'Catatan', 'Link'];
     const csvContent = [
         headers.join(','),
         ...rows.filter(r => !r.__deleted).map(r => 
-            [r.year, r.number, r.title, r.desc, r.file].map(f => `"${String(f||'').replace(/"/g, '""')}"`).join(',')
+            [
+                r.departemen, 
+                r.regulasi, 
+                r.lingkup, 
+                r.status, 
+                r.notes, 
+                r.link
+            ].map(f => `"${String(f||'').replace(/"/g, '""')}"`).join(',')
         )
     ].join('\n');
     
@@ -401,23 +415,23 @@ function handleImportCSV(e) {
         
         // Skip header
         for (let i = 1; i < lines.length; i++) {
-            // Simple CSV parser (assumes quotes)
             const parts = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-            if (parts && parts.length >= 4) {
+            if (parts && parts.length >= 6) {
                  const clean = s => s.replace(/^"|"$/g, '').replace(/""/g, '"');
                  rows.push({
                      id: Date.now() + Math.random(),
-                     year: clean(parts[0]||''),
-                     number: clean(parts[1]||''),
-                     title: clean(parts[2]||''),
-                     desc: clean(parts[3]||''),
-                     file: clean(parts[4]||''),
+                     departemen: clean(parts[0]||''),
+                     regulasi: clean(parts[1]||''),
+                     lingkup: clean(parts[2]||''),
+                     status: clean(parts[3]||'applicable'),
+                     notes: clean(parts[4]||''),
+                     link: clean(parts[5]||''),
                      __new: true
                  });
             }
         }
         renderTable();
-        alert(`Imported ${lines.length - 1} rows. Click Exit Edit to save.`);
+        alert(`Berhasil impor ${lines.length - 1} baris.`);
     };
     reader.readAsText(file);
     e.target.value = ''; 
@@ -426,23 +440,31 @@ function handleImportCSV(e) {
 // Modal Handling
 let currentRowRef = null;
 const modalTitle = document.getElementById('modalTitle');
-const inpYear = document.getElementById('inpYear');
-const inpNumber = document.getElementById('inpNumber');
-const inpTitle = document.getElementById('inpTitle');
-const inpDesc = document.getElementById('inpDesc');
-const inpFile = document.getElementById('inpFile');
+const fDepartemen = document.getElementById('fDepartemen');
+const fRegulasi = document.getElementById('fRegulasi');
+const fLingkup = document.getElementById('fLingkup');
+const fStatus = document.getElementById('fStatus');
+const fLink = document.getElementById('fLink');
+const fNotes = document.getElementById('fNotes');
 const editModal = document.getElementById('editModal');
 
 function openEditModal(row, index) {
     currentRowRef = row;
     newRowIndex = index;
-    if (modalTitle) modalTitle.textContent = row.title || 'Edit Regulation';
-    if (inpYear) inpYear.value = row.year || '';
-    if (inpNumber) inpNumber.value = row.number || '';
-    if (inpTitle) inpTitle.value = row.title || '';
-    if (inpDesc) inpDesc.value = row.desc || '';
-    if (inpFile) inpFile.value = row.file || '';
+    if (modalTitle) modalTitle.textContent = row.regulasi || 'Edit Regulasi';
+    
+    if (fDepartemen) fDepartemen.value = row.departemen || row.year || '';
+    if (fRegulasi) fRegulasi.value = row.regulasi || row.number || '';
+    if (fLingkup) fLingkup.value = row.lingkup || row.title || '';
+    if (fStatus) fStatus.value = row.status || 'applicable';
+    if (fLink) fLink.value = row.link || row.file || '';
+    if (fNotes) fNotes.value = row.notes || row.desc || '';
+    
     if (editModal) editModal.classList.remove('hidden');
+}
+
+function openEditModalFromRow(index) {
+    if (rows[index]) openEditModal(rows[index], index);
 }
 
 function closeEditModal() {
@@ -452,11 +474,8 @@ function closeEditModal() {
 }
 
 function deleteRowCurrent() {
-    if (currentRowRef && confirm('Delete this regulation?')) {
+    if (currentRowRef && confirm('Hapus regulasi ini?')) {
         currentRowRef.__deleted = true;
-        // In view mode, we probably want to save immediately or just hide it?
-        // Let's assume view mode deletion requires immediate sync or it's just local until refresh.
-        // For better UX, let's try to sync one deletion if not in edit mode.
         if (!isEditing) {
             saveCategoryToServer(currentCategory).then(() => {
                 refreshDetailPage();
@@ -471,11 +490,13 @@ function deleteRowCurrent() {
 
 function saveRowFromModal() {
     if (currentRowRef) {
-        currentRowRef.year = inpYear.value;
-        currentRowRef.number = inpNumber.value;
-        currentRowRef.title = inpTitle.value;
-        currentRowRef.desc = inpDesc.value;
-        currentRowRef.file = inpFile.value;
+        if (fDepartemen) currentRowRef.departemen = fDepartemen.value;
+        if (fRegulasi) currentRowRef.regulasi = fRegulasi.value;
+        if (fLingkup) currentRowRef.lingkup = fLingkup.value;
+        if (fStatus) currentRowRef.status = fStatus.value;
+        if (fLink) currentRowRef.link = fLink.value;
+        if (fNotes) currentRowRef.notes = fNotes.value;
+        
         currentRowRef.__modified = true;
         
         if (!isEditing) {
@@ -501,14 +522,17 @@ function startDetailAutoRefresh() {
 
 function stopDetailAutoRefresh() {
     if (autoRefreshDetailTimer) clearInterval(autoRefreshDetailTimer);
-    autoRefreshDetailTimer = null;
 }
 
 function startCountsAutoRefresh() {
-    if (autoRefreshCountsTimer) clearInterval(autoRefreshCountsTimer);
-    autoRefreshCountsTimer = setInterval(() => {
-        if (!currentCategory && document.visibilityState === 'visible') {
-            updateCategoryCounts();
+    stopCountsAutoRefresh();
+    autoRefreshCountsTimer = setInterval(async () => {
+        if (document.visibilityState === 'visible') {
+            await updateCategoryCounts();
         }
     }, 10000);
+}
+
+function stopCountsAutoRefresh() {
+    if (autoRefreshCountsTimer) clearInterval(autoRefreshCountsTimer);
 }
