@@ -1,13 +1,3 @@
-// Cursor Spotlight Effect
-document.addEventListener('mousemove', e => {
-    const x = e.clientX;
-    const y = e.clientY;
-    
-    // Update CSS variables for the spotlight position
-    document.documentElement.style.setProperty('--cursor-x', x + 'px');
-    document.documentElement.style.setProperty('--cursor-y', y + 'px');
-});
-
 // Toggle icon navbar
 let menuIcon = document.querySelector('.hamburger');
 let navbar = document.querySelector('.nav-links');
