@@ -7,7 +7,7 @@
     border: none;
     outline: none;
     scroll-behavior: smooth;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 :root {
@@ -31,18 +31,12 @@ html {
 
 section {
     min-height: 100vh;
-    padding: 12rem 10%;
+    padding: 10rem 9%;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    font-family: 'Poppins', sans-serif;
-    line-height: 1.2;
-}
-
-.hero-content, .about-content, .skills-container, .portfolio-container, .contact form {
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
+.heading {
+    text-align: center;
+    font-size: 4.5rem;
 }
 
 .about, 
