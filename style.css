@@ -11,42 +11,22 @@
 }
 
 :root {
-    /* Brittany Chiang Inspired Palette */
-    --bg-color: #0f172a; /* Slate 900 */
-    --second-bg-color: #1e293b; /* Slate 800 */
-    --card-bg-color: rgba(30, 41, 59, 0.5); /* Transparent Slate */
-    --text-color: #94a3b8; /* Slate 400 (Body) */
-    --heading-color: #e2e8f0; /* Slate 200 (Headings) */
-    --main-color: #5eead4; /* Teal 300 (Accent) */
-    --accent-color: #2dd4bf; /* Teal 400 */
-    --hover-bg: rgba(94, 234, 212, 0.1);
+    --bg-color: #1f242d;
+    --second-bg-color: #323946;
+    --card-bg-color: #323946;
+    --text-color: #fff;
+    --main-color: #0ef;
+    --accent-color: #0ef;
 }
 
 body {
     background: var(--bg-color);
     color: var(--text-color);
-    line-height: 1.6;
 }
 
 html {
     font-size: 62.5%;
-    scroll-behavior: smooth;
-    background: var(--bg-color);
-}
-
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-    width: 10px;
-}
-::-webkit-scrollbar-track {
-    background: var(--bg-color);
-}
-::-webkit-scrollbar-thumb {
-    background: var(--second-bg-color);
-    border-radius: 5px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: var(--text-color);
+    overflow-x: hidden;
 }
 
 section {
@@ -54,20 +34,9 @@ section {
     padding: 10rem 9%;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    color: var(--heading-color);
-    font-weight: 600;
-}
-
 .heading {
     text-align: center;
-    font-size: 4rem;
-    margin-bottom: 3rem;
-    color: var(--heading-color);
-}
-
-span {
-    color: var(--main-color);
+    font-size: 4.5rem;
 }
 
 
@@ -81,171 +50,69 @@ span {
     padding-top: 5rem;
 }
 
-/* Header / Sidebar Layout for Desktop */
-@media (min-width: 1024px) {
-    body {
-        /* Reset flex if previously applied, block is safer for this structure */
-        display: block;
-    }
-
-    .header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 40%; /* Left side width */
-        height: 100vh;
-        background: var(--bg-color);
-        flex-direction: column;
-        justify-content: center; /* Center vertically */
-        align-items: flex-start; /* Align left */
-        padding: 0 8rem; /* Padding inside sidebar */
-        z-index: 1000;
-        border-right: 1px solid var(--second-bg-color);
-    }
-
-    /* Wrap all sections in a main container conceptually (using margin) */
-    main {
-        width: 60%; /* Right side width */
-        margin-left: 40%; /* Offset by sidebar width */
-        min-height: 100vh;
-    }
-
-    section {
-        width: 100%; /* Fill the main container */
-        padding: 8rem 5rem; /* Adjust padding */
-        min-height: auto; /* Let content define height mostly */
-        margin-bottom: 5rem;
-    }
-
-    .footer {
-        width: 60%;
-        margin-left: 40%;
-        background: var(--bg-color); /* Match body to blend in */
-        border-top: 1px solid var(--second-bg-color);
-    }
-
-    .nav-links {
-        flex-direction: column;
-        gap: 2rem;
-        margin-top: 3rem;
-    }
-
-    .nav-links li a {
-        font-size: 1.6rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.1rem;
-        display: flex;
-        align-items: center;
-    }
-    
-    /* Add a line indicator for nav items */
-    .nav-links li a::before {
-        content: '';
-        display: block;
-        width: 3rem;
-        height: 1px;
-        background: var(--text-color);
-        margin-right: 1.5rem;
-        transition: width 0.3s, background 0.3s;
-    }
-
-    .nav-links li a:hover::before,
-    .nav-links li a.active::before {
-        width: 6rem;
-        background: var(--main-color);
-    }
-    
-    .nav-links li a:hover,
-    .nav-links li a.active {
-        color: var(--heading-color);
-    }
-
-    /* Hero adjustments for sidebar layout */
-    .hero {
-        min-height: 100vh; /* Keep hero full height */
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: flex-start;
-        text-align: left;
-    }
-
-    .hero-content {
-        max-width: 100%;
-    }
-    
-    .hero-img {
-        display: none; /* Hide hero image in sidebar layout or move it */
-    }
-
-    .logo-wrapper {
-        margin-bottom: 2rem;
-    }
-    
-    .logo {
-        font-size: 3rem;
-    }
+/* Header */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 2rem 9%;
+    background: var(--bg-color);
+    display: flex;
+    justify-content: flex-start; /* Align items to the left */
+    align-items: center;
+    z-index: 100;
+    gap: 4rem; /* Space between logo and navbar */
 }
 
-/* Mobile Fallback */
-@media (max-width: 1023px) {
-    .header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        padding: 2rem 5%;
-        background: rgba(15, 23, 42, 0.95);
-        backdrop-filter: blur(10px);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        z-index: 1000;
-        border-bottom: 1px solid var(--second-bg-color);
-    }
-    
-    .hamburger {
-        display: block;
-        cursor: pointer;
-    }
-    
-    .nav-links {
-        display: none;
-    }
-    
-    .nav-links.active {
-        display: flex;
-        flex-direction: column;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background: var(--bg-color);
-        padding: 4rem 2rem;
-        border-top: 1px solid var(--second-bg-color);
-        box-shadow: 0 10px 30px -10px rgba(2, 12, 27, 0.7);
-    }
-    
-    .nav-links li {
-        margin: 1.5rem 0;
-        text-align: center;
-    }
-    
-    .nav-links li a {
-        font-size: 2rem;
-        display: block;
-    }
-    
-    section {
-        padding: 10rem 5% 5rem; /* Standard mobile padding */
-    }
+.logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    /* Removed fixed position to let it sit inside header flow */
+}
+
+.logo {
+    font-size: 2.5rem;
+    color: var(--text-color);
+    font-weight: 600;
+    cursor: default;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+}
+
+.nav-links li a {
+    font-size: 1.7rem;
+    color: var(--text-color);
+    margin-left: 2.5rem;
+    transition: .3s;
+    font-weight: 700;
+}
+
+.nav-links li a:hover,
+.nav-links li a.active {
+    color: var(--main-color);
 }
 
 .hamburger {
     font-size: 3.6rem;
-    color: var(--main-color);
-    display: none; /* Hidden on desktop by default via media query logic, but explicit here */
+    color: var(--text-color);
+    display: none;
 }
 
 /* Hero Section */
@@ -259,81 +126,28 @@ span {
     flex: 1;
 }
 
-/* Card Styling - Brittany Style */
-.skills-box, .portfolio-box, .services-container .services-box {
-    background: var(--card-bg-color);
-    border-radius: 4px; /* Slightly more square */
-    padding: 3rem 2rem;
-    transition: all 0.3s ease;
-    border: 1px solid transparent;
-    box-shadow: 0 10px 30px -15px rgba(2, 12, 27, 0.7);
+.hero-content h3 {
+    font-size: 3.2rem;
+    font-weight: 700;
 }
 
-.skills-box:hover, .portfolio-box:hover, .services-container .services-box:hover {
-    background: rgba(30, 41, 59, 0.8); /* Lighter slate */
-    transform: translateY(-5px);
-    border-color: var(--main-color);
-    box-shadow: 0 20px 30px -15px rgba(2, 12, 27, 0.7);
-}
-
-.skills-box i, .portfolio-box i {
-    color: var(--main-color);
-    font-size: 4rem; /* Adjust icon size */
+.hero-content h3:nth-of-type(2) {
     margin-bottom: 2rem;
 }
 
-.skills-box h3, .portfolio-box h4 {
-    font-size: 2.2rem;
-    color: var(--heading-color);
-    margin-bottom: 1rem;
-}
-
-.skills-box p, .portfolio-box p {
-    font-size: 1.6rem;
-    color: var(--text-color);
-}
-
-/* Button Styling */
-.btn {
-    display: inline-block;
-    padding: 1.2rem 2.8rem;
-    background: transparent;
-    border: 1px solid var(--main-color);
-    border-radius: 4px;
-    font-size: 1.6rem;
+span {
     color: var(--main-color);
-    font-weight: 500;
-    letter-spacing: 1px;
-    transition: all 0.3s ease;
-    margin-top: 2rem;
 }
 
-.btn:hover {
-    background: var(--hover-bg);
-    box-shadow: none;
-    transform: translateY(-3px);
-}
-
-/* Typography Refinements */
 .hero-content h1 {
-    font-size: clamp(4rem, 8vw, 7rem); /* Responsive font size */
+    font-size: 5.6rem;
     font-weight: 700;
-    line-height: 1.1;
-    color: var(--heading-color);
-    margin-bottom: 1rem;
-}
-
-.hero-content h3 {
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 600;
-    color: var(--text-color);
+    line-height: 1.3;
 }
 
 .hero-content p {
-    font-size: 1.8rem;
-    color: var(--text-color);
-    max-width: 540px;
-    margin-top: 2rem;
+    font-size: 1.6rem;
+    margin-bottom: 2rem;
 }
 
 .social-media a {
@@ -343,18 +157,34 @@ span {
     width: 4rem;
     height: 4rem;
     background: transparent;
-    border: none;
-    font-size: 2.2rem;
-    color: var(--text-color);
-    margin: 0 1rem;
-    transition: 0.3s ease;
+    border: .2rem solid var(--main-color);
+    border-radius: 50%;
+    font-size: 2rem;
+    color: var(--main-color);
+    margin: 3rem 1.5rem 3rem 0;
+    transition: .5s ease;
 }
 
 .social-media a:hover {
-    color: var(--main-color);
-    transform: translateY(-3px);
+    background: var(--main-color);
+    color: var(--second-bg-color);
+    box-shadow: 0 0 1rem var(--main-color);
+}
+
+.btn {
+    display: inline-block;
+    padding: 1rem 2.8rem;
+    background: var(--main-color);
+    border-radius: 4rem;
+    box-shadow: 0 0 1rem var(--main-color);
+    font-size: 1.6rem;
+    color: var(--second-bg-color);
+    font-weight: 600;
+    transition: .5s ease;
+}
+
+.btn:hover {
     box-shadow: none;
-    background: transparent;
 }
 
 .hero-img {
@@ -434,14 +264,14 @@ span {
     border-radius: 2rem;
     padding: 3rem 2rem;
     box-shadow: 0 0 1rem var(--bg-color);
-    border: 1px solid var(--main-color);
+    border: .2rem solid var(--main-color);
     text-align: center;
     transition: .5s ease;
 }
 
 .skills-box:hover {
     transform: scale(1.02);
-    box-shadow: 0 0 2rem var(--accent-color);
+    box-shadow: 0 0 2rem var(--main-color);
 }
 
 .skills-box i {
@@ -488,7 +318,7 @@ span {
     display: flex;
     height: 250px;
     background: var(--card-bg-color);
-    border: 1px solid var(--main-color);
+    border: .2rem solid var(--main-color);
     cursor: pointer;
 }
 
