@@ -11,10 +11,11 @@
 }
 
 :root {
-    --bg-color: #1f242d;
-    --second-bg-color: #323946;
-    --text-color: #fff;
-    --main-color: #0ef;
+    --bg-color: #FAFAF9;
+    --second-bg-color: #F1F5F9;
+    --text-color: #292524;
+    --main-color: #4D7C0F;
+    --accent-color: #84CC16;
 }
 
 body {
@@ -258,7 +259,7 @@ span {
 
 .skills-box:hover {
     transform: scale(1.02);
-    box-shadow: 0 0 2rem var(--main-color);
+    box-shadow: 0 0 2rem var(--accent-color);
 }
 
 .skills-box i {
