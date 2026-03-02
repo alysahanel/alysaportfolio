@@ -7,7 +7,7 @@
     border: none;
     outline: none;
     scroll-behavior: smooth;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
 }
 
 :root {
@@ -31,7 +31,18 @@ html {
 
 section {
     min-height: 100vh;
-    padding: 10rem 9% 2rem;
+    padding: 12rem 10%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.2;
+}
+
+.hero-content, .about-content, .skills-container, .portfolio-container, .contact form {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .about, 
@@ -221,6 +232,8 @@ span {
 .about-content h2 {
     text-align: center;
     line-height: 1.2;
+    font-size: 3.8rem;
+    font-weight: 600;
 }
 
 .about-content h3 {
