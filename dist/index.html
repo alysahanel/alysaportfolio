@@ -7,210 +7,335 @@
     <link rel="icon" href="tab logo.jpeg">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header class="header">
-        <a href="#" class="logo">AMMS.</a>
+    <div class="layout-wrapper">
+        <header class="header-sidebar">
+            <div class="sidebar-content">
+                <div class="logo-wrapper">
+                    <!-- <img src="tab logo.jpeg" alt="Alysa Logo" class="logo-img"> -->
+                </div>
+                
+                <div class="intro">
+                    <h1>Alysa Milano</h1>
+                    <h2><span class="multiple-text"></span></h2>
+                    <p class="short-bio">An Informatics student focused on backend-oriented web development and connecting microcontroller-based devices with server-side services.</p>
+                </div>
 
-        <nav class="navbar">
-            <ul class="nav-links">
-                <li><a href="#about" class="active">About Alysa</a></li>
-                <li><a href="#experience">Work Experiences</a></li>
-                <li><a href="#skills">Skills</a></li>
-                <li><a href="#portfolio">Projects</a></li>
-            </ul>
-        </nav>
-        
-        <div class="hamburger">
-            <i class="fas fa-bars"></i>
-        </div>
-    </header>
+                <nav class="navbar">
+                    <ul class="nav-links">
+                        <li><a href="#about" class="nav-item"><span class="nav-indicator"></span><span class="nav-text">About</span></a></li>
+                        <li><a href="#experience" class="nav-item"><span class="nav-indicator"></span><span class="nav-text">Experience</span></a></li>
+                        <li><a href="#skills" class="nav-item"><span class="nav-indicator"></span><span class="nav-text">Skills</span></a></li>
+                        <li><a href="#portfolio" class="nav-item"><span class="nav-indicator"></span><span class="nav-text">Projects</span></a></li>
+                    </ul>
+                </nav>
 
-    <main>
-        <section id="home" class="hero">
-            <div class="hero-content">
-                <h3>Hello, I'm</h3>
-                <h1>Alysa Milano</h1>
-                <h3>And I am a <span class="multiple-text"></span></h3>
-                <p>An IoT and Web Developer with an Informatics background from President University.</p>
                 <div class="social-media">
-                    <a href="mailto:alysamilanohanel@gmail.com"><i class="fas fa-envelope"></i></a>
-                    <a href="https://www.linkedin.com/in/alysamilano" target="_blank"><i class="fab fa-linkedin-in"></i></a>
                     <a href="https://github.com/alysahanel" target="_blank"><i class="fab fa-github"></i></a>
+                    <a href="https://www.linkedin.com/in/alysamilano" target="_blank"><i class="fab fa-linkedin-in"></i></a>
                     <a href="https://www.instagram.com/alysamila_?igsh=ZjlkeXF1eTJ4aGxy&utm_source=ig_contact_invite" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="mailto:alysamilanohanel@gmail.com"><i class="fas fa-envelope"></i></a>
                 </div>
             </div>
-            <div class="hero-img">
-                <img src="Prof.jpg" alt="Alysa Milano">
-            </div>
-        </section>
+        </header>
 
-        <section id="about" class="about">
-            <div class="about-img">
-                <img src="Prof.jpg" alt="Alysa Milano">
-            </div>
-            <div class="about-content">
-                <h2 class="heading">About <span>Me</span></h2>
-                <h3>IoT & Web Developer</h3>
-                <p>Hi! I’m Alysa, an Informatics student at President University with a strong focus on IoT and backend-oriented web development. I work mainly on system logic, API development, database design, and data integration for web and IoT applications, connecting microcontroller-based devices with server-side services and dashboards.</p>
-                <p>My experience includes building backend services, managing structured data, implementing role-based access control, and handling data import/export workflows. I’m comfortable working across the full development cycle from requirement analysis and system design to implementation, testing, and debugging and I enjoy turning complex system requirements into reliable, maintainable solutions that support real operational needs.</p>
-            </div>
-        </section>
+        <main class="main-content">
+            <section id="about" class="section about">
+                <div class="section-content">
+                    <p class="lead">Hi! I’m Alysa, an Informatics student at President University with a strong focus on <strong>IoT and backend-oriented web development</strong>. I work mainly on system logic, API development, database design, and data integration for web and IoT applications.</p>
+                    
+                    <p>My experience includes building backend services, managing structured data, implementing role-based access control, and handling data import/export workflows. I’m comfortable working across the full development cycle from requirement analysis and system design to implementation, testing, and debugging.</p>
 
-        <section id="experience" class="portfolio">
-            <h2 class="heading">Work <span>Experience</span></h2>
-            <div class="portfolio-container">
-                <div class="portfolio-box" data-title="Research Intern" data-desc="For my research internship, I worked on the development of an IoT-based Autonomous Monitoring and Control System (AMCS) for the aquaculture sector. My role focused on integrating an ESP32-based water temperature control system using a DS18B20 sensor, RTC-based timestamping, and relay-controlled heater and cooler. The system supported real-time monitoring, configurable temperature thresholds, hysteresis logic for stability, and ESP-NOW communication for reliable data transmission without internet dependency. This experience strengthened my skills in embedded systems and practical IoT implementation for environmental monitoring. (April – May 2025)" data-img="work-brin.jpg" data-certificate="BRIN_Certificate.jpg" data-report="Fishery_Report.pdf">
-                    <img src="work-brin.jpg" alt="Research Intern - BRIN" style="width:100%; height:100%; object-fit: cover; position: absolute; top:0; left:0;">
-                    <div class="portfolio-layer">
-                        <h4>Research Intern</h4>
-                        <p>Badan Riset dan Inovasi Nasional</p>
-                        <p style="font-size: 1.2rem; margin-top: 0.5rem;">April – May 2025</p>
-                        <a href="#"><i class="fas fa-external-link-alt"></i></a>
+                    <p>I enjoy turning complex system requirements into reliable, maintainable solutions that support real operational needs.</p>
+                    
+                    <a href="Alysa_Milano_CV.pdf" class="btn resume-btn" download>Download CV</a>
+                </div>
+            </section>
+
+            <section id="experience" class="section experience">
+                <!-- <h2 class="sticky-header">Experience</h2> -->
+                <div class="experience-list">
+                    
+                    <!-- System Development Intern -->
+                    <div class="experience-item" data-title="System Development Intern" data-desc="Developing GAMS and RCS internal web systems." data-img="work-nippon.jpg" data-certificate="Internship_Certificate.pdf" data-report="INTERNSHIP_FINAL_REPORT_001202300089_ALYSA MILANO.pdf">
+                        <div class="exp-period">Aug 2025 — Dec 2025</div>
+                        <div class="exp-content">
+                            <h3>System Development Intern · PT Nippon Steel Chemical and Material Indonesia</h3>
+                            <p>Developed two internal web systems: General Affairs Management System (GAMS) and Regulatory Compliance System (RCS). Focused on backend logic, database design, and role-based access control to streamline HRGA and Legal operations.</p>
+                            <ul class="tech-stack">
+                                <li>Web Development</li>
+                                <li>Backend</li>
+                                <li>Database Design</li>
+                                <li>System Analysis</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Administration Division Lead -->
+                    <div class="experience-item" data-title="Administration Division Lead (Volunteer PIC)" data-desc="Led administrative operations for the university’s business incubation programs." data-img="pic-activity.jpeg" data-certificate="alysa-milano-pic.jpg">
+                        <div class="exp-period">Oct 2024 — May 2025</div>
+                        <div class="exp-content">
+                            <h3>Administration Division Lead (Volunteer PIC) · SetSail BizAccel</h3>
+                            <p>Led administrative operations for the university’s business incubation programs, ensuring organized documentation and structured workflow management. Oversaw internal coordination processes and supported strategic program execution across workshops and startup activities. Contributed to operational sustainability through systematic reporting and communication management.</p>
+                            <ul class="tech-stack">
+                                <li>Administration</li>
+                                <li>Documentation</li>
+                                <li>Workflow Management</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- BRIN -->
+                    <div class="experience-item" data-title="Research Intern" data-desc="Development of an IoT-based Autonomous Monitoring and Control System (AMCS)." data-img="work-brin.jpg" data-certificate="BRIN_Certificate.jpg" data-report="Fishery_Report.pdf">
+                        <div class="exp-period">April — May 2025</div>
+                        <div class="exp-content">
+                            <h3>Research Intern · Badan Riset dan Inovasi Nasional</h3>
+                            <p>Developed an IoT-based Autonomous Monitoring and Control System (AMCS) for the aquaculture sector. Integrated ESP32, DS18B20 sensors, and relay controls for real-time water temperature management. Implemented ESP-NOW for reliable data transmission without internet dependency.</p>
+                            <ul class="tech-stack">
+                                <li>IoT</li>
+                                <li>ESP32</li>
+                                <li>Embedded Systems</li>
+                                <li>C++</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Interim Deputy -->
+                    <div class="experience-item" data-title="Interim Deputy Program Manager" data-desc="Assisted in leading and coordinating entrepreneurship incubation programs, workshops, and networking events for startup founders and student entrepreneurs." data-img="parttimer-setsail-interim-deputy.jpg" data-certificate="alysa-milano-interim-setsail.jpg">
+                        <div class="exp-period">Sep 2024 — Feb 2025</div>
+                        <div class="exp-content">
+                            <h3>Interim Deputy Program Manager · Setsail BizAccel</h3>
+                            <p>Assisted in leading incubation programs, managing event timelines, and ensuring smooth collaboration between teams. Contributed to improving program efficiency and participant engagement.</p>
+                            <ul class="tech-stack">
+                                <li>Program Management</li>
+                                <li>Event Planning</li>
+                                <li>Stakeholder Management</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Web Developer Intern -->
+                    <div class="experience-item" data-title="Web Developer Intern" data-desc="Backend systems for startup tenants." data-img="work-setsail.jpg" data-certificate="setsail-internship.png">
+                        <div class="exp-period">Sep 2023 — Apr 2024</div>
+                        <div class="exp-content">
+                            <h3>Web Developer Intern · SetSail BizAccel</h3>
+                            <p>Focused on backend systems and application logic to support internal platforms. Collaborated on API integration and database management to ensure reliable data flow.</p>
+                            <ul class="tech-stack">
+                                <li>Backend</li>
+                                <li>API Integration</li>
+                                <li>Database Management</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Research Assistant -->
+                    <div class="experience-item" data-title="Research Assistant" data-desc="Supported research activities by assisting in data structuring, documentation, and analytical reporting." data-img="research-assistant.jpeg" data-certificate="alysa-milano-prc-internship.png">
+                        <div class="exp-period">Oct 2023 — Feb 2024</div>
+                        <div class="exp-content">
+                            <h3>Research Assistant · President Research Center</h3>
+                            <p>Supported research activities, data structuring, and analytical reporting. Worked in a multidisciplinary environment.</p>
+                            <ul class="tech-stack">
+                                <li>Research</li>
+                                <li>Data Structuring</li>
+                                <li>Documentation</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <section id="skills" class="section skills">
+                 <!-- <h2 class="sticky-header">Skills</h2> -->
+                 <div class="skills-grid">
+                    <div class="skill-category">
+                        <h3>Programming Languages</h3>
+                        <p>Java, C++, Python, HTML, CSS, JavaScript</p>
+                    </div>
+                    <div class="skill-category">
+                        <h3>IoT & Hardware</h3>
+                        <p>Arduino, ESP32, Sensors, Actuators</p>
+                    </div>
+                    <div class="skill-category">
+                        <h3>Tools & Platforms</h3>
+                        <p>Git, VS Code, Proteus, Node.js, MySQL</p>
+                    </div>
+                 </div>
+            </section>
+
+            <section id="portfolio" class="section projects">
+                <!-- <h2 class="sticky-header">Projects</h2> -->
+                <div class="project-list">
+                    
+                    <!-- AMMS -->
+                    <div class="project-card" data-title="Alysa Milano Management Systems (AMMS)" data-desc="Internal HRGA system." data-img="manajemen.jpg" data-github="https://github.com/alysahanel/AlysaMilanoManagementSystem" data-demo="/gams/">
+                        <div class="project-image">
+                            <img src="manajemen.jpg" alt="AMMS">
+                        </div>
+                        <div class="project-content">
+                            <h3>AMMS</h3>
+                            <p>Internal web-based system for HRGA administrative processes, streamlining item requests and inventory management.</p>
+                            <ul class="tech-stack">
+                                <li>Node.js</li>
+                                <li>Express</li>
+                                <li>MySQL</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Compliance -->
+                    <div class="project-card" data-title="Compliance System" data-desc="Regulatory compliance management." data-img="compliance.jpg" data-github="https://github.com/alysahanel/Compliance-System-Alysa-Milano" data-demo="/legal/">
+                        <div class="project-image">
+                            <img src="compliance.jpg" alt="Compliance System">
+                        </div>
+                        <div class="project-content">
+                            <h3>Compliance System</h3>
+                            <p>Centralized application for managing regulatory documents, corporate licenses, and compliance records.</p>
+                            <ul class="tech-stack">
+                                <li>Node.js</li>
+                                <li>Express</li>
+                                <li>MySQL</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- AMCS -->
+                    <div class="project-card" data-title="Autonomous Monitoring and Control System (AMCS)" data-desc="IoT-based aquaculture system." data-img="fishery.jpeg" data-fishery="https://github.com/alysahanel?tab=repositories&q=fishery+brin" data-ds18b20="https://github.com/search?q=owner%3Aalysahanel+ds18b20&type=repositories" data-rtc="https://github.com/search?q=owner%3Aalysahanel+rtc&type=repositories" data-eeprom="https://github.com/search?q=owner%3Aalysahanel+eeprom&type=repositories" data-relay="https://github.com/search?q=owner%3Aalysahanel+relay&type=repositories">
+                        <div class="project-image">
+                            <img src="fishery.jpeg" alt="AMCS">
+                        </div>
+                        <div class="project-content">
+                            <h3>AMCS</h3>
+                            <p>IoT-based aquaculture system designed for automated water temperature monitoring and control using ESP32 and DS18B20 sensors.</p>
+                            <ul class="tech-stack">
+                                <li>ESP32</li>
+                                <li>IoT</li>
+                                <li>C++</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- CashTracking -->
+                    <div class="project-card" data-title="CashTrack – Personal Finance Tracker" data-desc="A simple and intuitive web app built to help users track their personal finances." data-img="cashtrack.webp" data-demo="/cashtracking/" data-github="https://github.com/alysahanel/CashTracking">
+                        <div class="project-image">
+                            <img src="cashtrack.webp" alt="CashTracking">
+                        </div>
+                        <div class="project-content">
+                            <h3>CashTrack</h3>
+                            <p>Personal finance tracker for recording income/expenses and visualizing spending habits through interactive charts.</p>
+                            <ul class="tech-stack">
+                                <li>React.js</li>
+                                <li>CSS</li>
+                                <li>Chart.js</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Healthcare -->
+                    <div class="project-card" data-title="Healthcare Web Information System" data-desc="Healthcare data management." data-img="healthcare.jpg" data-demo="/healthcare-web/" data-github="https://github.com/alysahanel/Healthcare.git">
+                        <div class="project-image">
+                            <img src="healthcare.jpg" alt="Healthcare Web">
+                        </div>
+                        <div class="project-content">
+                            <h3>Healthcare Web System</h3>
+                            <p>Web-based system for managing health-related data, patient records, and clinical workflows.</p>
+                            <ul class="tech-stack">
+                                <li>REST API</li>
+                                <li>Database</li>
+                                <li>Web</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Robot -->
+                    <div class="project-card" data-title="Autonomous Mobile Robot" data-desc="Obstacle & Fire Detection Robot." data-img="robotic.jpeg" data-joystick="https://github.com/search?q=owner%3Aalysahanel+joystick&type=repositories" data-parking="https://github.com/search?q=owner%3Aalysahanel+parking+sensor&type=repositories" data-car="https://github.com/search?q=owner%3Aalysahanel+car&type=repositories">
+                        <div class="project-image">
+                            <img src="robotic.jpeg" alt="Robot">
+                        </div>
+                        <div class="project-content">
+                            <h3>Autonomous Mobile Robot</h3>
+                            <p>Obstacle and fire detection robot equipped with ultrasonic and flame sensors for autonomous navigation.</p>
+                            <ul class="tech-stack">
+                                <li>Arduino</li>
+                                <li>Robotics</li>
+                                <li>C++</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Ready Setsail 4 -->
+                    <div class="project-card" data-title="Ready Setsail 4 Workshop" data-desc="Directed the end-to-end planning and execution of the Ready Setsail 4 Workshop under the Setsail incubation program." data-img="ready-setsail.jpg" data-certificate="alysa-milano-ready-setsail-4.png">
+                        <div class="project-image">
+                            <img src="ready-setsail.jpg" alt="Ready Setsail 4">
+                        </div>
+                        <div class="project-content">
+                            <h3>Ready Setsail 4 Workshop</h3>
+                            <p>Directed end-to-end planning and execution, coordinating speakers and managing logistics for startup founder onboarding.</p>
+                            <ul class="tech-stack">
+                                <li>Event Management</li>
+                                <li>Logistics</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- LightenUp -->
+                    <div class="project-card" data-title="LightenUp App Alpha Launch" data-desc="Led the alpha launch of the LightenUp application by coordinating cross-functional teams including product, marketing, and operations." data-img="ligthenup.jpg" data-certificate="alysa-milano-lightenup.png">
+                        <div class="project-image">
+                            <img src="ligthenup.jpg" alt="LightenUp Launch">
+                        </div>
+                        <div class="project-content">
+                            <h3>LightenUp App Alpha Launch</h3>
+                            <p>Spearheaded the alpha launch of the LightenUp application, managing project timelines and aligning launch strategies with user engagement goals.</p>
+                            <ul class="tech-stack">
+                                <li>Project Management</li>
+                                <li>Product Launch</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Collaborative Seminar -->
+                    <div class="project-card" data-title="Collaborative Seminar Project" data-desc="Directed end-to-end execution of an inter-department collaborative seminar featuring International Relations alumnae." data-img="IR.jpg" data-certificate="alysa-milano-ecozystem.png">
+                        <div class="project-image">
+                            <img src="IR.jpg" alt="Collaborative Seminar">
+                        </div>
+                        <div class="project-content">
+                            <h3>Collaborative Seminar Project</h3>
+                            <p>Directed the execution of an inter-department collaborative seminar, overseeing strategic planning and stakeholder coordination.</p>
+                            <ul class="tech-stack">
+                                <li>Project Management</li>
+                                <li>Stakeholder Coordination</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Earth Day -->
+                    <div class="project-card" data-title="Earth Day 2024" data-desc="Managed administrative coordination, documentation, and formal communication with external partner PT Nippon for Earth Day celebration." data-img="earth-day.jpg" data-certificate="alysa-milano-demo-day.jpg">
+                        <div class="project-image">
+                            <img src="earth-day.jpg" alt="Earth Day">
+                        </div>
+                        <div class="project-content">
+                            <h3>Earth Day 2024</h3>
+                            <p>Managed administrative coordination and documentation for the Earth Day celebration in collaboration with PT Nippon.</p>
+                            <ul class="tech-stack">
+                                <li>Administration</li>
+                                <li>Event Coordination</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
+            </section>
 
-                <div class="portfolio-box" data-title="System Development Intern" data-desc="During my internship, I was involved in developing two internal web-based systems: the General Affairs Management System (GAMS) and the Regulatory Compliance System (RCS). My role focused on backend and database development, system integration, and role-based access control to support HRGA and Legal department operations. GAMS was designed to manage item requests, stock monitoring, scheduling, and reporting, while RCS centralized the management of regulations, licenses, and company agreements with CSV import and data export features. This project strengthened my skills in web application development, system analysis, and real-world enterprise system implementation. (August 2024 – January 2025)" data-img="work-nippon.jpg" data-certificate="Internship_Certificate.pdf" data-report="INTERNSHIP_FINAL_REPORT_001202300089_ALYSA MILANO.pdf">
-                    <img src="work-nippon.jpg" alt="System Development Intern - Nippon Steel" style="width:100%; height:100%; object-fit: cover; position: absolute; top:0; left:0;">
-                    <div class="portfolio-layer">
-                        <h4>System Development Intern</h4>
-                        <p>PT Nippon Steel Chemical and Material Indonesia</p>
-                        <p style="font-size: 1.2rem; margin-top: 0.5rem;">August 2024 – January 2025</p>
-                        <a href="#"><i class="fas fa-external-link-alt"></i></a>
-                    </div>
-                </div>
+            <footer class="footer">
+                <p>Built with care by Alysa Milano &copy; 2025</p>
+            </footer>
+        </main>
+    </div>
 
-                <div class="portfolio-box" data-title="Web Developer Intern" data-desc="As a Web Developer Intern at SetSail BizAccel, I focused on developing backend systems and application logic to support internal platforms and startup tenants. I worked on server-side processing, database management, and API integration to ensure reliable data flow and system functionality. I collaborated with other team members to align system requirements with business needs and participated in several entrepreneurship and innovation programs organized by SetSail. This experience strengthened my system development skills and provided hands-on exposure to working in a dynamic and fast-paced startup environment. (January – May 2024)" data-img="work-setsail.jpg" data-certificate="setsail-internship.png">
-                    <img src="work-setsail.jpg" alt="Web Developer Intern - SetSail BizAccel" style="width:100%; height:100%; object-fit: cover; position: absolute; top:0; left:0;">
-                    <div class="portfolio-layer">
-                        <h4>Web Developer Intern</h4>
-                        <p>SetSail BizAccel</p>
-                        <p style="font-size: 1.2rem; margin-top: 0.5rem;">January – May 2024</p>
-                        <a href="#"><i class="fas fa-external-link-alt"></i></a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="skills" class="skills">
-            <h2 class="heading"><span>Skills</span></h2>
-            <div class="skills-container">
-                <div class="skills-box">
-                    <i class="fas fa-code"></i>
-                    <h3>Programming Languages</h3>
-                    <p>Java, C++, Python, HTML, CSS, JavaScript</p>
-                </div>
-                <div class="skills-box">
-                    <i class="fas fa-microchip"></i>
-                    <h3>IoT & Hardware</h3>
-                    <p>Arduino, ESP32, Sensors, Actuators</p>
-                </div>
-                <div class="skills-box">
-                    <i class="fas fa-tools"></i>
-                    <h3>Tools & Platforms</h3>
-                    <p>Git, VS Code, Proteus, Node.js, MySQL</p>
-                </div>
-                <div class="skills-box">
-                    <i class="fas fa-users"></i>
-                    <h3>Soft Skills</h3>
-                    <p>Problem Solving, Teamwork, Communication, Leadership</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="portfolio" class="portfolio">
-            <h2 class="heading">Latest <span>Projects</span></h2>
-            <div class="portfolio-container">
-                <div class="portfolio-box" data-title="Java Projects" data-desc="A collection of Java-based projects, ranging from desktop applications to backend services. Includes the use of OOP, Swing/JavaFX, and database integration." data-img="java-projects.jpg" data-github="https://github.com/alysahanel?tab=repositories&q=&type=&language=java">
-                    <img src="java-projects.jpg" alt="Java Project" style="width:100%; height:100%; object-fit: cover; position: absolute; top:0; left:0;">
-                    <div class="portfolio-layer">
-                        <h4>Java Projects</h4>
-                        <p>Java Applications & Backend.</p>
-                        <a href="#"><i class="fas fa-external-link-alt"></i></a>
-                    </div>
-                </div>
-
-                <div class="portfolio-box" data-title="Cash Tracking App" data-desc="Personal financial management application with a Modern Dark Mode interface. Features include recording income/expenses, real-time balance summary, and transaction history. Built with React.js (Frontend) and Python Flask (Backend)." data-img="cashtrack.webp" data-demo="/cashtracking/" data-github="https://github.com/alysahanel/CashTracking">
-                    <img src="cashtrack.webp" alt="Cash Tracking App" style="width:100%; height:100%; object-fit: cover; position: absolute; top:0; left:0;">
-                    <div class="portfolio-layer">
-                        <h4>Cash Tracking</h4>
-                        <p>Financial Management App.</p>
-                        <a href="javascript:void(0);"><i class="fas fa-external-link-alt"></i></a>
-                    </div>
-                </div>
-
-                <div class="portfolio-box" data-title="C++ Projects" data-desc="Exploration in system programming and algorithms using C++. Includes memory management projects, data structures, and programming competitions." data-img="cpp-projects.jpg" data-github="https://github.com/alysahanel?tab=repositories&q=&type=&language=c%2B%2B">
-                    <img src="cpp-projects.jpg" alt="C++ Project" style="width:100%; height:100%; object-fit: cover; position: absolute; top:0; left:0;">
-                    <div class="portfolio-layer">
-                        <h4>C++ Projects</h4>
-                        <p>System & Algorithm Exploration.</p>
-                        <a href="#"><i class="fas fa-external-link-alt"></i></a>
-                    </div>
-                </div>
-
-                <div class="portfolio-box" data-title="Compliance System" data-desc="Integrated E-Monitoring system for managing corporate legal compliance and permits. Uses Node.js, MySQL, and Tailwind CSS." data-img="compliance.jpg" data-github="https://github.com/alysahanel/Compliance-System-Alysa-Milano" data-demo="/legal/">
-                    <img src="compliance.jpg" alt="Compliance System" style="width:100%; height:100%; object-fit: cover; position: absolute; top:0; left:0;">
-                    <div class="portfolio-layer">
-                        <h4>Compliance System</h4>
-                        <p>E-Monitoring System for legal compliance and permits.</p>
-                        <a href="#"><i class="fas fa-external-link-alt"></i></a>
-                    </div>
-                </div>
-
-                <div class="portfolio-box" data-title="AMMS (Management System)" data-desc="Comprehensive General Affairs (GA) Management System for managing item requests, inventory, and approval workflows. Uses Node.js, Express, and MySQL." data-img="manajemen.jpg" data-github="https://github.com/alysahanel/AlysaMilanoManagementSystem" data-demo="/gams/">
-                    <img src="manajemen.jpg" alt="AMMS" style="width:100%; height:100%; object-fit: cover; position: absolute; top:0; left:0;">
-                    <div class="portfolio-layer">
-                        <h4>AMMS</h4>
-                        <p>General Affairs and Inventory Management System.</p>
-                        <a href="#"><i class="fas fa-external-link-alt"></i></a>
-                    </div>
-                </div>
-
-                <div class="portfolio-box" data-title="Healthcare Web" data-desc="Interactive health platform with Symptom Diagnosis, BMI Calculator, and Diabetes Risk Assessment features. Built with pure HTML, CSS, and JavaScript." data-img="healthcare.jpg" data-demo="/healthcare-web/" data-github="https://github.com/alysahanel/Healthcare.git">
-                    <img src="healthcare.jpg" alt="Healthcare Web" style="width:100%; height:100%; object-fit: cover; position: absolute; top:0; left:0;">
-                    <div class="portfolio-layer">
-                        <h4>Healthcare Web</h4>
-                        <p>Diagnosis & Health Calculator.</p>
-                        <a href="#"><i class="fas fa-external-link-alt"></i></a>
-                    </div>
-                </div>
-
-                <div class="portfolio-box" data-title="Autonomous Monitoring Control System in the Agriculture and Fisheries Sector" data-desc="Water quality monitoring system for smart fisheries using DS18B20 temperature sensors, RTC, EEPROM, and Relay. Equipped with a Node.js-based backend." data-img="fishery.jpeg" data-fishery="https://github.com/alysahanel?tab=repositories&q=fishery+brin" data-ds18b20="https://github.com/search?q=owner%3Aalysahanel+ds18b20&type=repositories" data-rtc="https://github.com/search?q=owner%3Aalysahanel+rtc&type=repositories" data-eeprom="https://github.com/search?q=owner%3Aalysahanel+eeprom&type=repositories" data-relay="https://github.com/search?q=owner%3Aalysahanel+relay&type=repositories">
-                    <img src="fishery.jpeg" alt="Autonomous Monitoring Control System" style="width:100%; height:100%; object-fit: cover; position: absolute; top:0; left:0;">
-                    <div class="portfolio-layer">
-                        <h4 style="font-size: 2rem;">Autonomous Monitoring Control System</h4>
-                        <p>Aquaculture & Fisheries Sector</p>
-                        <a href="#"><i class="fas fa-external-link-alt"></i></a>
-                    </div>
-                </div>
-
-                <div class="portfolio-box" data-title="Autonomous Mobile Robot" data-desc="Autonomous mobile robot with navigation and obstacle avoidance capabilities. Uses ultrasonic sensors and an Arduino-based controller." data-img="robotic.jpeg" data-joystick="https://github.com/search?q=owner%3Aalysahanel+joystick&type=repositories" data-parking="https://github.com/search?q=owner%3Aalysahanel+parking+sensor&type=repositories" data-car="https://github.com/search?q=owner%3Aalysahanel+car&type=repositories">
-                    <img src="robotic.jpeg" alt="Autonomous Mobile Robot" style="width:100%; height:100%; object-fit: cover; position: absolute; top:0; left:0;">
-                    <div class="portfolio-layer">
-                        <h4>Mobile Robot</h4>
-                        <p>Autonomous & Obstacle Avoidance.</p>
-                        <a href="#"><i class="fas fa-external-link-alt"></i></a>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer class="footer">
-        <div class="footer-content">
-            <p class="made-with-love">Built with care and attention to detail by Alysa Milano</p>
-            <div class="social-media-footer">
-                <a href="mailto:alysamilanohanel@gmail.com"><i class="fas fa-envelope"></i></a>
-                <a href="https://www.linkedin.com/in/alysamilano" target="_blank"><i class="fab fa-linkedin-in"></i></a>
-                <a href="https://github.com/alysahanel" target="_blank"><i class="fab fa-github"></i></a>
-            </div>
-            <p class="copyright"> &copy; 2025 by Alysa Milano. All Rights Reserved.</p>
-        </div>
-        <div class="footer-iconTop">
-            <a href="#home"><i class="fas fa-arrow-up"></i></a>
-        </div>
-    </footer>
+    <div class="hamburger">
+        <i class="fas fa-bars"></i>
+    </div>
 
     <div id="portfolio-modal" class="modal">
         <div class="modal-content">

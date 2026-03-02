@@ -1,15 +1,15 @@
 // Toggle icon navbar
 let menuIcon = document.querySelector('.hamburger');
-let navbar = document.querySelector('.nav-links');
+let navbar = document.querySelector('.navbar'); // Select the wrapper, not just ul
 
 menuIcon.onclick = () => {
-    menuIcon.classList.toggle('active'); // Optional: Add animation to icon if needed
-    navbar.classList.toggle('active');
+    menuIcon.classList.toggle('active');
+    navbar.classList.toggle('active'); // CSS visibility/opacity handles the rest
 };
 
 // Scroll sections active link
 let sections = document.querySelectorAll('section');
-let navLinks = document.querySelectorAll('header nav a');
+let navLinks = document.querySelectorAll('.navbar a'); // Updated selector: .navbar is the nav element
 
 window.onscroll = () => {
     sections.forEach(sec => {
@@ -21,18 +21,19 @@ window.onscroll = () => {
         if(top >= offset && top < offset + height) {
             navLinks.forEach(links => {
                 links.classList.remove('active');
-                document.querySelector('header nav a[href*=' + id + ']').classList.add('active');
+                let target = document.querySelector('.navbar a[href*=' + id + ']');
+                if(target) target.classList.add('active');
             });
         };
     });
 
-    // Sticky navbar
-    let header = document.querySelector('header');
-    header.classList.toggle('sticky', window.scrollY > 100);
+    // Sticky navbar removed as it's handled by CSS sticky positioning now
 
     // Remove toggle icon and navbar when click navbar link (scroll)
-    menuIcon.classList.remove('active');
-    navbar.classList.remove('active');
+    if(navbar.classList.contains('active')) {
+        menuIcon.classList.remove('active');
+        navbar.classList.remove('active');
+    }
 };
 
 // Typed.js
@@ -64,7 +65,7 @@ const modalCertificate = document.querySelector('.modal-certificate');
 const modalReport = document.querySelector('.modal-report');
 const modalDemo = document.querySelector('.modal-demo');
 const closeModal = document.querySelector('.close-modal');
-const portfolioBoxes = document.querySelectorAll('.portfolio-box');
+const portfolioBoxes = document.querySelectorAll('.experience-item, .project-card');
 
 portfolioBoxes.forEach(box => {
     box.addEventListener('click', () => {
