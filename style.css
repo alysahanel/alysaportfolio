@@ -31,6 +31,7 @@ body {
 html {
     font-size: 62.5%;
     scroll-behavior: smooth;
+    background: var(--bg-color);
 }
 
 /* Scrollbar Styling */
@@ -83,8 +84,8 @@ span {
 /* Header / Sidebar Layout for Desktop */
 @media (min-width: 1024px) {
     body {
-        display: flex;
-        justify-content: flex-end; /* Push content to right */
+        /* Reset flex if previously applied, block is safer for this structure */
+        display: block;
     }
 
     .header {
@@ -99,15 +100,28 @@ span {
         align-items: flex-start; /* Align left */
         padding: 0 8rem; /* Padding inside sidebar */
         z-index: 1000;
+        border-right: 1px solid var(--second-bg-color);
     }
 
     /* Wrap all sections in a main container conceptually (using margin) */
-    section {
+    main {
         width: 60%; /* Right side width */
         margin-left: 40%; /* Offset by sidebar width */
+        min-height: 100vh;
+    }
+
+    section {
+        width: 100%; /* Fill the main container */
         padding: 8rem 5rem; /* Adjust padding */
         min-height: auto; /* Let content define height mostly */
         margin-bottom: 5rem;
+    }
+
+    .footer {
+        width: 60%;
+        margin-left: 40%;
+        background: var(--bg-color); /* Match body to blend in */
+        border-top: 1px solid var(--second-bg-color);
     }
 
     .nav-links {
