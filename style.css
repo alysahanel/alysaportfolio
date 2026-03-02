@@ -11,12 +11,12 @@
 }
 
 :root {
-    --bg-color: #656D3F; /* Olive Green Background */
-    --second-bg-color: #492828; /* Dark Brown (Secondary/Footer) */
-    --card-bg-color: #492828; /* Dark Brown Card */
-    --text-color: #ECECEC; /* Light Gray/White Text */
-    --main-color: #ECECEC; /* Main Accent (White for contrast) */
-    --accent-color: #84934A; /* Lighter Olive (Hover/Highlight) */
+    --bg-color: #1f242d;
+    --second-bg-color: #323946;
+    --card-bg-color: #323946;
+    --text-color: #fff;
+    --main-color: #0ef;
+    --accent-color: #0ef;
 }
 
 body {
