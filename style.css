@@ -11,12 +11,12 @@
 }
 
 :root {
-    --bg-color: #FAFAF9; /* Warm White (Hero) */
-    --second-bg-color: #F1F5F9; /* Section Bawah */
-    --card-bg-color: #E7E5E4; /* Card Color */
-    --text-color: #292524;
-    --main-color: #4D7C0F;
-    --accent-color: #84CC16;
+    --bg-color: #040D12; /* Darkest Background (Black/Blue) */
+    --second-bg-color: #183D3D; /* Secondary Background (Dark Green) */
+    --card-bg-color: #183D3D; /* Card Background */
+    --text-color: #93B1A6; /* Light Text (Light Sage) */
+    --main-color: #5C8374; /* Main Accent (Sage Green) */
+    --accent-color: #93B1A6; /* Highlight Color */
 }
 
 body {
