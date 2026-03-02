@@ -11,30 +11,19 @@
 </head>
 <body>
     <header class="header">
-        <div class="logo-wrapper">
-            <img src="tab logo.jpeg" alt="Alysa Logo" class="logo-img">
+        <div class="mobile-top-bar">
+            <div class="logo-wrapper">
+                <img src="tab logo.jpeg" alt="Alysa Logo" class="logo-img">
+            </div>
+            <div class="hamburger">
+                <i class="fas fa-bars"></i>
+            </div>
         </div>
 
-        <nav class="navbar">
-            <ul class="nav-links">
-                <li><a href="#about" class="active">About Alysa</a></li>
-                <li><a href="#experience">Work Experiences</a></li>
-                <li><a href="#skills">Skills</a></li>
-                <li><a href="#portfolio">Projects</a></li>
-            </ul>
-        </nav>
-        
-        <div class="hamburger">
-            <i class="fas fa-bars"></i>
-        </div>
-    </header>
-
-    <main>
-        <section id="home" class="hero">
-            <div class="hero-content">
-                <h3>Hello, I'm</h3>
+        <div class="header-content">
+            <div class="hero-text">
                 <h1>Alysa Milano</h1>
-                <h3>And I am a <span class="multiple-text"></span></h3>
+                <h3>I am a <span class="multiple-text"></span></h3>
                 <p>An IoT and Web Developer with an Informatics background from President University.</p>
                 <div class="social-media">
                     <a href="mailto:alysamilanohanel@gmail.com"><i class="fas fa-envelope"></i></a>
@@ -43,10 +32,20 @@
                     <a href="https://www.instagram.com/alysamila_?igsh=ZjlkeXF1eTJ4aGxy&utm_source=ig_contact_invite" target="_blank"><i class="fab fa-instagram"></i></a>
                 </div>
             </div>
-            <div class="hero-img">
-                <img src="Prof.jpg" alt="Alysa Milano">
-            </div>
-        </section>
+
+            <nav class="navbar">
+                <ul class="nav-links">
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#experience">Experience</a></li>
+                    <li><a href="#skills">Skills</a></li>
+                    <li><a href="#portfolio">Projects</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section Removed (Moved to Header) -->
 
         <section id="about" class="about">
             <div class="about-content">
